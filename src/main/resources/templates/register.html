@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Registro - GastuApp</title>
+    <link rel="stylesheet" href="/css/styles.css">
+</head>
+
+<body>
+
+<h2>Crear Cuenta</h2>
+
+<form th:action="@{/auth/register}" method="post">
+
+    <label>Nombre:</label>
+    <input type="text" name="nombre" placeholder="Tu nombre" required>
+
+    <label>Correo:</label>
+    <input type="email" name="correo" placeholder="correo@example.com" required>
+
+    <label>Teléfono:</label>
+    <input type="text" name="telefono" placeholder="3001234567">
+
+    <label>Contraseña:</label>
+    <input type="password" name="password" placeholder="********" required>
+
+    <button type="submit">Registrarme</button>
+</form>
+
+<p>¿Ya tienes cuenta? <a th:href="@{/login}">Inicia sesión</a></p>
+
+</body>
+</html>
