@@ -1,8 +1,12 @@
 package GastuApp.User;
 
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.*;
 import org.springframework.stereotype.Service;
-import java.util.stream.Collectors;
+
+import java.util.Collection;
+import java.util.Collections;
 
 @Service
 public class UsuarioDetailsServiceImpl implements UserDetailsService {
@@ -18,11 +22,14 @@ public class UsuarioDetailsServiceImpl implements UserDetailsService {
         Usuario user = usuarioRepo.findByUsername(username)
                 .orElseThrow(() -> new UsernameNotFoundException("Usuario no encontrado"));
 
-        String[] roles = new String[] { user.getRol() != null ? user.getRol().getNombre() : "aprendiz" };
+        String roleName = user.getRol() != null ? user.getRol().getNombre() : "aprendiz";
+        Collection<GrantedAuthority> authorities = Collections.singletonList(
+                new SimpleGrantedAuthority("ROLE_" + roleName.toUpperCase()));
 
-        return User.withUsername(user.getUsername())
-                .password(user.getPassword())
-                .roles(roles)
-                .build();
+        return new CustomUserDetails(
+                user.getId(),
+                user.getUsername(),
+                user.getPassword(),
+                authorities);
     }
 }

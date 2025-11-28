@@ -34,21 +34,30 @@ public class JwtUtil {
 
     public boolean validarToken(String token) {
         try {
-                Jwts.parserBuilder()
+            Jwts.parserBuilder()
                     .setSigningKey(getKey())
                     .build()
                     .parseClaimsJws(token);
+            System.out.println("DEBUG JwtUtil: Token validado exitosamente");
             return true;
+        } catch (io.jsonwebtoken.ExpiredJwtException ex) {
+            System.out.println("DEBUG JwtUtil: Token expirado - " + ex.getMessage());
+            return false;
+        } catch (io.jsonwebtoken.security.SignatureException ex) {
+            System.out.println("DEBUG JwtUtil: Firma inválida - " + ex.getMessage());
+            return false;
         } catch (Exception ex) {
+            System.out.println(
+                    "DEBUG JwtUtil: Error validando token - " + ex.getClass().getName() + ": " + ex.getMessage());
             return false;
         }
     }
 
     public String getUsernameFromToken(String token) {
         Jws<Claims> jwsClaims = Jwts.parserBuilder()
-            .setSigningKey(getKey())
-            .build()
-            .parseClaimsJws(token);
+                .setSigningKey(getKey())
+                .build()
+                .parseClaimsJws(token);
 
         Claims claims = jwsClaims.getBody();
 
