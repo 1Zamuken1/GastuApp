@@ -1,50 +1,56 @@
 package GastuApp.Movimientos.DTO;
 
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
+
 /**
  * DTO para transferencia de datos de Conceptos.
- * Representa la informacion basica de un concepto que proviene
- * del microservicio de gestion de usuarios.
+ * Utilizado en las peticiones y respuestas del API REST.
  */
 public class ConceptoDTO {
 
     /**
-     * ID del concepto.
+     * ID del concepto. Solo se utiliza en respuestas.
      */
-    private Long conceptoId;
+    private Long id;
 
     /**
      * Tipo de concepto: INGRESO, EGRESO o AHORRO.
      */
+    @NotBlank(message = "El tipo es obligatorio")
     private String tipo;
 
     /**
      * Nombre del concepto.
      */
+    @NotBlank(message = "El nombre es obligatorio")
+    @Size(max = 50, message = "El nombre no puede exceder 50 caracteres")
     private String nombre;
 
     /**
-     * Descripcion del concepto.
+     * Descripción del concepto.
      */
+    @Size(max = 100, message = "La descripción no puede exceder 100 caracteres")
     private String descripcion;
 
     // Constructores
     public ConceptoDTO() {
     }
 
-    public ConceptoDTO(Long conceptoId, String tipo, String nombre, String descripcion) {
-        this.conceptoId = conceptoId;
+    public ConceptoDTO(Long id, String tipo, String nombre, String descripcion) {
+        this.id = id;
         this.tipo = tipo;
         this.nombre = nombre;
         this.descripcion = descripcion;
     }
 
     // Getters y Setters
-    public Long getConceptoId() {
-        return conceptoId;
+    public Long getId() {
+        return id;
     }
 
-    public void setConceptoId(Long conceptoId) {
-        this.conceptoId = conceptoId;
+    public void setId(Long id) {
+        this.id = id;
     }
 
     public String getTipo() {

@@ -1,0 +1,311 @@
+package GastuApp.Movimientos.Service;
+
+import GastuApp.Movimientos.DTO.ConceptoDTO;
+import GastuApp.Movimientos.DTO.EgresoDTO;
+import GastuApp.Movimientos.DTO.PreferenciasFinancierasDTO;
+import GastuApp.Movimientos.Entity.Movimiento;
+import GastuApp.Movimientos.Entity.Movimiento.TipoMovimiento;
+import GastuApp.Movimientos.Entity.Notificacion.TipoNotificacion;
+import GastuApp.Movimientos.Repository.MovimientoRepository;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.client.RestTemplate;
+
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.util.List;
+import java.util.stream.Collectors;
+
+/**
+ * Servicio que contiene la lógica de negocio para la gestión de Egresos.
+ * Incluye validaciones de salud financiera y generación de notificaciones.
+ */
+@Service
+public class EgresoService {
+
+    private final MovimientoRepository movimientoRepository;
+    private final RestTemplate restTemplate;
+    private final NotificacionService notificacionService;
+    private final PreferenciasUsuarioService preferenciasService;
+
+    @Value("${usuarios.service.url}")
+    private String usuariosServiceUrl;
+
+    public EgresoService(MovimientoRepository movimientoRepository,
+            RestTemplate restTemplate,
+            NotificacionService notificacionService,
+            PreferenciasUsuarioService preferenciasService) {
+        this.movimientoRepository = movimientoRepository;
+        this.restTemplate = restTemplate;
+        this.notificacionService = notificacionService;
+        this.preferenciasService = preferenciasService;
+    }
+
+    /**
+     * Obtiene todos los egresos de un usuario específico.
+     *
+     * @param usuarioId ID del usuario
+     * @return Lista de DTOs de egresos ordenados por fecha descendente
+     */
+    @Transactional(readOnly = true)
+    public List<EgresoDTO> obtenerEgresosPorUsuario(Long usuarioId) {
+        List<Movimiento> egresos = movimientoRepository
+                .findByUsuarioIdAndTipoOrderByFechaRegistroDesc(usuarioId, TipoMovimiento.EGRESO);
+
+        return egresos.stream()
+                .map(this::convertirADTO)
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * Obtiene un egreso específico por su ID.
+     * Valida que el egreso pertenezca al usuario solicitante.
+     *
+     * @param id        ID del egreso
+     * @param usuarioId ID del usuario solicitante
+     * @return DTO del egreso
+     * @throws RuntimeException si el egreso no existe o no pertenece al usuario
+     */
+    @Transactional(readOnly = true)
+    public EgresoDTO obtenerEgresoPorId(Long id, Long usuarioId) {
+        Movimiento egreso = movimientoRepository.findByIdAndUsuarioId(id, usuarioId)
+                .orElseThrow(() -> new RuntimeException("Egreso no encontrado o no tiene permisos para acceder"));
+
+        if (egreso.getTipo() != TipoMovimiento.EGRESO) {
+            throw new RuntimeException("El movimiento solicitado no es un egreso");
+        }
+
+        return convertirADTO(egreso);
+    }
+
+    /**
+     * Crea un nuevo egreso para un usuario.
+     * Valida que el concepto seleccionado exista y sea de tipo EGRESO.
+     * Realiza validaciones de salud financiera y genera notificaciones si es
+     * necesario.
+     *
+     * @param dto       DTO con los datos del egreso
+     * @param usuarioId ID del usuario que crea el egreso
+     * @param token     Token JWT para validar el concepto
+     * @return DTO del egreso creado
+     * @throws RuntimeException si el concepto no existe o no es válido
+     */
+    @Transactional
+    public EgresoDTO crearEgreso(EgresoDTO dto, Long usuarioId, String token) {
+        // Validar que el concepto existe y es de tipo EGRESO
+        validarConcepto(dto.getConceptoId(), "EGRESO", token);
+
+        // Crear entidad
+        Movimiento egreso = new Movimiento();
+        egreso.setTipo(TipoMovimiento.EGRESO);
+        egreso.setMonto(dto.getMonto());
+        egreso.setDescripcion(dto.getDescripcion());
+        egreso.setUsuarioId(usuarioId);
+        egreso.setConceptoId(dto.getConceptoId());
+
+        // Guardar
+        Movimiento egresoGuardado = movimientoRepository.save(egreso);
+
+        // Validar salud financiera y generar notificaciones si es necesario
+        validarSaludFinanciera(usuarioId, egresoGuardado);
+
+        return convertirADTO(egresoGuardado);
+    }
+
+    /**
+     * Actualiza un egreso existente.
+     * Valida que el egreso pertenezca al usuario y que el concepto sea válido.
+     *
+     * @param id        ID del egreso a actualizar
+     * @param dto       DTO con los nuevos datos
+     * @param usuarioId ID del usuario que actualiza
+     * @param token     Token JWT para validar el concepto
+     * @return DTO del egreso actualizado
+     * @throws RuntimeException si el egreso no existe, no pertenece al usuario o
+     *                          el concepto no es válido
+     */
+    @Transactional
+    public EgresoDTO actualizarEgreso(Long id, EgresoDTO dto, Long usuarioId, String token) {
+        // Buscar egreso existente
+        Movimiento egreso = movimientoRepository.findByIdAndUsuarioId(id, usuarioId)
+                .orElseThrow(() -> new RuntimeException("Egreso no encontrado o no tiene permisos para modificarlo"));
+
+        if (egreso.getTipo() != TipoMovimiento.EGRESO) {
+            throw new RuntimeException("El movimiento no es un egreso");
+        }
+
+        // Validar nuevo concepto si cambió
+        if (!egreso.getConceptoId().equals(dto.getConceptoId())) {
+            validarConcepto(dto.getConceptoId(), "EGRESO", token);
+        }
+
+        // Actualizar campos
+        egreso.setMonto(dto.getMonto());
+        egreso.setDescripcion(dto.getDescripcion());
+        egreso.setConceptoId(dto.getConceptoId());
+
+        // Guardar cambios
+        Movimiento egresoActualizado = movimientoRepository.save(egreso);
+
+        // Re-validar salud financiera después de la actualización
+        validarSaludFinanciera(usuarioId, egresoActualizado);
+
+        return convertirADTO(egresoActualizado);
+    }
+
+    /**
+     * Elimina un egreso.
+     * Valida que el egreso pertenezca al usuario solicitante.
+     *
+     * @param id        ID del egreso a eliminar
+     * @param usuarioId ID del usuario que solicita la eliminación
+     * @throws RuntimeException si el egreso no existe o no pertenece al usuario
+     */
+    @Transactional
+    public void eliminarEgreso(Long id, Long usuarioId) {
+        Movimiento egreso = movimientoRepository.findByIdAndUsuarioId(id, usuarioId)
+                .orElseThrow(() -> new RuntimeException("Egreso no encontrado o no tiene permisos para eliminarlo"));
+
+        if (egreso.getTipo() != TipoMovimiento.EGRESO) {
+            throw new RuntimeException("El movimiento no es un egreso");
+        }
+
+        movimientoRepository.delete(egreso);
+    }
+
+    /**
+     * Valida la salud financiera del usuario después de registrar/actualizar un
+     * egreso.
+     * Genera notificaciones según las preferencias configuradas por el usuario.
+     *
+     * @param usuarioId ID del usuario
+     * @param egreso    Egreso recién creado o actualizado
+     */
+    private void validarSaludFinanciera(Long usuarioId, Movimiento egreso) {
+        // Obtener totales
+        BigDecimal totalIngresos = movimientoRepository.calcularTotalIngresos(usuarioId);
+        BigDecimal totalEgresos = movimientoRepository.calcularTotalEgresos(usuarioId);
+
+        // Obtener preferencias del usuario
+        PreferenciasFinancierasDTO preferencias = preferenciasService.obtenerPreferencias(usuarioId);
+
+        // Validación 1: Egresos superan ingresos (siempre activa)
+        if (totalEgresos.compareTo(totalIngresos) > 0) {
+            BigDecimal diferencia = totalEgresos.subtract(totalIngresos);
+            notificacionService.crearNotificacion(
+                    usuarioId,
+                    TipoNotificacion.MOVIMIENTO,
+                    egreso.getId(),
+                    "Egresos superan ingresos",
+                    String.format("Tus egresos totales ($%.2f) han superado tus ingresos ($%.2f) por $%.2f. " +
+                            "Considera revisar tus gastos para mantener un balance financiero saludable.",
+                            totalEgresos, totalIngresos, diferencia));
+        }
+
+        // Validación 2: Umbral de advertencia configurable
+        if (totalIngresos.compareTo(BigDecimal.ZERO) > 0) {
+            BigDecimal porcentajeUsado = totalEgresos
+                    .multiply(BigDecimal.valueOf(100))
+                    .divide(totalIngresos, 2, RoundingMode.HALF_UP);
+
+            int umbralAdvertencia = preferencias.getUmbralAdvertenciaPorcentaje();
+
+            if (porcentajeUsado.compareTo(BigDecimal.valueOf(umbralAdvertencia)) >= 0 &&
+                    totalEgresos.compareTo(totalIngresos) <= 0) { // Solo si no se superó el 100%
+
+                notificacionService.crearNotificacion(
+                        usuarioId,
+                        TipoNotificacion.MOVIMIENTO,
+                        egreso.getId(),
+                        "Umbral de gastos alcanzado",
+                        String.format("Has utilizado el %.2f%% de tus ingresos ($%.2f de $%.2f). " +
+                                "Tu umbral de advertencia está configurado en %d%%. " +
+                                "Considera moderar tus gastos.",
+                                porcentajeUsado, totalEgresos, totalIngresos, umbralAdvertencia));
+            }
+        }
+
+        // Validación 3: Egreso individual grande (configurable)
+        if (preferencias.getAlertaEgresoGrandeActiva() && totalIngresos.compareTo(BigDecimal.ZERO) > 0) {
+            BigDecimal porcentajeEgreso = egreso.getMonto()
+                    .multiply(BigDecimal.valueOf(100))
+                    .divide(totalIngresos, 2, RoundingMode.HALF_UP);
+
+            int umbralEgresoGrande = preferencias.getEgresoGrandePorcentaje();
+
+            if (porcentajeEgreso.compareTo(BigDecimal.valueOf(umbralEgresoGrande)) >= 0) {
+                notificacionService.crearNotificacion(
+                        usuarioId,
+                        TipoNotificacion.MOVIMIENTO,
+                        egreso.getId(),
+                        "Egreso individual significativo",
+                        String.format(
+                                "Has registrado un egreso de $%.2f que representa el %.2f%% de tus ingresos totales. " +
+                                        "Tu umbral de egreso grande está configurado en %d%%. " +
+                                        "Verifica que este gasto esté dentro de tu planificación.",
+                                egreso.getMonto(), porcentajeEgreso, umbralEgresoGrande));
+            }
+        }
+    }
+
+    /**
+     * Valida que un concepto exista y sea del tipo correcto.
+     * Usa el ConceptoService local en lugar de llamadas HTTP.
+     *
+     * @param conceptoId   ID del concepto a validar
+     * @param tipoEsperado Tipo esperado del concepto (INGRESO o EGRESO)
+     * @throws RuntimeException si el concepto no existe o no es del tipo correcto
+     */
+    private void validarConcepto(Long conceptoId, String tipoEsperado, String token) {
+        try {
+            // Usar ConceptoService local en lugar de RestTemplate
+            String url = usuariosServiceUrl + "/api/conceptos/" + conceptoId;
+
+            org.springframework.http.HttpHeaders headers = new org.springframework.http.HttpHeaders();
+            if (token != null && !token.isEmpty()) {
+                // Asegurarse de que el token tenga el prefijo Bearer si no lo tiene
+                if (!token.startsWith("Bearer ")) {
+                    token = "Bearer " + token;
+                }
+                headers.set("Authorization", token);
+            }
+
+            org.springframework.http.HttpEntity<String> entity = new org.springframework.http.HttpEntity<>(headers);
+
+            org.springframework.http.ResponseEntity<ConceptoDTO> response = restTemplate.exchange(
+                    url,
+                    org.springframework.http.HttpMethod.GET,
+                    entity,
+                    ConceptoDTO.class);
+
+            ConceptoDTO concepto = response.getBody();
+
+            if (concepto == null) {
+                throw new RuntimeException("Concepto no encontrado");
+            }
+
+            if (!tipoEsperado.equals(concepto.getTipo())) {
+                throw new RuntimeException("El concepto seleccionado no es de tipo " + tipoEsperado);
+            }
+        } catch (Exception e) {
+            throw new RuntimeException("Error al validar el concepto: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Convierte una entidad Movimiento a un DTO de Egreso.
+     *
+     * @param movimiento Entidad a convertir
+     * @return DTO con los datos del egreso
+     */
+    private EgresoDTO convertirADTO(Movimiento movimiento) {
+        EgresoDTO dto = new EgresoDTO();
+        dto.setId(movimiento.getId());
+        dto.setMonto(movimiento.getMonto());
+        dto.setDescripcion(movimiento.getDescripcion());
+        dto.setConceptoId(movimiento.getConceptoId());
+        dto.setFechaRegistro(movimiento.getFechaRegistro());
+        return dto;
+    }
+}
