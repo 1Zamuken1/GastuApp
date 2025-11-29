@@ -73,14 +73,12 @@ public class IngresoController {
      * Valida que todos los campos requeridos esten presentes y sean validos.
      *
      * @param dto            DTO con los datos del ingreso a crear
-     * @param token          Token JWT para validar el concepto
      * @param authentication Informacion del usuario autenticado
      * @return DTO del ingreso creado con status 201 (CREATED)
      */
     @PostMapping
     public ResponseEntity<IngresoDTO> crearIngreso(
             @Valid @RequestBody IngresoDTO dto,
-            @RequestHeader("Authorization") String token,
             Authentication authentication) {
 
         System.out.println("DEBUG IngresoController: POST /api/movimientos/ingresos - Petición recibida");
@@ -88,7 +86,7 @@ public class IngresoController {
                 + (authentication != null ? authentication.getName() : "null"));
 
         Long usuarioId = obtenerUsuarioId(authentication);
-        IngresoDTO ingresoCreado = ingresoService.crearIngreso(dto, usuarioId, token);
+        IngresoDTO ingresoCreado = ingresoService.crearIngreso(dto, usuarioId);
         return ResponseEntity.status(HttpStatus.CREATED).body(ingresoCreado);
     }
 
@@ -98,7 +96,6 @@ public class IngresoController {
      *
      * @param id             ID del ingreso a actualizar
      * @param dto            DTO con los nuevos datos del ingreso
-     * @param token          Token JWT para validar el concepto
      * @param authentication Informacion del usuario autenticado
      * @return DTO del ingreso actualizado
      */
@@ -106,11 +103,10 @@ public class IngresoController {
     public ResponseEntity<IngresoDTO> actualizarIngreso(
             @PathVariable Long id,
             @Valid @RequestBody IngresoDTO dto,
-            @RequestHeader("Authorization") String token,
             Authentication authentication) {
 
         Long usuarioId = obtenerUsuarioId(authentication);
-        IngresoDTO ingresoActualizado = ingresoService.actualizarIngreso(id, dto, usuarioId, token);
+        IngresoDTO ingresoActualizado = ingresoService.actualizarIngreso(id, dto, usuarioId);
         return ResponseEntity.ok(ingresoActualizado);
     }
 
@@ -130,6 +126,37 @@ public class IngresoController {
         Long usuarioId = obtenerUsuarioId(authentication);
         ingresoService.eliminarIngreso(id, usuarioId);
         return ResponseEntity.noContent().build();
+    }
+
+    /**
+     * Obtiene un resumen de conceptos con estadísticas (cantidad y total).
+     * Solo incluye conceptos que tienen al menos un registro.
+     *
+     * @param authentication Información del usuario autenticado
+     * @return Lista de ConceptoResumenDTO
+     */
+    @GetMapping("/resumen-conceptos")
+    public ResponseEntity<List<GastuApp.Movimientos.DTO.ConceptoResumenDTO>> obtenerResumenConceptos(
+            Authentication authentication) {
+        Long usuarioId = obtenerUsuarioId(authentication);
+        List<GastuApp.Movimientos.DTO.ConceptoResumenDTO> resumen = ingresoService.obtenerResumenConceptos(usuarioId);
+        return ResponseEntity.ok(resumen);
+    }
+
+    /**
+     * Obtiene los ingresos de un concepto específico.
+     *
+     * @param conceptoId     ID del concepto
+     * @param authentication Información del usuario autenticado
+     * @return Lista de ingresos del concepto
+     */
+    @GetMapping("/concepto/{conceptoId}")
+    public ResponseEntity<List<IngresoDTO>> obtenerIngresosPorConcepto(
+            @PathVariable Long conceptoId,
+            Authentication authentication) {
+        Long usuarioId = obtenerUsuarioId(authentication);
+        List<IngresoDTO> ingresos = ingresoService.obtenerIngresosPorConcepto(usuarioId, conceptoId);
+        return ResponseEntity.ok(ingresos);
     }
 
     /**

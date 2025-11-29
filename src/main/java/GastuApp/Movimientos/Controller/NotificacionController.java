@@ -71,7 +71,7 @@ public class NotificacionController {
      */
     @PutMapping("/{id}/marcar-leida")
     public ResponseEntity<NotificacionDTO> marcarComoLeida(
-            @PathVariable Long id,
+            @PathVariable @org.springframework.lang.NonNull Long id,
             Authentication authentication) {
 
         Long usuarioId = obtenerUsuarioId(authentication);

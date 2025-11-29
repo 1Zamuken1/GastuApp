@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+  <head
+    th:replace="~{fragments/head :: head(title='Ingresos - GastuApp')}"
+  ></head>
+  <body>
+    <div th:replace="~{fragments/navbar :: navbar}"></div>
+
+    <div class="container-fluid">
+      <div class="row">
+        <div
+          th:replace="~{fragments/sidebar :: sidebar(activePage='ingresos')}"
+        ></div>
+
+        <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+          <div
+            class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom"
+          >
+            <h1 class="h2">Ingresos</h1>
+            <div class="btn-toolbar mb-2 mb-md-0">
+              <a href="/ingresos/nuevo" class="btn btn-sm btn-primary">
+                <i class="bi bi-plus-lg"></i> Nuevo Ingreso
+              </a>
+            </div>
+          </div>
+
+          <div class="table-responsive">
+            <table class="table table-striped table-hover">
+              <thead>
+                <tr>
+                  <th>Fecha</th>
+                  <th>Concepto</th>
+                  <th>Descripción</th>
+                  <th class="text-end">Monto</th>
+                  <th class="text-center">Acciones</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr th:each="ingreso : ${ingresos}">
+                  <td
+                    th:text="${#temporals.format(ingreso.fechaRegistro, 'dd/MM/yyyy HH:mm')}"
+                  ></td>
+                  <td th:text="${ingreso.conceptoId}"></td>
+                  <!-- TODO: Mostrar nombre del concepto -->
+                  <td th:text="${ingreso.descripcion}"></td>
+                  <td
+                    class="text-end text-success fw-bold"
+                    th:text="${'$ ' + #numbers.formatDecimal(ingreso.monto, 1, 'POINT', 2, 'COMMA')}"
+                  ></td>
+                  <td class="text-center">
+                    <div class="btn-group">
+                      <a
+                        th:href="@{/ingresos/editar/{id}(id=${ingreso.id})}"
+                        class="btn btn-sm btn-outline-secondary"
+                      >
+                        <i class="bi bi-pencil"></i>
+                      </a>
+                      <a
+                        th:href="@{/ingresos/eliminar/{id}(id=${ingreso.id})}"
+                        class="btn btn-sm btn-outline-danger"
+                        onclick="return confirm('¿Estás seguro de eliminar este ingreso?')"
+                      >
+                        <i class="bi bi-trash"></i>
+                      </a>
+                    </div>
+                  </td>
+                </tr>
+                <tr th:if="${#lists.isEmpty(ingresos)}">
+                  <td colspan="5" class="text-center py-4 text-muted">
+                    No hay ingresos registrados.
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </main>
+      </div>
+    </div>
+
+    <div th:replace="~{fragments/head :: scripts}"></div>
+  </body>
+</html>

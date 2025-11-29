@@ -72,7 +72,6 @@ public class EgresoController {
     @PostMapping
     public ResponseEntity<EgresoDTO> crearEgreso(
             @Valid @RequestBody EgresoDTO dto,
-            @RequestHeader("Authorization") String token,
             Authentication authentication) {
 
         System.out.println("DEBUG EgresoController: POST /api/movimientos/egresos - Petición recibida");
@@ -80,7 +79,7 @@ public class EgresoController {
                 + (authentication != null ? authentication.getName() : "null"));
 
         Long usuarioId = obtenerUsuarioId(authentication);
-        EgresoDTO egresoCreado = egresoService.crearEgreso(dto, usuarioId, token);
+        EgresoDTO egresoCreado = egresoService.crearEgreso(dto, usuarioId);
         return ResponseEntity.status(HttpStatus.CREATED).body(egresoCreado);
     }
 
@@ -98,11 +97,10 @@ public class EgresoController {
     public ResponseEntity<EgresoDTO> actualizarEgreso(
             @PathVariable Long id,
             @Valid @RequestBody EgresoDTO dto,
-            @RequestHeader("Authorization") String token,
             Authentication authentication) {
 
         Long usuarioId = obtenerUsuarioId(authentication);
-        EgresoDTO egresoActualizado = egresoService.actualizarEgreso(id, dto, usuarioId, token);
+        EgresoDTO egresoActualizado = egresoService.actualizarEgreso(id, dto, usuarioId);
         return ResponseEntity.ok(egresoActualizado);
     }
 
@@ -122,6 +120,37 @@ public class EgresoController {
         Long usuarioId = obtenerUsuarioId(authentication);
         egresoService.eliminarEgreso(id, usuarioId);
         return ResponseEntity.noContent().build();
+    }
+
+    /**
+     * Obtiene un resumen de conceptos con estadísticas (cantidad y total).
+     * Solo incluye conceptos que tienen al menos un registro.
+     *
+     * @param authentication Información del usuario autenticado
+     * @return Lista de ConceptoResumenDTO
+     */
+    @GetMapping("/resumen-conceptos")
+    public ResponseEntity<List<GastuApp.Movimientos.DTO.ConceptoResumenDTO>> obtenerResumenConceptos(
+            Authentication authentication) {
+        Long usuarioId = obtenerUsuarioId(authentication);
+        List<GastuApp.Movimientos.DTO.ConceptoResumenDTO> resumen = egresoService.obtenerResumenConceptos(usuarioId);
+        return ResponseEntity.ok(resumen);
+    }
+
+    /**
+     * Obtiene los egresos de un concepto específico.
+     *
+     * @param conceptoId     ID del concepto
+     * @param authentication Información del usuario autenticado
+     * @return Lista de egresos del concepto
+     */
+    @GetMapping("/concepto/{conceptoId}")
+    public ResponseEntity<List<EgresoDTO>> obtenerEgresosPorConcepto(
+            @PathVariable Long conceptoId,
+            Authentication authentication) {
+        Long usuarioId = obtenerUsuarioId(authentication);
+        List<EgresoDTO> egresos = egresoService.obtenerEgresosPorConcepto(usuarioId, conceptoId);
+        return ResponseEntity.ok(egresos);
     }
 
     /**

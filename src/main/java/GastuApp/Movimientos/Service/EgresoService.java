@@ -7,10 +7,8 @@ import GastuApp.Movimientos.Entity.Movimiento;
 import GastuApp.Movimientos.Entity.Movimiento.TipoMovimiento;
 import GastuApp.Movimientos.Entity.Notificacion.TipoNotificacion;
 import GastuApp.Movimientos.Repository.MovimientoRepository;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.client.RestTemplate;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -25,21 +23,18 @@ import java.util.stream.Collectors;
 public class EgresoService {
 
     private final MovimientoRepository movimientoRepository;
-    private final RestTemplate restTemplate;
     private final NotificacionService notificacionService;
     private final PreferenciasUsuarioService preferenciasService;
-
-    @Value("${usuarios.service.url}")
-    private String usuariosServiceUrl;
+    private final ConceptoService conceptoService;
 
     public EgresoService(MovimientoRepository movimientoRepository,
-            RestTemplate restTemplate,
             NotificacionService notificacionService,
-            PreferenciasUsuarioService preferenciasService) {
+            PreferenciasUsuarioService preferenciasService,
+            ConceptoService conceptoService) {
         this.movimientoRepository = movimientoRepository;
-        this.restTemplate = restTemplate;
         this.notificacionService = notificacionService;
         this.preferenciasService = preferenciasService;
+        this.conceptoService = conceptoService;
     }
 
     /**
@@ -87,14 +82,14 @@ public class EgresoService {
      *
      * @param dto       DTO con los datos del egreso
      * @param usuarioId ID del usuario que crea el egreso
-     * @param token     Token JWT para validar el concepto
+     * @param token     Token JWT (Ignorado, mantenido por compatibilidad temporal)
      * @return DTO del egreso creado
      * @throws RuntimeException si el concepto no existe o no es válido
      */
     @Transactional
-    public EgresoDTO crearEgreso(EgresoDTO dto, Long usuarioId, String token) {
+    public EgresoDTO crearEgreso(EgresoDTO dto, Long usuarioId) {
         // Validar que el concepto existe y es de tipo EGRESO
-        validarConcepto(dto.getConceptoId(), "EGRESO", token);
+        validarConcepto(dto.getConceptoId(), "EGRESO");
 
         // Crear entidad
         Movimiento egreso = new Movimiento();
@@ -120,13 +115,13 @@ public class EgresoService {
      * @param id        ID del egreso a actualizar
      * @param dto       DTO con los nuevos datos
      * @param usuarioId ID del usuario que actualiza
-     * @param token     Token JWT para validar el concepto
+     * @param token     Token JWT (Ignorado, mantenido por compatibilidad temporal)
      * @return DTO del egreso actualizado
      * @throws RuntimeException si el egreso no existe, no pertenece al usuario o
      *                          el concepto no es válido
      */
     @Transactional
-    public EgresoDTO actualizarEgreso(Long id, EgresoDTO dto, Long usuarioId, String token) {
+    public EgresoDTO actualizarEgreso(Long id, EgresoDTO dto, Long usuarioId) {
         // Buscar egreso existente
         Movimiento egreso = movimientoRepository.findByIdAndUsuarioId(id, usuarioId)
                 .orElseThrow(() -> new RuntimeException("Egreso no encontrado o no tiene permisos para modificarlo"));
@@ -137,7 +132,7 @@ public class EgresoService {
 
         // Validar nuevo concepto si cambió
         if (!egreso.getConceptoId().equals(dto.getConceptoId())) {
-            validarConcepto(dto.getConceptoId(), "EGRESO", token);
+            validarConcepto(dto.getConceptoId(), "EGRESO");
         }
 
         // Actualizar campos
@@ -250,40 +245,67 @@ public class EgresoService {
     }
 
     /**
+     * Obtiene un resumen de conceptos de EGRESO con estadísticas (cantidad y
+     * total).
+     * Solo incluye conceptos que tienen al menos un registro.
+     *
+     * @param usuarioId ID del usuario
+     * @return Lista de ConceptoResumenDTO
+     */
+    @Transactional(readOnly = true)
+    public List<GastuApp.Movimientos.DTO.ConceptoResumenDTO> obtenerResumenConceptos(Long usuarioId) {
+        // Obtener estadísticas crudas del repositorio: [conceptoId, cantidad, total]
+        List<Object[]> estadisticas = movimientoRepository.contarYSumarEgresosPorConcepto(usuarioId);
+
+        return estadisticas.stream().map(obj -> {
+            Long conceptoId = (Long) obj[0];
+            Long cantidad = (Long) obj[1];
+            java.math.BigDecimal total = (java.math.BigDecimal) obj[2];
+
+            // Obtener detalles del concepto
+            ConceptoDTO concepto = conceptoService.obtenerPorId(conceptoId);
+
+            return new GastuApp.Movimientos.DTO.ConceptoResumenDTO(
+                    concepto.getId(),
+                    concepto.getNombre(),
+                    concepto.getDescripcion(),
+                    cantidad,
+                    total);
+        }).collect(Collectors.toList());
+    }
+
+    /**
+     * Obtiene los egresos de un usuario filtrados por concepto.
+     *
+     * @param usuarioId  ID del usuario
+     * @param conceptoId ID del concepto
+     * @return Lista de egresos
+     */
+    @Transactional(readOnly = true)
+    public List<EgresoDTO> obtenerEgresosPorConcepto(Long usuarioId, Long conceptoId) {
+        List<Movimiento> egresos = movimientoRepository
+                .findByUsuarioIdAndConceptoIdAndTipoOrderByFechaRegistroDesc(usuarioId, conceptoId,
+                        TipoMovimiento.EGRESO);
+
+        return egresos.stream()
+                .map(this::convertirADTO)
+                .collect(Collectors.toList());
+    }
+
+    /**
      * Valida que un concepto exista y sea del tipo correcto.
-     * Usa el ConceptoService local en lugar de llamadas HTTP.
+     * Usa el ConceptoService local.
      *
      * @param conceptoId   ID del concepto a validar
      * @param tipoEsperado Tipo esperado del concepto (INGRESO o EGRESO)
      * @throws RuntimeException si el concepto no existe o no es del tipo correcto
      */
-    private void validarConcepto(Long conceptoId, String tipoEsperado, String token) {
+    private void validarConcepto(Long conceptoId, String tipoEsperado) {
+        if (conceptoId == null) {
+            throw new RuntimeException("El ID del concepto es requerido");
+        }
         try {
-            // Usar ConceptoService local en lugar de RestTemplate
-            String url = usuariosServiceUrl + "/api/conceptos/" + conceptoId;
-
-            org.springframework.http.HttpHeaders headers = new org.springframework.http.HttpHeaders();
-            if (token != null && !token.isEmpty()) {
-                // Asegurarse de que el token tenga el prefijo Bearer si no lo tiene
-                if (!token.startsWith("Bearer ")) {
-                    token = "Bearer " + token;
-                }
-                headers.set("Authorization", token);
-            }
-
-            org.springframework.http.HttpEntity<String> entity = new org.springframework.http.HttpEntity<>(headers);
-
-            org.springframework.http.ResponseEntity<ConceptoDTO> response = restTemplate.exchange(
-                    url,
-                    org.springframework.http.HttpMethod.GET,
-                    entity,
-                    ConceptoDTO.class);
-
-            ConceptoDTO concepto = response.getBody();
-
-            if (concepto == null) {
-                throw new RuntimeException("Concepto no encontrado");
-            }
+            ConceptoDTO concepto = conceptoService.obtenerPorId(conceptoId);
 
             if (!tipoEsperado.equals(concepto.getTipo())) {
                 throw new RuntimeException("El concepto seleccionado no es de tipo " + tipoEsperado);

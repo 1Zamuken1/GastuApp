@@ -57,7 +57,7 @@ public class ConceptoService {
      * @throws RuntimeException si el concepto no existe
      */
     @Transactional(readOnly = true)
-    public ConceptoDTO obtenerPorId(Long id) {
+    public ConceptoDTO obtenerPorId(@org.springframework.lang.NonNull Long id) {
         Concepto concepto = conceptoRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Concepto no encontrado"));
         return convertirADTO(concepto);
@@ -98,7 +98,7 @@ public class ConceptoService {
      * @return DTO del concepto actualizado
      */
     @Transactional
-    public ConceptoDTO actualizarConcepto(Long id, ConceptoDTO dto) {
+    public ConceptoDTO actualizarConcepto(@org.springframework.lang.NonNull Long id, ConceptoDTO dto) {
         Concepto concepto = conceptoRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Concepto no encontrado"));
 
@@ -127,7 +127,7 @@ public class ConceptoService {
      * @param id ID del concepto a eliminar
      */
     @Transactional
-    public void eliminarConcepto(Long id) {
+    public void eliminarConcepto(@org.springframework.lang.NonNull Long id) {
         if (!conceptoRepository.existsById(id)) {
             throw new RuntimeException("Concepto no encontrado");
         }

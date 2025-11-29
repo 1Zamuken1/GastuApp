@@ -1,75 +1,68 @@
 package GastuApp.Config;
 
+import GastuApp.User.UsuarioDetailsServiceImpl;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
-import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.lang.NonNull;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.web.filter.OncePerRequestFilter;
-import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 
-@Component
+// NOTA: No usamos @Component para evitar el registro automático en la cadena global de filtros.
+// Se instancia manualmente en SecurityConfig.
 public class JwtFilter extends OncePerRequestFilter {
 
     private final JwtUtil jwtUtil;
-    private final GastuApp.User.UsuarioDetailsServiceImpl userDetailsService;
+    private final UsuarioDetailsServiceImpl userDetailsService;
 
-    public JwtFilter(JwtUtil jwtUtil, GastuApp.User.UsuarioDetailsServiceImpl userDetailsService) {
+    public JwtFilter(JwtUtil jwtUtil, UsuarioDetailsServiceImpl userDetailsService) {
         this.jwtUtil = jwtUtil;
         this.userDetailsService = userDetailsService;
     }
 
     @Override
-    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
+    protected void doFilterInternal(@NonNull HttpServletRequest request,
+            @NonNull HttpServletResponse response,
+            @NonNull FilterChain filterChain)
             throws ServletException, IOException {
 
         String uri = request.getRequestURI();
         System.out.println("DEBUG JwtFilter: Procesando URI: " + uri);
 
-        // Rutas publicas - permitir sin autenticacion
-        if (uri.startsWith("/css") || uri.startsWith("/js") ||
-                uri.equals("/login") || uri.equals("/register") ||
-                uri.startsWith("/auth/") || uri.startsWith("/api/auth/") ||
-                uri.equals("/api/movimientos/ingresos/test")) {
-            System.out.println("DEBUG JwtFilter: Ruta pública, permitiendo sin autenticación");
+        // Solo aplicar JWT filter a rutas de API
+        if (!uri.startsWith("/api/")) {
+            System.out.println("DEBUG JwtFilter: No es ruta API, saltando filtro JWT");
+            filterChain.doFilter(request, response);
+            return;
+        }
+
+        // Rutas públicas de API - permitir sin autenticación
+        if (uri.startsWith("/api/auth/") || uri.equals("/api/movimientos/ingresos/test")) {
+            System.out.println("DEBUG JwtFilter: Ruta API pública, permitiendo sin autenticación");
             filterChain.doFilter(request, response);
             return;
         }
 
         String token = null;
 
-        // OPCION 1: Buscar token en cookies (para vistas web)
-        Cookie[] cookies = request.getCookies();
-        if (cookies != null) {
-            for (Cookie c : cookies) {
-                if ("token".equals(c.getName())) {
-                    token = c.getValue();
-                    System.out.println("DEBUG JwtFilter: Token encontrado en cookie");
-                    break;
-                }
-            }
-        }
-
-        // OPCION 2: Buscar token en header Authorization (para APIs REST)
-        if (token == null) {
-            String authHeader = request.getHeader("Authorization");
-            if (authHeader != null && authHeader.startsWith("Bearer ")) {
-                token = authHeader.substring(7);
-                System.out.println("DEBUG JwtFilter: Token encontrado en header Authorization");
-            }
+        // Buscar token en header Authorization (para APIs REST)
+        String authHeader = request.getHeader("Authorization");
+        if (authHeader != null && authHeader.startsWith("Bearer ")) {
+            token = authHeader.substring(7);
+            System.out.println("DEBUG JwtFilter: Token encontrado en header Authorization");
         }
 
         if (token == null) {
-            System.out.println("DEBUG JwtFilter: No se encontró token");
+            System.out.println("DEBUG JwtFilter: No se encontró token en header Authorization");
         }
 
-        // Validar y establecer autenticacion
+        // Validar y establecer autenticación
         if (token != null && jwtUtil.validarToken(token)) {
             String username = jwtUtil.getUsernameFromToken(token);
             System.out.println("DEBUG JwtFilter: Token válido para usuario: " + username);
@@ -84,16 +77,12 @@ public class JwtFilter extends OncePerRequestFilter {
             return;
         }
 
-        System.out.println("DEBUG JwtFilter: Token inválido o ausente para URI: " + uri);
+        System.out.println("DEBUG JwtFilter: Token inválido o ausente para URI de API: " + uri);
+        System.out.println("DEBUG JwtFilter: Continuando cadena de filtros (posible autenticación por sesión)");
 
-        // Si es una ruta de API y no hay token valido, devolver 401
-        if (uri.startsWith("/api/")) {
-            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-            response.getWriter().write("{\"error\": \"Token no valido o ausente\"}");
-            return;
-        }
-
-        // Para rutas web sin token, redirigir al login
-        response.sendRedirect("/login");
+        // No bloquear aquí. Permitir que la cadena continúe.
+        // Si no hay otra autenticación (sesión), SecurityConfig se encargará de
+        // rechazarla.
+        filterChain.doFilter(request, response);
     }
 }

@@ -22,14 +22,14 @@ public class EgresoDTO {
      */
     @NotNull(message = "El monto es obligatorio")
     @DecimalMin(value = "0.01", message = "El monto debe ser mayor a cero")
-    @Digits(integer = 10, fraction = 2, message = "El monto debe tener máximo 10 dígitos enteros y 2 decimales")
+    @Digits(integer = 10, fraction = 2, message = "El monto debe tener maximo 10 digitos enteros y 2 decimales")
     private BigDecimal monto;
 
     /**
-     * Descripción del egreso.
-     * Campo opcional, máximo 100 caracteres.
+     * Descripcion del egreso.
+     * Campo opcional, maximo 100 caracteres.
      */
-    @Size(max = 100, message = "La descripción no puede exceder 100 caracteres")
+    @Size(max = 100, message = "La descripcion no puede exceder 100 caracteres")
     private String descripcion;
 
     /**
@@ -41,7 +41,7 @@ public class EgresoDTO {
 
     /**
      * Fecha de registro del egreso.
-     * Se establece automáticamente en el servidor.
+     * Se establece automaticamente en el servidor.
      */
     private LocalDateTime fechaRegistro;
 

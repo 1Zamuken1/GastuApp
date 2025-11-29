@@ -23,7 +23,7 @@ public interface MovimientoRepository extends JpaRepository<Movimiento, Long> {
      * Busca todos los movimientos de un usuario especifico filtrados por tipo.
      *
      * @param usuarioId ID del usuario propietario
-     * @param tipo Tipo de movimiento (INGRESO o EGRESO)
+     * @param tipo      Tipo de movimiento (INGRESO o EGRESO)
      * @return Lista de movimientos ordenados por fecha descendente
      */
     List<Movimiento> findByUsuarioIdAndTipoOrderByFechaRegistroDesc(Long usuarioId, TipoMovimiento tipo);
@@ -32,7 +32,7 @@ public interface MovimientoRepository extends JpaRepository<Movimiento, Long> {
      * Busca un movimiento especifico por ID y usuario.
      * Garantiza que un usuario solo pueda acceder a sus propios movimientos.
      *
-     * @param id ID del movimiento
+     * @param id        ID del movimiento
      * @param usuarioId ID del usuario propietario
      * @return Optional con el movimiento si existe y pertenece al usuario
      */
@@ -60,8 +60,28 @@ public interface MovimientoRepository extends JpaRepository<Movimiento, Long> {
      * Cuenta la cantidad de movimientos de un usuario por tipo.
      *
      * @param usuarioId ID del usuario
-     * @param tipo Tipo de movimiento
+     * @param tipo      Tipo de movimiento
      * @return Cantidad de movimientos
      */
     Long countByUsuarioIdAndTipo(Long usuarioId, TipoMovimiento tipo);
+
+    /**
+     * Busca ingresos de un usuario filtrados por concepto.
+     */
+    List<Movimiento> findByUsuarioIdAndConceptoIdAndTipoOrderByFechaRegistroDesc(Long usuarioId, Long conceptoId,
+            TipoMovimiento tipo);
+
+    /**
+     * Cuenta y suma ingresos por concepto para un usuario.
+     * Retorna: [conceptoId, cantidad, total]
+     */
+    @Query("SELECT m.conceptoId, COUNT(m), SUM(m.monto) FROM Movimiento m WHERE m.usuarioId = :uid AND m.tipo = 'INGRESO' GROUP BY m.conceptoId")
+    List<Object[]> contarYSumarIngresosPorConcepto(@Param("uid") Long usuarioId);
+
+    /**
+     * Cuenta y suma egresos por concepto para un usuario.
+     * Retorna: [conceptoId, cantidad, total]
+     */
+    @Query("SELECT m.conceptoId, COUNT(m), SUM(m.monto) FROM Movimiento m WHERE m.usuarioId = :uid AND m.tipo = 'EGRESO' GROUP BY m.conceptoId")
+    List<Object[]> contarYSumarEgresosPorConcepto(@Param("uid") Long usuarioId);
 }

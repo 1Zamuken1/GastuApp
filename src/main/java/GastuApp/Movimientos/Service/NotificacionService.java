@@ -83,7 +83,7 @@ public class NotificacionService {
      *                          usuario
      */
     @Transactional
-    public NotificacionDTO marcarComoLeida(Long notificacionId, Long usuarioId) {
+    public NotificacionDTO marcarComoLeida(@org.springframework.lang.NonNull Long notificacionId, Long usuarioId) {
         Notificacion notificacion = notificacionRepository.findById(notificacionId)
                 .orElseThrow(() -> new RuntimeException("Notificación no encontrada"));
 

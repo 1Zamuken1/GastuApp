@@ -5,6 +5,7 @@ import GastuApp.Movimientos.Service.ConceptoService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -53,7 +54,7 @@ public class ConceptoController {
      * @return DTO del concepto
      */
     @GetMapping("/{id}")
-    public ResponseEntity<ConceptoDTO> obtenerConcepto(@PathVariable Long id) {
+    public ResponseEntity<ConceptoDTO> obtenerConcepto(@PathVariable @org.springframework.lang.NonNull Long id) {
         ConceptoDTO concepto = conceptoService.obtenerPorId(id);
         return ResponseEntity.ok(concepto);
     }
@@ -74,12 +75,12 @@ public class ConceptoController {
     /**
      * Crea un nuevo concepto.
      * Solo usuarios con rol ADMIN pueden crear conceptos.
-     * TODO: Agregar validación de rol ADMIN con @PreAuthorize
      *
      * @param dto DTO con los datos del concepto
      * @return DTO del concepto creado con status 201
      */
     @PostMapping
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ConceptoDTO> crearConcepto(@Valid @RequestBody ConceptoDTO dto) {
         ConceptoDTO conceptoCreado = conceptoService.crearConcepto(dto);
         return ResponseEntity.status(HttpStatus.CREATED).body(conceptoCreado);
@@ -88,15 +89,15 @@ public class ConceptoController {
     /**
      * Actualiza un concepto existente.
      * Solo usuarios con rol ADMIN pueden actualizar conceptos.
-     * TODO: Agregar validación de rol ADMIN con @PreAuthorize
      *
      * @param id  ID del concepto a actualizar
      * @param dto DTO con los nuevos datos
      * @return DTO del concepto actualizado
      */
     @PutMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ConceptoDTO> actualizarConcepto(
-            @PathVariable Long id,
+            @PathVariable @org.springframework.lang.NonNull Long id,
             @Valid @RequestBody ConceptoDTO dto) {
         ConceptoDTO conceptoActualizado = conceptoService.actualizarConcepto(id, dto);
         return ResponseEntity.ok(conceptoActualizado);
@@ -105,13 +106,13 @@ public class ConceptoController {
     /**
      * Elimina un concepto.
      * Solo usuarios con rol ADMIN pueden eliminar conceptos.
-     * TODO: Agregar validación de rol ADMIN con @PreAuthorize
      *
      * @param id ID del concepto a eliminar
      * @return Respuesta sin contenido con status 204
      */
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> eliminarConcepto(@PathVariable Long id) {
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<Void> eliminarConcepto(@PathVariable @org.springframework.lang.NonNull Long id) {
         conceptoService.eliminarConcepto(id);
         return ResponseEntity.noContent().build();
     }
