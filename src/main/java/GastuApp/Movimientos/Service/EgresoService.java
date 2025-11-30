@@ -257,13 +257,31 @@ public class EgresoService {
         // Obtener estadísticas crudas del repositorio: [conceptoId, cantidad, total]
         List<Object[]> estadisticas = movimientoRepository.contarYSumarEgresosPorConcepto(usuarioId);
 
+        if (estadisticas.isEmpty()) {
+            return List.of();
+        }
+
+        // Extraer IDs de conceptos
+        List<Long> conceptoIds = estadisticas.stream()
+                .map(obj -> (Long) obj[0])
+                .collect(Collectors.toList());
+
+        // Obtener mapa de conceptos para acceso rápido
+        java.util.Map<Long, ConceptoDTO> conceptosMap = conceptoService.obtenerPorIds(conceptoIds).stream()
+                .collect(Collectors.toMap(ConceptoDTO::getId, c -> c));
+
         return estadisticas.stream().map(obj -> {
             Long conceptoId = (Long) obj[0];
             Long cantidad = (Long) obj[1];
             java.math.BigDecimal total = (java.math.BigDecimal) obj[2];
 
-            // Obtener detalles del concepto
-            ConceptoDTO concepto = conceptoService.obtenerPorId(conceptoId);
+            // Obtener detalles del concepto del mapa
+            ConceptoDTO concepto = conceptosMap.get(conceptoId);
+
+            // Fallback por si acaso
+            if (concepto == null) {
+                return null;
+            }
 
             return new GastuApp.Movimientos.DTO.ConceptoResumenDTO(
                     concepto.getId(),
@@ -271,7 +289,9 @@ public class EgresoService {
                     concepto.getDescripcion(),
                     cantidad,
                     total);
-        }).collect(Collectors.toList());
+        })
+                .filter(java.util.Objects::nonNull)
+                .collect(Collectors.toList());
     }
 
     /**

@@ -64,6 +64,19 @@ public class ConceptoService {
     }
 
     /**
+     * Obtiene múltiples conceptos por sus IDs.
+     *
+     * @param ids Lista de IDs de conceptos
+     * @return Lista de DTOs de conceptos
+     */
+    @Transactional(readOnly = true)
+    public List<ConceptoDTO> obtenerPorIds(List<Long> ids) {
+        return conceptoRepository.findAllById(ids).stream()
+                .map(this::convertirADTO)
+                .collect(Collectors.toList());
+    }
+
+    /**
      * Crea un nuevo concepto.
      * Solo usuarios con rol ADMIN pueden crear conceptos.
      *

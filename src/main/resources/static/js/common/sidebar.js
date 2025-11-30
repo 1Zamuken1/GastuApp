@@ -9,28 +9,21 @@ document.addEventListener("DOMContentLoaded", function () {
   const sidebarBackdrop = document.getElementById("sidebarBackdrop");
   const mainContent = document.querySelector("main");
 
-  // Load saved state from localStorage
-  const savedState = localStorage.getItem("sidebarCollapsed");
-  if (savedState === "true") {
-    sidebar.classList.add("collapsed");
-  }
-
   // Toggle sidebar on button click
   if (sidebarToggle) {
     sidebarToggle.addEventListener("click", function () {
-      const isCollapsed = sidebar.classList.toggle("collapsed");
+      const isCollapsed =
+        document.documentElement.classList.toggle("sidebar-collapsed");
+      sidebar.classList.toggle("collapsed", isCollapsed);
 
       // Save state
       localStorage.setItem("sidebarCollapsed", isCollapsed);
-
-      // Update icon
-      const icon = this.querySelector("i");
-      if (icon) {
-        icon.className = isCollapsed
-          ? "bi bi-chevron-right"
-          : "bi bi-chevron-left";
-      }
     });
+
+    // Initialize state from class
+    if (document.documentElement.classList.contains("sidebar-collapsed")) {
+      sidebar.classList.add("collapsed");
+    }
   }
 
   // Mobile: Show/hide sidebar

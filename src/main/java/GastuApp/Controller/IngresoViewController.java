@@ -24,7 +24,7 @@ public class IngresoViewController {
 
     @GetMapping
     public String listarIngresos(Model model) {
-        // La nueva vista es SPA - carga datos via AJAX desde la API REST
+        // Fast page load - data will be fetched via optimized API calls
         model.addAttribute("activePage", "ingresos");
         return "movimientos/ingresos/ingresos";
     }
@@ -40,12 +40,6 @@ public class IngresoViewController {
     @PostMapping("/guardar")
     public String guardarIngreso(@ModelAttribute IngresoDTO ingresoDTO, Authentication authentication) {
         Long usuarioId = obtenerUsuarioId(authentication);
-        // El token no es necesario si usamos el servicio directamente, pero el método
-        // lo pide
-        // En una arquitectura monolítica idealmente refactorizaríamos el servicio para
-        // no pedir token
-        // Por ahora pasaremos null ya que la validación local de conceptos no usa el
-        // token
         ingresoService.crearIngreso(ingresoDTO, usuarioId);
         return "redirect:/movimientos/ingresos";
     }

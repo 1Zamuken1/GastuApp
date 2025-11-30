@@ -86,7 +86,7 @@
     /* Sidebar Base Styles */
     .sidebar {
       position: fixed;
-      top: 56px;
+      top: 80px;
       bottom: 0;
       left: 0;
       width: 250px;
@@ -100,7 +100,7 @@
     .sidebar-sticky {
       position: sticky;
       top: 0;
-      height: calc(100vh - 56px);
+      height: calc(100vh - 80px);
       padding-top: 1rem;
       overflow-y: auto;
       overflow-x: hidden;
@@ -170,25 +170,28 @@
     }
 
     /* Collapsed State (Desktop) */
-    .sidebar.collapsed {
-      width: 80px;
+    .sidebar.collapsed,
+    html.sidebar-collapsed .sidebar {
+      width: 100px;
     }
 
     .sidebar.collapsed .sidebar-text,
-    .sidebar.collapsed .sidebar-heading span {
-      opacity: 0;
-      width: 0;
-      overflow: hidden;
+    .sidebar.collapsed .sidebar-heading span,
+    html.sidebar-collapsed .sidebar .sidebar-text,
+    html.sidebar-collapsed .sidebar .sidebar-heading span {
+      display: none;
     }
 
-    .sidebar.collapsed .nav-link {
+    .sidebar.collapsed .nav-link,
+    html.sidebar-collapsed .sidebar .nav-link {
       justify-content: center;
-      padding: 0.75rem 0.5rem;
+      padding: 0.75rem 1rem;
     }
 
-    .sidebar.collapsed .nav-link.active {
+    .sidebar.collapsed .nav-link.active,
+    html.sidebar-collapsed .sidebar .nav-link.active {
       border-left: 4px solid #ffffff;
-      padding-left: calc(0.5rem - 4px);
+      padding-left: calc(1rem - 4px);
     }
 
     /* Mobile Styles */
@@ -217,8 +220,9 @@
         width: 220px;
       }
 
-      .sidebar.collapsed {
-        width: 70px;
+      .sidebar.collapsed,
+      html.sidebar-collapsed .sidebar {
+        width: 90px;
       }
     }
 
@@ -229,8 +233,9 @@
         transition: margin-left 0.3s ease;
       }
 
-      body:has(.sidebar.collapsed) main {
-        margin-left: 80px;
+      body:has(.sidebar.collapsed) main,
+      html.sidebar-collapsed body:has(.sidebar) main {
+        margin-left: 100px;
       }
     }
   </style>

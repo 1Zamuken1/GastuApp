@@ -78,7 +78,7 @@ document.addEventListener("DOMContentLoaded", function () {
   function cargarDatosMensuales() {
     mostrarLoading(true);
 
-    // Fetch all movements and concepts in parallel
+    // Fetch all movements and concepts in parallel with optimized batch queries
     const pMovimientos = fetch(API_BASE, { credentials: "include" }).then(
       (res) => {
         if (!res.ok) throw new Error("Error cargando movimientos");
@@ -95,56 +95,56 @@ document.addEventListener("DOMContentLoaded", function () {
 
     Promise.all([pMovimientos, pConceptos])
       .then(([movimientos, conceptosList]) => {
-        // Filter for current month
-        const now = new Date();
-        const currentMonth = now.getMonth();
-        const currentYear = now.getFullYear();
-
-        const movimientosMes = movimientos.filter((m) => {
-          const d = new Date(m.fechaRegistro);
-          return (
-            d.getMonth() === currentMonth && d.getFullYear() === currentYear
-          );
-        });
-
-        // Map concepts for easy lookup
-        const conceptosMap = {};
-        conceptosList.forEach((c) => (conceptosMap[c.id] = c));
-
-        // 1. Update Dashboard Stats
-        actualizarDashboard(movimientosMes);
-
-        // 2. Group by Concept for the Grid
-        const conceptosAgrupados = agruparPorConcepto(movimientosMes);
-
-        // 3. Render Grid with Monthly Data
-        const totalMes = movimientosMes.reduce((sum, m) => sum + m.monto, 0);
-
-        const dataParaGrid = Object.keys(conceptosAgrupados).map((id) => {
-          const concepto = conceptosMap[id] || {
-            nombre: "Desconocido",
-            descripcion: "",
-          };
-          return {
-            conceptoId: id,
-            nombre: concepto.nombre,
-            descripcion: concepto.descripcion,
-            cantidadRegistros: conceptosAgrupados[id].cantidad,
-            totalAcumulado: conceptosAgrupados[id].total,
-            movimientos: conceptosAgrupados[id].movimientos,
-          };
-        });
-
-        renderizarConceptos(dataParaGrid, totalMes);
-      })
-      .catch((error) => {
-        console.error("Error:", error);
+        renderData(movimientos, conceptosList);
         mostrarLoading(false);
-        if (conceptosGrid && conceptosGrid.innerHTML === "") {
-          emptyState.classList.remove("d-none");
-        }
       })
-      .finally(() => mostrarLoading(false));
+      .catch((err) => {
+        console.error("Error:", err);
+        mostrarError("Error al cargar los datos");
+        mostrarLoading(false);
+      });
+  }
+
+  function renderData(movimientos, conceptosList) {
+    // Filter for current month
+    const now = new Date();
+    const currentMonth = now.getMonth();
+    const currentYear = now.getFullYear();
+
+    const movimientosMes = movimientos.filter((m) => {
+      const d = new Date(m.fechaRegistro);
+      return d.getMonth() === currentMonth && d.getFullYear() === currentYear;
+    });
+
+    // Map concepts for easy lookup
+    const conceptosMap = {};
+    conceptosList.forEach((c) => (conceptosMap[c.id] = c));
+
+    // 1. Update Dashboard Stats
+    actualizarDashboard(movimientosMes);
+
+    // 2. Group by Concept for the Grid
+    const conceptosAgrupados = agruparPorConcepto(movimientosMes);
+
+    // 3. Render Grid with Monthly Data
+    const totalMes = movimientosMes.reduce((sum, m) => sum + m.monto, 0);
+
+    const dataParaGrid = Object.keys(conceptosAgrupados).map((id) => {
+      const concepto = conceptosMap[id] || {
+        nombre: "Desconocido",
+        descripcion: "",
+      };
+      return {
+        conceptoId: id,
+        nombre: concepto.nombre,
+        descripcion: concepto.descripcion,
+        cantidadRegistros: conceptosAgrupados[id].cantidad,
+        totalAcumulado: conceptosAgrupados[id].total,
+        movimientos: conceptosAgrupados[id].movimientos,
+      };
+    });
+
+    renderizarConceptos(dataParaGrid, totalMes);
   }
 
   function agruparPorConcepto(movimientos) {

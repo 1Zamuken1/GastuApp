@@ -23,7 +23,7 @@ public class EgresoViewController {
 
     @GetMapping
     public String listarEgresos(Model model) {
-        // La nueva vista es SPA - carga datos via AJAX desde la API REST
+        // Fast page load - data will be fetched via optimized API calls
         model.addAttribute("activePage", "egresos");
         return "movimientos/egresos/egresos";
     }

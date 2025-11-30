@@ -39,6 +39,16 @@
       crossorigin="anonymous"
     />
 
+    <!-- Prevent Sidebar FOUC -->
+    <script>
+      (function () {
+        const isCollapsed = localStorage.getItem("sidebarCollapsed") === "true";
+        if (isCollapsed) {
+          document.documentElement.classList.add("sidebar-collapsed");
+        }
+      })();
+    </script>
+
     <!-- Base Styles -->
     <style>
       body {
@@ -49,13 +59,18 @@
       main {
         padding-top: 60px;
       }
+
+      /* Prevent transitions on load */
+      .preload * {
+        transition: none !important;
+      }
     </style>
 
     <!-- Page specific links -->
     <th:block th:replace="${links} ?: ~{}" />
   </head>
 
-  <body>
+  <body class="preload">
     <!-- Scripts Fragment -->
     <div th:fragment="scripts">
       <!-- Bootstrap Bundle with Popper -->
@@ -67,6 +82,16 @@
 
       <!-- Sidebar toggle script -->
       <script th:src="@{/js/common/sidebar.js}"></script>
+
+      <!-- Navbar notifications script -->
+      <script th:src="@{/js/common/navbar.js}"></script>
+
+      <!-- Remove preload class -->
+      <script>
+        window.addEventListener("load", function () {
+          document.body.classList.remove("preload");
+        });
+      </script>
     </div>
   </body>
 </html>
