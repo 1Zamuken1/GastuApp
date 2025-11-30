@@ -10,41 +10,127 @@
     <div class="container-fluid">
       <div class="row">
         <!-- Sidebar -->
-        <nav th:replace="fragments/sidebar :: sidebar"></nav>
+        <nav
+          th:replace="fragments/sidebar :: sidebar"
+          class="col-md-3 col-lg-2 d-md-block bg-light sidebar collapse"
+        ></nav>
 
         <!-- Main Content -->
-        <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+        <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4 py-4">
           <!-- Header -->
           <div
             class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom"
           >
-            <div>
-              <h1 class="h2 fw-bold">Mis Ingresos</h1>
-              <p class="text-muted">
-                Visualiza y gestiona tus ingresos por concepto
-              </p>
-            </div>
-            <button class="btn btn-success" onclick="abrirModalCrear()">
-              <i class="bi bi-plus-circle me-2"></i>Nuevo Ingreso
-            </button>
+            <h1 class="h2">Mis Ingresos</h1>
           </div>
 
-          <!-- Search Bar Principal -->
+          <!-- Dashboard Cards -->
           <div class="row mb-4">
-            <div class="col-md-6 col-lg-4">
-              <div class="input-group">
-                <span class="input-group-text bg-white text-muted border-end-0"
-                  ><i class="bi bi-search"></i
+            <!-- Total Card -->
+            <div class="col-md-6 mb-3 mb-md-0">
+              <div class="card bg-success text-white h-100 shadow-sm">
+                <div
+                  class="card-body d-flex flex-column justify-content-center align-items-center text-center"
+                >
+                  <h6 class="card-subtitle mb-2 text-white-50">
+                    Total del Mes
+                  </h6>
+                  <h2 class="display-4 fw-bold mb-0" id="totalMesActual">
+                    $0.00
+                  </h2>
+                </div>
+              </div>
+            </div>
+
+            <!-- Stats Card -->
+            <div class="col-md-6">
+              <div
+                class="card h-100 shadow-sm border-0 border-top border-4 border-success"
+              >
+                <div class="card-body">
+                  <div class="row text-center h-100 align-items-center">
+                    <div class="col-4 border-end">
+                      <h6 class="text-muted small mb-2">
+                        <i class="bi bi-list-check me-1"></i>Registros
+                      </h6>
+                      <h3 class="fw-bold mb-0" id="statRegistros">0</h3>
+                    </div>
+                    <div class="col-4 border-end">
+                      <h6 class="text-muted small mb-2">
+                        <i class="bi bi-tags me-1"></i>Conceptos
+                      </h6>
+                      <h3 class="fw-bold mb-0" id="statConceptos">0</h3>
+                    </div>
+                    <div class="col-4">
+                      <h6 class="text-muted small mb-2">
+                        <i class="bi bi-clock-history me-1"></i>Último
+                      </h6>
+                      <h4
+                        class="fw-bold mb-0 text-success"
+                        id="statUltimoRegistro"
+                      >
+                        -
+                      </h4>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Actions Toolbar -->
+          <div class="row mb-4 align-items-center justify-content-between">
+            <div class="col-md-6">
+              <div class="input-group search-container shadow-sm rounded">
+                <span class="input-group-text bg-white border-end-0 ps-3"
+                  ><i class="bi bi-search text-muted"></i
                 ></span>
                 <input
                   type="text"
                   id="buscadorPrincipal"
-                  class="form-control border-start-0 ps-0"
+                  class="form-control border-start-0 ps-0 search-input"
                   placeholder="Buscar concepto..."
                 />
               </div>
             </div>
+            <div
+              class="col-md-6 d-flex justify-content-center align-items-center flex-wrap gap-2 mt-3 mt-md-0"
+            >
+              <button
+                type="button"
+                class="btn btn-outline-danger btn-hover-lift shadow-sm"
+                onclick="exportarReporte('pdf')"
+                title="Exportar a PDF"
+              >
+                <i class="bi bi-file-pdf me-1"></i> PDF
+              </button>
+              <button
+                type="button"
+                class="btn btn-outline-success btn-hover-lift shadow-sm"
+                onclick="exportarReporte('excel')"
+                title="Exportar a Excel"
+              >
+                <i class="bi bi-file-excel me-1"></i> Excel
+              </button>
+              <button
+                type="button"
+                class="btn btn-outline-primary btn-hover-lift shadow-sm"
+                onclick="exportarReporte('csv')"
+                title="Exportar a CSV"
+              >
+                <i class="bi bi-file-text me-1"></i> CSV
+              </button>
+
+              <button
+                class="btn btn-success btn-pulse btn-bounce shadow ms-2"
+                onclick="abrirModalCrear()"
+              >
+                <i class="bi bi-plus-lg me-2"></i>Nuevo Ingreso
+              </button>
+            </div>
           </div>
+
+          <h4 class="fw-bold mb-3">Desglose por Concepto</h4>
 
           <!-- Loading Spinner -->
           <div id="loadingSpinner" class="text-center d-none">
@@ -270,6 +356,13 @@
 
     <!-- Scripts -->
     <div th:replace="fragments/head :: scripts"></div>
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Export Libraries -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
     <script th:src="@{/js/movimientos/ingresos.js}"></script>
   </body>
 </html>

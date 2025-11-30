@@ -1,9 +1,66 @@
-/* Estilos para la vista de Egresos */
-.hover-card:hover {
-  transform: translateY(-5px);
-  transition: transform 0.2s ease-in-out;
+/* Animations */
+.btn-hover-lift {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
-.card {
-  transition: transform 0.2s ease-in-out;
+.btn-hover-lift:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;
+}
+
+.btn-pulse {
+  animation: pulse-red 2s infinite;
+}
+
+@keyframes pulse-red {
+  0% {
+    box-shadow: 0 0 0 0 rgba(220, 53, 69, 0.7);
+  }
+  70% {
+    box-shadow: 0 0 0 10px rgba(220, 53, 69, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(220, 53, 69, 0);
+  }
+}
+
+.search-container {
+  transition: all 0.3s ease;
+}
+
+.search-container:focus-within {
+  transform: scale(1.02);
+  box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;
+  border-color: #dc3545;
+}
+
+.search-input:focus {
+  box-shadow: none;
+}
+
+/* New Animations */
+@keyframes bounce {
+  0%,
+  20%,
+  50%,
+  80%,
+  100% {
+    transform: translateY(0);
+  }
+  40% {
+    transform: translateY(-6px);
+  }
+  60% {
+    transform: translateY(-3px);
+  }
+}
+
+.btn-bounce:hover {
+  animation: bounce 1s;
+}
+
+.search-container:focus-within {
+  transform: scale(1.02);
+  box-shadow: 0 0.5rem 1rem rgba(220, 53, 69, 0.25) !important;
+  border: 2px solid #dc3545;
 }

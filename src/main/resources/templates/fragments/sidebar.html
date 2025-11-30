@@ -1,106 +1,143 @@
-<nav
-  th:fragment="sidebar"
-  id="sidebarMenu"
-  class="col-md-3 col-lg-2 d-md-block bg-dark sidebar collapse"
->
-  <div class="position-sticky pt-3 sidebar-sticky">
-    <ul class="nav flex-column">
+<nav th:fragment="sidebar" id="sidebarMenu" class="sidebar bg-dark">
+  <div class="sidebar-sticky">
+    <!-- Navigation -->
+    <ul class="nav flex-column px-2">
+      <!-- Toggle button inside nav, styled like other items -->
+      <li class="nav-item d-none d-md-block">
+        <button
+          id="sidebarToggle"
+          class="nav-link text-white d-flex align-items-center w-100 border-0 bg-transparent"
+        >
+          <i class="bi bi-list sidebar-icon"></i>
+          <span class="sidebar-text ms-2">Colapsar menú</span>
+        </button>
+      </li>
+
       <li class="nav-item">
         <a
-          class="nav-link text-white"
+          class="nav-link text-white d-flex align-items-center"
           th:classappend="${activePage == 'dashboard'} ? 'active bg-primary'"
           href="/dashboard"
+          title="Dashboard"
         >
-          <i class="bi bi-speedometer2 me-2"></i>
-          <span>Dashboard</span>
+          <i class="bi bi-speedometer2 sidebar-icon"></i>
+          <span class="sidebar-text ms-2">Dashboard</span>
         </a>
       </li>
       <li class="nav-item">
         <a
-          class="nav-link text-white"
+          class="nav-link text-white d-flex align-items-center"
           th:classappend="${activePage == 'ingresos'} ? 'active bg-success'"
           href="/movimientos/ingresos"
+          title="Ingresos"
         >
-          <i class="bi bi-graph-up-arrow me-2"></i>
-          <span>Ingresos</span>
+          <i class="bi bi-graph-up-arrow sidebar-icon"></i>
+          <span class="sidebar-text ms-2">Ingresos</span>
         </a>
       </li>
       <li class="nav-item">
         <a
-          class="nav-link text-white"
+          class="nav-link text-white d-flex align-items-center"
           th:classappend="${activePage == 'egresos'} ? 'active bg-danger'"
           href="/movimientos/egresos"
+          title="Egresos"
         >
-          <i class="bi bi-graph-down-arrow me-2"></i>
-          <span>Egresos</span>
+          <i class="bi bi-graph-down-arrow sidebar-icon"></i>
+          <span class="sidebar-text ms-2">Egresos</span>
         </a>
       </li>
       <li class="nav-item">
         <a
-          class="nav-link text-white"
+          class="nav-link text-white d-flex align-items-center"
           th:classappend="${activePage == 'notificaciones'} ? 'active bg-warning'"
           href="/notificaciones"
+          title="Notificaciones"
         >
-          <i class="bi bi-bell me-2"></i>
-          <span>Notificaciones</span>
+          <i class="bi bi-bell sidebar-icon"></i>
+          <span class="sidebar-text ms-2">Notificaciones</span>
         </a>
       </li>
     </ul>
 
-    <hr class="my-3 border-secondary" />
+    <hr class="my-3 border-secondary mx-2" />
 
     <h6
-      class="sidebar-heading d-flex justify-content-between align-items-center px-3 mb-2 text-muted text-uppercase small"
+      class="sidebar-heading px-3 mb-2 text-muted text-uppercase small d-flex align-items-center"
     >
-      <span>Configuración</span>
+      <i class="bi bi-gear-fill sidebar-icon"></i>
+      <span class="sidebar-text ms-2">Configuración</span>
     </h6>
-    <ul class="nav flex-column mb-2">
+    <ul class="nav flex-column px-2 mb-2">
       <li class="nav-item">
         <a
-          class="nav-link text-white"
+          class="nav-link text-white d-flex align-items-center"
           th:classappend="${activePage == 'preferencias'} ? 'active bg-info'"
           href="/preferencias"
+          title="Preferencias"
         >
-          <i class="bi bi-gear me-2"></i>
-          <span>Preferencias</span>
+          <i class="bi bi-sliders sidebar-icon"></i>
+          <span class="sidebar-text ms-2">Preferencias</span>
         </a>
       </li>
     </ul>
   </div>
 
   <style>
-    /* Minimal custom styles for sidebar */
+    /* Sidebar Base Styles */
     .sidebar {
       position: fixed;
       top: 56px;
       bottom: 0;
       left: 0;
-      z-index: 100;
+      width: 250px;
+      z-index: 1000;
       padding: 0;
-      box-shadow: inset -1px 0 0 rgba(0, 0, 0, 0.1);
+      transition: width 0.3s ease, left 0.3s ease;
+      overflow-x: hidden;
+      box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
     }
 
     .sidebar-sticky {
       position: sticky;
       top: 0;
       height: calc(100vh - 56px);
-      padding-top: 0.5rem;
-      overflow-x: hidden;
+      padding-top: 1rem;
       overflow-y: auto;
+      overflow-x: hidden;
     }
 
+    /* Scrollbar styling */
+    .sidebar-sticky::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    .sidebar-sticky::-webkit-scrollbar-track {
+      background: #2c2c2c;
+    }
+
+    .sidebar-sticky::-webkit-scrollbar-thumb {
+      background: #555;
+      border-radius: 3px;
+    }
+
+    .sidebar-sticky::-webkit-scrollbar-thumb:hover {
+      background: #777;
+    }
+
+    /* Navigation Links */
     .sidebar .nav-link {
       font-weight: 500;
-      color: #ffffff;
       padding: 0.75rem 1rem;
       border-radius: 0.375rem;
-      margin: 0.25rem 0.5rem;
+      margin: 0.25rem 0;
       transition: all 0.2s ease-in-out;
+      white-space: nowrap;
+      cursor: pointer;
     }
 
     .sidebar .nav-link:hover {
       background-color: rgba(255, 255, 255, 0.1);
-      transform: translateX(5px);
+      transform: translateX(3px);
     }
 
     .sidebar .nav-link.active {
@@ -109,14 +146,112 @@
       padding-left: calc(1rem - 4px);
     }
 
-    .sidebar .nav-link i {
-      font-size: 1.1rem;
+    .sidebar-icon {
+      font-size: 1.2rem;
+      min-width: 1.2rem;
+      text-align: center;
     }
 
+    .sidebar-text {
+      transition: opacity 0.2s ease, width 0.2s ease;
+    }
+
+    .sidebar-heading {
+      transition: opacity 0.2s ease;
+    }
+
+    /* Toggle button specific styling */
+    #sidebarToggle {
+      text-align: left;
+    }
+
+    #sidebarToggle:hover {
+      background-color: rgba(255, 255, 255, 0.1);
+    }
+
+    /* Collapsed State (Desktop) */
+    .sidebar.collapsed {
+      width: 80px;
+    }
+
+    .sidebar.collapsed .sidebar-text,
+    .sidebar.collapsed .sidebar-heading span {
+      opacity: 0;
+      width: 0;
+      overflow: hidden;
+    }
+
+    .sidebar.collapsed .nav-link {
+      justify-content: center;
+      padding: 0.75rem 0.5rem;
+    }
+
+    .sidebar.collapsed .nav-link.active {
+      border-left: 4px solid #ffffff;
+      padding-left: calc(0.5rem - 4px);
+    }
+
+    /* Mobile Styles */
     @media (max-width: 767.98px) {
       .sidebar {
         top: 0;
+        left: -100%;
+        width: 280px;
+        height: 100vh;
+        z-index: 1050;
+      }
+
+      .sidebar.show {
+        left: 0;
+      }
+
+      .sidebar-sticky {
+        height: 100vh;
+        padding-top: 1rem;
+      }
+    }
+
+    /* Tablet Styles */
+    @media (min-width: 768px) and (max-width: 991.98px) {
+      .sidebar {
+        width: 220px;
+      }
+
+      .sidebar.collapsed {
+        width: 70px;
+      }
+    }
+
+    /* Main content adjustment */
+    @media (min-width: 768px) {
+      body:has(.sidebar) main {
+        margin-left: 250px;
+        transition: margin-left 0.3s ease;
+      }
+
+      body:has(.sidebar.collapsed) main {
+        margin-left: 80px;
       }
     }
   </style>
 </nav>
+
+<!-- Backdrop for mobile -->
+<div id="sidebarBackdrop" class="sidebar-backdrop"></div>
+
+<style>
+  .sidebar-backdrop {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 1049;
+    transition: opacity 0.3s ease;
+  }
+
+  @media (max-width: 767.98px) {
+    .sidebar-backdrop.show {
+      display: block;
+    }
+  }
+</style>

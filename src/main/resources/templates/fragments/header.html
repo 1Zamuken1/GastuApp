@@ -1,0 +1,130 @@
+<header
+  th:fragment="header"
+  class="header navbar navbar-dark sticky-top bg-dark flex-md-nowrap p-0 shadow-sm"
+>
+  <!-- Mobile toggle -->
+  <button
+    id="sidebarMobileToggle"
+    class="navbar-toggler d-md-none border-0"
+    type="button"
+    aria-label="Toggle navigation"
+  >
+    <span class="navbar-toggler-icon"></span>
+  </button>
+
+  <!-- Brand/Logo -->
+  <a class="navbar-brand col-auto me-0 px-3 fs-5 fw-bold" href="/dashboard">
+    <i class="bi bi-wallet2 me-2"></i
+    ><span class="d-none d-sm-inline">GastuApp</span>
+  </a>
+
+  <!-- Spacer -->
+  <div class="flex-grow-1"></div>
+
+  <!-- User menu -->
+  <div class="navbar-nav">
+    <div class="nav-item dropdown">
+      <a
+        class="nav-link dropdown-toggle text-white px-3"
+        href="#"
+        id="userDropdown"
+        role="button"
+        data-bs-toggle="dropdown"
+        aria-expanded="false"
+      >
+        <i class="bi bi-person-circle me-1"></i>
+        <span class="d-none d-sm-inline" th:text="${#authentication.name}"
+          >Usuario</span
+        >
+      </a>
+      <ul
+        class="dropdown-menu dropdown-menu-end"
+        aria-labelledby="userDropdown"
+      >
+        <li>
+          <span class="dropdown-item-text">
+            <small class="text-muted">Sesión activa</small><br />
+            <strong th:text="${#authentication.name}"
+              >usuario@example.com</strong
+            >
+          </span>
+        </li>
+        <li><hr class="dropdown-divider" /></li>
+        <li>
+          <a class="dropdown-item" href="/preferencias">
+            <i class="bi bi-gear me-2"></i>Configuración
+          </a>
+        </li>
+        <li><hr class="dropdown-divider" /></li>
+        <li>
+          <form action="/logout" method="post" class="d-inline w-100">
+            <button type="submit" class="dropdown-item text-danger">
+              <i class="bi bi-box-arrow-right me-2"></i>Cerrar Sesión
+            </button>
+          </form>
+        </li>
+      </ul>
+    </div>
+  </div>
+
+  <style>
+    .header {
+      height: 56px;
+      z-index: 1040;
+    }
+
+    .navbar-brand {
+      transition: opacity 0.2s ease;
+    }
+
+    .navbar-brand:hover {
+      opacity: 0.9;
+    }
+
+    .navbar-toggler {
+      position: relative;
+      padding: 0.5rem 0.75rem;
+    }
+
+    .navbar-toggler:focus {
+      box-shadow: 0 0 0 0.25rem rgba(255, 255, 255, 0.25);
+      outline: none;
+    }
+
+    .nav-link.dropdown-toggle {
+      transition: background-color 0.2s ease;
+    }
+
+    .nav-link.dropdown-toggle:hover {
+      background-color: rgba(255, 255, 255, 0.1);
+    }
+
+    .dropdown-menu {
+      min-width: 250px;
+    }
+
+    .dropdown-item {
+      transition: all 0.2s ease;
+    }
+
+    .dropdown-item:hover {
+      background-color: rgba(0, 0, 0, 0.05);
+      transform: translateX(3px);
+    }
+
+    .dropdown-item.text-danger:hover {
+      background-color: rgba(220, 53, 69, 0.1);
+      color: #dc3545 !important;
+    }
+
+    @media (max-width: 575.98px) {
+      #sidebarMobileToggle {
+        order: -1;
+      }
+
+      .navbar-brand {
+        font-size: 1.1rem;
+      }
+    }
+  </style>
+</header>
