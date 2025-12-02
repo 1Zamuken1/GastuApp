@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+  <head th:replace="fragments/head :: head('Mi Perfil - GastuApp', ~{::link})">
+    <!-- Custom CSS for Profile -->
+    <link rel="stylesheet" th:href="@{/css/perfil/perfil.css}" />
+  </head>
+  <body>
+    <!-- Navbar -->
+    <nav th:replace="fragments/navbar :: navbar"></nav>
+
+    <!-- Sidebar -->
+    <nav
+      th:replace="fragments/sidebar :: sidebar"
+      class="d-md-block bg-light sidebar collapse"
+    ></nav>
+
+    <!-- Main Content -->
+    <main class="px-md-4 py-4">
+      <div
+        class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom"
+      >
+        <h1 class="h2">Mi Cuenta</h1>
+      </div>
+
+      <div class="row">
+        <div class="col-md-12">
+          <div class="card shadow-sm">
+            <div class="card-header">
+              <ul class="nav nav-tabs card-header-tabs">
+                <li class="nav-item">
+                  <a
+                    class="nav-link"
+                    th:classappend="${activeTab == 'general'} ? 'active fw-bold'"
+                    href="/perfil?tab=general"
+                  >
+                    <i class="bi bi-person me-2"></i>General
+                  </a>
+                </li>
+                <li class="nav-item">
+                  <a
+                    class="nav-link"
+                    th:classappend="${activeTab == 'preferencias'} ? 'active fw-bold'"
+                    href="/perfil?tab=preferencias"
+                  >
+                    <i class="bi bi-sliders me-2"></i>Preferencias
+                  </a>
+                </li>
+                <li class="nav-item">
+                  <a
+                    class="nav-link"
+                    th:classappend="${activeTab == 'notificaciones'} ? 'active fw-bold'"
+                    href="/perfil?tab=notificaciones"
+                  >
+                    <i class="bi bi-bell me-2"></i>Notificaciones
+                  </a>
+                </li>
+              </ul>
+            </div>
+            <div class="card-body p-4">
+              <!-- General Tab -->
+              <div th:if="${activeTab == 'general'}">
+                <h4 class="mb-4">Información Personal</h4>
+
+                <form id="formPerfil">
+                  <div class="row g-3">
+                    <div class="col-md-6">
+                      <label class="form-label">Nombre de Usuario</label>
+                      <input
+                        type="text"
+                        class="form-control"
+                        id="username"
+                        required
+                      />
+                    </div>
+                    <div class="col-md-6">
+                      <label class="form-label">Correo Electrónico</label>
+                      <input
+                        type="email"
+                        class="form-control"
+                        id="email"
+                        readonly
+                      />
+                      <small class="text-muted"
+                        >El correo no se puede modificar</small
+                      >
+                    </div>
+                    <div class="col-12 mt-4">
+                      <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-check-lg me-1"></i>Guardar Cambios
+                      </button>
+                      <button
+                        type="button"
+                        class="btn btn-outline-secondary"
+                        data-bs-toggle="modal"
+                        data-bs-target="#modalCambiarPassword"
+                      >
+                        <i class="bi bi-key me-1"></i>Cambiar Contraseña
+                      </button>
+                    </div>
+                  </div>
+                </form>
+              </div>
+
+              <!-- Preferencias Tab -->
+              <div th:if="${activeTab == 'preferencias'}">
+                <h4 class="mb-4">Configuración Financiera</h4>
+
+                <form id="formPreferenciasFinancieras">
+                  <div class="alert alert-info mb-4">
+                    <i class="bi bi-info-circle me-2"></i>
+                    <strong>Control de Gastos:</strong> Configura los umbrales
+                    para recibir alertas automáticas sobre tu salud financiera.
+                  </div>
+
+                  <div class="mb-4">
+                    <label class="form-label fw-bold" for="umbralAdvertencia">
+                      Umbral de Advertencia
+                      <i
+                        class="bi bi-info-circle text-muted ms-1"
+                        title="Porcentaje de ingresos vs egresos antes de alertar"
+                      ></i>
+                    </label>
+                    <div class="input-group">
+                      <input
+                        type="number"
+                        class="form-control"
+                        id="umbralAdvertencia"
+                        min="0"
+                        max="100"
+                        required
+                      />
+                      <span class="input-group-text">%</span>
+                    </div>
+                    <small class="form-text text-muted">
+                      Recibirás una alerta cuando tus gastos superen este
+                      porcentaje de tus ingresos.
+                    </small>
+                  </div>
+
+                  <div class="mb-4">
+                    <label class="form-label fw-bold" for="egresoGrande">
+                      Definir Egreso Grande
+                      <i
+                        class="bi bi-info-circle text-muted ms-1"
+                        title="Porcentaje que define un gasto como 'grande'"
+                      ></i>
+                    </label>
+                    <div class="input-group">
+                      <input
+                        type="number"
+                        class="form-control"
+                        id="egresoGrande"
+                        min="0"
+                        max="100"
+                        required
+                      />
+                      <span class="input-group-text">%</span>
+                    </div>
+                    <small class="form-text text-muted">
+                      Un gasto será considerado "grande" si supera este
+                      porcentaje de tus ingresos.
+                    </small>
+                  </div>
+
+                  <div class="mb-4">
+                    <div class="form-check form-switch">
+                      <input
+                        class="form-check-input"
+                        type="checkbox"
+                        id="alertaEgresoGrande"
+                      />
+                      <label
+                        class="form-check-label fw-bold"
+                        for="alertaEgresoGrande"
+                      >
+                        Activar Alertas de Egresos Grandes
+                      </label>
+                    </div>
+                    <small class="form-text text-muted d-block mt-2">
+                      Recibirás una notificación cuando registres un egreso
+                      grande.
+                    </small>
+                  </div>
+
+                  <div class="d-flex gap-2">
+                    <button type="submit" class="btn btn-primary">
+                      <i class="bi bi-check-lg me-1"></i>Guardar Configuración
+                    </button>
+                    <button
+                      type="button"
+                      class="btn btn-outline-secondary"
+                      id="btnResetPreferencias"
+                    >
+                      <i class="bi bi-arrow-clockwise me-1"></i>Restaurar
+                      Predeterminados
+                    </button>
+                  </div>
+                </form>
+              </div>
+
+              <!-- Notificaciones Tab -->
+              <div th:if="${activeTab == 'notificaciones'}">
+                <h4 class="mb-4">Configuración de Alertas</h4>
+
+                <div class="alert alert-info mb-4">
+                  <i class="bi bi-info-circle me-2"></i>
+                  <strong>Sistema de Notificaciones:</strong> Las alertas te
+                  ayudan a mantener control sobre tus finanzas personales.
+                </div>
+
+                <form id="formNotificaciones">
+                  <!-- Egreso Grande Threshold -->
+                  <div class="card mb-3">
+                    <div class="card-body">
+                      <h5 class="card-title mb-3">
+                        <i class="bi bi-percent text-primary me-2"></i>
+                        Umbral de Egreso Grande
+                      </h5>
+                      <div class="mb-3">
+                        <label
+                          class="form-label fw-bold"
+                          for="egresoGrandeNotif"
+                        >
+                          Porcentaje que define un "egreso grande"
+                        </label>
+                        <div class="input-group">
+                          <input
+                            type="number"
+                            class="form-control"
+                            id="egresoGrandeNotif"
+                            min="0"
+                            max="100"
+                            required
+                          />
+                          <span class="input-group-text">%</span>
+                        </div>
+                        <small class="text-muted">
+                          Un gasto será considerado "grande" si supera este
+                          porcentaje de tus ingresos totales.
+                        </small>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Enable/Disable Alert -->
+                  <div class="card">
+                    <div class="card-body">
+                      <div
+                        class="d-flex justify-content-between align-items-start"
+                      >
+                        <div class="flex-grow-1">
+                          <h5 class="card-title mb-2">
+                            <i
+                              class="bi bi-exclamation-triangle text-warning me-2"
+                            ></i>
+                            Alertas de Egresos Grandes
+                          </h5>
+                          <p class="card-text text-muted mb-0">
+                            Recibe una notificación cuando registres un egreso
+                            que supere el umbral configurado arriba.
+                          </p>
+                        </div>
+                        <div class="form-check form-switch ms-3">
+                          <input
+                            class="form-check-input"
+                            type="checkbox"
+                            id="alertaEgresoGrandeNotif"
+                            style="width: 3em; height: 1.5em"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="mt-4">
+                    <button type="submit" class="btn btn-primary">
+                      <i class="bi bi-check-lg me-1"></i>Guardar Configuración
+                    </button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <!-- Modal Cambiar Contraseña -->
+    <div class="modal fade" id="modalCambiarPassword" tabindex="-1">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Cambiar Contraseña</h5>
+            <button
+              type="button"
+              class="btn-close"
+              data-bs-dismiss="modal"
+            ></button>
+          </div>
+          <form id="formCambiarPassword">
+            <div class="modal-body">
+              <div class="mb-3">
+                <label class="form-label">Contraseña Actual</label>
+                <input
+                  type="password"
+                  class="form-control"
+                  id="passwordActual"
+                  required
+                />
+              </div>
+              <div class="mb-3">
+                <label class="form-label">Nueva Contraseña</label>
+                <input
+                  type="password"
+                  class="form-control"
+                  id="passwordNueva"
+                  minlength="6"
+                  required
+                />
+                <small class="text-muted">Mínimo 6 caracteres</small>
+              </div>
+              <div class="mb-3">
+                <label class="form-label">Confirmar Nueva Contraseña</label>
+                <input
+                  type="password"
+                  class="form-control"
+                  id="passwordConfirmar"
+                  minlength="6"
+                  required
+                />
+              </div>
+            </div>
+            <div class="modal-footer">
+              <button
+                type="button"
+                class="btn btn-secondary"
+                data-bs-dismiss="modal"
+              >
+                Cancelar
+              </button>
+              <button type="submit" class="btn btn-primary">
+                Cambiar Contraseña
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <!-- Scripts -->
+    <div th:replace="fragments/head :: scripts"></div>
+
+    <!-- Profile Page Script -->
+    <script th:src="@{/js/perfil/perfil.js}"></script>
+  </body>
+</html>

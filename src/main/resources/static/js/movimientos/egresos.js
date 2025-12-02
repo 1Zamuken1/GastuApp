@@ -106,15 +106,18 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 
   function renderData(movimientos, conceptosList) {
-    // Filter for current month
+    // Filter for current month - TEMPORARILY DISABLED to show all data
     const now = new Date();
-    const currentMonth = now.getMonth();
-    const currentYear = now.getFullYear();
+    // const currentMonth = now.getMonth();
+    // const currentYear = now.getFullYear();
 
+    const movimientosMes = movimientos; // Show all history
+    /*
     const movimientosMes = movimientos.filter((m) => {
       const d = new Date(m.fechaRegistro);
       return d.getMonth() === currentMonth && d.getFullYear() === currentYear;
     });
+    */
 
     // Map concepts for easy lookup
     const conceptosMap = {};
@@ -466,14 +469,17 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 
   function mostrarLoading(show) {
-    if (loadingSpinner) {
-      if (show) {
-        loadingSpinner.classList.remove("d-none");
-        if (conceptosGrid) conceptosGrid.classList.add("d-none");
-        if (emptyState) emptyState.classList.add("d-none");
-      } else {
-        loadingSpinner.classList.add("d-none");
-      }
+    const skeletonLoader = document.getElementById("skeletonLoader");
+
+    if (show) {
+      if (skeletonLoader) skeletonLoader.classList.remove("d-none");
+      else if (loadingSpinner) loadingSpinner.classList.remove("d-none");
+
+      if (conceptosGrid) conceptosGrid.classList.add("d-none");
+      if (emptyState) emptyState.classList.add("d-none");
+    } else {
+      if (skeletonLoader) skeletonLoader.classList.add("d-none");
+      if (loadingSpinner) loadingSpinner.classList.add("d-none");
     }
   }
 

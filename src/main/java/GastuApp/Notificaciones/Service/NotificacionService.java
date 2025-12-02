@@ -1,9 +1,9 @@
-package GastuApp.Movimientos.Service;
+package GastuApp.Notificaciones.Service;
 
-import GastuApp.Movimientos.DTO.NotificacionDTO;
-import GastuApp.Movimientos.Entity.Notificacion;
-import GastuApp.Movimientos.Entity.Notificacion.TipoNotificacion;
-import GastuApp.Movimientos.Repository.NotificacionRepository;
+import GastuApp.Notificaciones.DTO.NotificacionDTO;
+import GastuApp.Notificaciones.Entity.Notificacion;
+import GastuApp.Notificaciones.Entity.Notificacion.TipoNotificacion;
+import GastuApp.Notificaciones.Repository.NotificacionRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 

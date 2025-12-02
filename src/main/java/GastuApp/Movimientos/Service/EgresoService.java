@@ -1,11 +1,13 @@
 package GastuApp.Movimientos.Service;
 
-import GastuApp.Movimientos.DTO.ConceptoDTO;
+import GastuApp.Conceptos.DTO.ConceptoDTO;
 import GastuApp.Movimientos.DTO.EgresoDTO;
 import GastuApp.Movimientos.DTO.PreferenciasFinancierasDTO;
 import GastuApp.Movimientos.Entity.Movimiento;
 import GastuApp.Movimientos.Entity.Movimiento.TipoMovimiento;
-import GastuApp.Movimientos.Entity.Notificacion.TipoNotificacion;
+import GastuApp.Notificaciones.Entity.Notificacion.TipoNotificacion;
+import GastuApp.Conceptos.Service.ConceptoService;
+import GastuApp.Notificaciones.Service.NotificacionService;
 import GastuApp.Movimientos.Repository.MovimientoRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -253,7 +255,7 @@ public class EgresoService {
      * @return Lista de ConceptoResumenDTO
      */
     @Transactional(readOnly = true)
-    public List<GastuApp.Movimientos.DTO.ConceptoResumenDTO> obtenerResumenConceptos(Long usuarioId) {
+    public List<GastuApp.Conceptos.DTO.ConceptoResumenDTO> obtenerResumenConceptos(Long usuarioId) {
         // Obtener estadísticas crudas del repositorio: [conceptoId, cantidad, total]
         List<Object[]> estadisticas = movimientoRepository.contarYSumarEgresosPorConcepto(usuarioId);
 
@@ -283,7 +285,7 @@ public class EgresoService {
                 return null;
             }
 
-            return new GastuApp.Movimientos.DTO.ConceptoResumenDTO(
+            return new GastuApp.Conceptos.DTO.ConceptoResumenDTO(
                     concepto.getId(),
                     concepto.getNombre(),
                     concepto.getDescripcion(),

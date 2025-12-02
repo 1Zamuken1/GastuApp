@@ -1,7 +1,7 @@
 package GastuApp.Controller;
 
 import GastuApp.Movimientos.DTO.IngresoDTO;
-import GastuApp.Movimientos.Service.ConceptoService;
+import GastuApp.Conceptos.Service.ConceptoService;
 import GastuApp.Movimientos.Service.IngresoService;
 import GastuApp.User.CustomUserDetails;
 

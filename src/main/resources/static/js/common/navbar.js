@@ -3,7 +3,10 @@
  * Fetches and displays real notifications from the API with tabs
  */
 
-document.addEventListener("DOMContentLoaded", function () {
+document.addEventListener("DOMContentLoaded", initNavbar);
+
+function initNavbar() {
+  console.log("Navbar JS initialized");
   // Variables globales
   let allNotifications = [];
   let currentTab = "no-leidas";
@@ -419,4 +422,4 @@ document.addEventListener("DOMContentLoaded", function () {
 
   // Actualizar cada 30 segundos
   setInterval(fetchUnreadCount, 30000);
-});
+}

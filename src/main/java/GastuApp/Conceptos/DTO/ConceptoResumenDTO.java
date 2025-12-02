@@ -1,4 +1,4 @@
-package GastuApp.Movimientos.DTO;
+package GastuApp.Conceptos.DTO;
 
 import java.math.BigDecimal;
 

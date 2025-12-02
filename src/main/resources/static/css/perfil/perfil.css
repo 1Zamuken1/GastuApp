@@ -1,0 +1,32 @@
+.card-header-tabs {
+  margin-bottom: -1px; /* Align with bottom border */
+}
+
+.card-header-tabs .nav-link {
+  border: none;
+  border-bottom: 3px solid transparent;
+  color: #6c757d;
+  font-weight: 500;
+  padding: 1rem 1.5rem;
+}
+
+.card-header-tabs .nav-link:hover {
+  color: #0d6efd;
+  border-color: transparent;
+  background-color: rgba(13, 110, 253, 0.05);
+}
+
+.card-header-tabs .nav-link.active {
+  color: #0d6efd;
+  background-color: transparent;
+  border-bottom: 3px solid #0d6efd;
+}
+
+.form-label {
+  font-weight: 500;
+  color: #495057;
+}
+
+.list-group-item {
+  padding: 1rem 1.25rem;
+}

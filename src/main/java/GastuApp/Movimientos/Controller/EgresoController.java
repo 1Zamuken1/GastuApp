@@ -130,10 +130,10 @@ public class EgresoController {
      * @return Lista de ConceptoResumenDTO
      */
     @GetMapping("/resumen-conceptos")
-    public ResponseEntity<List<GastuApp.Movimientos.DTO.ConceptoResumenDTO>> obtenerResumenConceptos(
+    public ResponseEntity<List<GastuApp.Conceptos.DTO.ConceptoResumenDTO>> obtenerResumenConceptos(
             Authentication authentication) {
         Long usuarioId = obtenerUsuarioId(authentication);
-        List<GastuApp.Movimientos.DTO.ConceptoResumenDTO> resumen = egresoService.obtenerResumenConceptos(usuarioId);
+        List<GastuApp.Conceptos.DTO.ConceptoResumenDTO> resumen = egresoService.obtenerResumenConceptos(usuarioId);
         return ResponseEntity.ok(resumen);
     }
 

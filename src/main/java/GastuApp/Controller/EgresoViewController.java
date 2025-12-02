@@ -1,7 +1,7 @@
 package GastuApp.Controller;
 
 import GastuApp.Movimientos.DTO.EgresoDTO;
-import GastuApp.Movimientos.Service.ConceptoService;
+import GastuApp.Conceptos.Service.ConceptoService;
 import GastuApp.Movimientos.Service.EgresoService;
 import GastuApp.User.CustomUserDetails;
 import org.springframework.security.core.Authentication;

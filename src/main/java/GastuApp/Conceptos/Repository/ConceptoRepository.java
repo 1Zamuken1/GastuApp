@@ -1,7 +1,7 @@
-package GastuApp.Movimientos.Repository;
+package GastuApp.Conceptos.Repository;
 
-import GastuApp.Movimientos.Entity.Concepto;
-import GastuApp.Movimientos.Entity.Concepto.TipoConcepto;
+import GastuApp.Conceptos.Entity.Concepto;
+import GastuApp.Conceptos.Entity.Concepto.TipoConcepto;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

@@ -1,4 +1,4 @@
-package GastuApp.Movimientos.DTO;
+package GastuApp.Notificaciones.DTO;
 
 import java.time.LocalDateTime;
 

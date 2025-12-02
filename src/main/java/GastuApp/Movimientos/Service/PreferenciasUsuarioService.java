@@ -2,14 +2,8 @@ package GastuApp.Movimientos.Service;
 
 import GastuApp.Movimientos.DTO.PreferenciasFinancierasDTO;
 import org.springframework.stereotype.Service;
-
 import java.util.concurrent.ConcurrentHashMap;
 
-/**
- * Servicio para gestionar preferencias financieras de usuarios.
- * Almacena las preferencias en memoria sin necesidad de base de datos.
- * Las preferencias se pierden al reiniciar la aplicación.
- */
 @Service
 public class PreferenciasUsuarioService {
 

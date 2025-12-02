@@ -1,4 +1,4 @@
-package GastuApp.Movimientos.Entity;
+package GastuApp.Notificaciones.Entity;
 
 import jakarta.persistence.*;
 import java.time.LocalDateTime;

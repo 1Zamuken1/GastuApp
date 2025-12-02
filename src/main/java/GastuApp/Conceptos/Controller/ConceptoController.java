@@ -1,7 +1,7 @@
-package GastuApp.Movimientos.Controller;
+package GastuApp.Conceptos.Controller;
 
-import GastuApp.Movimientos.DTO.ConceptoDTO;
-import GastuApp.Movimientos.Service.ConceptoService;
+import GastuApp.Conceptos.DTO.ConceptoDTO;
+import GastuApp.Conceptos.Service.ConceptoService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

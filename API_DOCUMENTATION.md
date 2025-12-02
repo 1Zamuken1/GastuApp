@@ -15,22 +15,22 @@ POST /api/auth/register
 Content-Type: application/json
 
 {
-  "nombre": "Juan Pérez",
-  "correo": "juan@example.com",
+  "username": "juanperez",
+  "email": "juan@example.com",
   "telefono": "1234567890",
   "password": "miPassword123"
 }
 ```
 
-**Respuesta exitosa (201)**:
+**Respuesta exitosa (200)**:
 
 ```json
 {
-  "usuarioId": 1,
-  "nombre": "Juan Pérez",
-  "correo": "juan@example.com",
-  "telefono": "1234567890",
-  "rol": "USER"
+  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+  "username": "juanperez",
+  "userId": 1,
+  "email": "juan@example.com",
+  "message": "Usuario registrado exitosamente"
 }
 ```
 
@@ -41,7 +41,7 @@ POST /api/auth/login
 Content-Type: application/json
 
 {
-  "correo": "juan@example.com",
+  "username": "juanperez",
   "password": "miPassword123"
 }
 ```
@@ -51,15 +51,83 @@ Content-Type: application/json
 ```json
 {
   "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
-  "tipo": "Bearer",
-  "usuarioId": 1,
-  "nombre": "Juan Pérez",
-  "correo": "juan@example.com",
-  "rol": "USER"
+  "username": "juanperez",
+  "userId": 1,
+  "email": "juan@example.com"
 }
 ```
 
 > **Nota**: El token debe incluirse en todas las peticiones subsiguientes en el header `Authorization: Bearer {token}`
+
+---
+
+## 👤 Perfil de Usuario
+
+Endpoints para gestionar la información del usuario autenticado.
+
+### Obtener Perfil
+
+```http
+GET /api/usuario
+Authorization: Bearer {token}
+```
+
+**Respuesta (200)**:
+
+```json
+{
+  "id": 1,
+  "username": "juanperez",
+  "email": "juan@example.com",
+  "telefono": "1234567890"
+}
+```
+
+### Actualizar Perfil
+
+Permite actualizar el nombre de usuario. El correo no es modificable.
+
+```http
+PUT /api/usuario
+Authorization: Bearer {token}
+Content-Type: application/json
+
+{
+  "username": "juanperez_nuevo"
+}
+```
+
+**Respuesta (200)**:
+
+```json
+{
+  "id": 1,
+  "username": "juanperez_nuevo",
+  "email": "juan@example.com",
+  "telefono": "1234567890"
+}
+```
+
+### Cambiar Contraseña
+
+```http
+POST /api/usuario/cambiar-password
+Authorization: Bearer {token}
+Content-Type: application/json
+
+{
+  "passwordActual": "password123",
+  "passwordNueva": "nuevaPassword123"
+}
+```
+
+**Respuesta (200)**:
+
+```json
+{
+  "mensaje": "Contraseña actualizada exitosamente"
+}
+```
 
 ---
 

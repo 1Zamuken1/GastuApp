@@ -1,7 +1,7 @@
-package GastuApp.Movimientos.Controller;
+package GastuApp.Notificaciones.Controller;
 
-import GastuApp.Movimientos.DTO.NotificacionDTO;
-import GastuApp.Movimientos.Service.NotificacionService;
+import GastuApp.Notificaciones.DTO.NotificacionDTO;
+import GastuApp.Notificaciones.Service.NotificacionService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;

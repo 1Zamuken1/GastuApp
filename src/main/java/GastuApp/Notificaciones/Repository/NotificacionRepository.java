@@ -1,6 +1,6 @@
-package GastuApp.Movimientos.Repository;
+package GastuApp.Notificaciones.Repository;
 
-import GastuApp.Movimientos.Entity.Notificacion;
+import GastuApp.Notificaciones.Entity.Notificacion;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

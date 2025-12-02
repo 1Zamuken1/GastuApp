@@ -1,4 +1,4 @@
-package GastuApp.Movimientos.Entity;
+package GastuApp.Conceptos.Entity;
 
 import jakarta.persistence.*;
 

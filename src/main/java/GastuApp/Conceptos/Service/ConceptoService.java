@@ -1,14 +1,17 @@
-package GastuApp.Movimientos.Service;
+package GastuApp.Conceptos.Service;
 
-import GastuApp.Movimientos.DTO.ConceptoDTO;
-import GastuApp.Movimientos.Entity.Concepto;
-import GastuApp.Movimientos.Entity.Concepto.TipoConcepto;
-import GastuApp.Movimientos.Repository.ConceptoRepository;
+import GastuApp.Conceptos.DTO.ConceptoDTO;
+import GastuApp.Conceptos.Entity.Concepto;
+import GastuApp.Conceptos.Entity.Concepto.TipoConcepto;
+import GastuApp.Conceptos.Repository.ConceptoRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.stream.Collectors;
+
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 
 /**
  * Servicio para gestión de conceptos.
@@ -29,6 +32,7 @@ public class ConceptoService {
      * @return Lista de todos los conceptos
      */
     @Transactional(readOnly = true)
+    @Cacheable("conceptos")
     public List<ConceptoDTO> obtenerTodos() {
         return conceptoRepository.findAll().stream()
                 .map(this::convertirADTO)
@@ -42,6 +46,7 @@ public class ConceptoService {
      * @return Lista de conceptos del tipo especificado
      */
     @Transactional(readOnly = true)
+    @Cacheable(value = "conceptos", key = "#tipo")
     public List<ConceptoDTO> obtenerPorTipo(String tipo) {
         TipoConcepto tipoConcepto = TipoConcepto.valueOf(tipo.toUpperCase());
         return conceptoRepository.findByTipo(tipoConcepto).stream()
@@ -84,6 +89,7 @@ public class ConceptoService {
      * @return DTO del concepto creado
      */
     @Transactional
+    @CacheEvict(value = "conceptos", allEntries = true)
     public ConceptoDTO crearConcepto(ConceptoDTO dto) {
         // Validar que el tipo sea válido
         TipoConcepto tipo;
@@ -111,6 +117,7 @@ public class ConceptoService {
      * @return DTO del concepto actualizado
      */
     @Transactional
+    @CacheEvict(value = "conceptos", allEntries = true)
     public ConceptoDTO actualizarConcepto(@org.springframework.lang.NonNull Long id, ConceptoDTO dto) {
         Concepto concepto = conceptoRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Concepto no encontrado"));
@@ -140,6 +147,7 @@ public class ConceptoService {
      * @param id ID del concepto a eliminar
      */
     @Transactional
+    @CacheEvict(value = "conceptos", allEntries = true)
     public void eliminarConcepto(@org.springframework.lang.NonNull Long id) {
         if (!conceptoRepository.existsById(id)) {
             throw new RuntimeException("Concepto no encontrado");
