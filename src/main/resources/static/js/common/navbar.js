@@ -123,6 +123,9 @@ function initNavbar() {
   /**
    * Renderiza una tarjeta de notificación individual
    */
+  /**
+   * Renderiza una tarjeta de notificación individual
+   */
   function renderNotificationCard(notification) {
     const { tipo, titulo, descripcion, fechaCreacion, id, leida } =
       notification;
@@ -133,6 +136,12 @@ function initNavbar() {
       ? ""
       : `border-start border-${iconData.color} border-4`;
     const bgClass = leida ? "bg-white" : "bg-light";
+
+    // Truncate description for navbar (max 80 chars)
+    const truncatedDesc =
+      descripcion && descripcion.length > 80
+        ? descripcion.substring(0, 80) + "..."
+        : descripcion;
 
     // Only show Dismiss button if not read
     const dismissBtn = !leida
@@ -156,7 +165,7 @@ function initNavbar() {
                           titulo || "Notificación"
                         }</h6>
                         <p class="mb-2 small text-muted text-break">${
-                          descripcion || ""
+                          truncatedDesc || ""
                         }</p>
                         <div class="d-flex align-items-center justify-content-between">
                             <span class="small text-muted">
@@ -177,6 +186,22 @@ function initNavbar() {
             </div>
         `;
   }
+
+  // ... (getNotificationIcon, formatTimeAgo, updateMainBadge, updateTabBadges, updateBadges, showError, event listeners) ...
+
+  // ============================================
+  // FUNCIONES GLOBALES (para botones inline)
+  // ============================================
+
+  /**
+   * Ver detalles de una notificación
+   */
+  window.viewNotificationDetails = function (id) {
+    // Mark as read locally first for immediate feedback
+    markAsRead(id);
+    // Redirect to profile notifications tab with ID parameter
+    window.location.href = `/perfil?tab=notificaciones&notificationId=${id}`;
+  };
 
   /**
    * Obtiene el ícono y color según el tipo de notificación
@@ -401,9 +426,10 @@ function initNavbar() {
    * Ver detalles de una notificación
    */
   window.viewNotificationDetails = function (id) {
+    // Mark as read first for immediate feedback
     markAsRead(id);
-    // Aquí puedes redirigir o mostrar más detalles
-    console.log("Ver detalles de notificación:", id);
+    // Redirect to profile notifications tab with ID parameter for highlighting
+    window.location.href = `/perfil?tab=notificaciones&notificationId=${id}`;
   };
 
   /**
@@ -413,6 +439,9 @@ function initNavbar() {
     markAsRead(id);
   };
 
+  // Expose fetchUnreadCount globally
+  window.fetchUnreadCount = fetchUnreadCount;
+
   // ============================================
   // INICIALIZACIÓN
   // ============================================
@@ -420,6 +449,6 @@ function initNavbar() {
   // Cargar conteo inicial
   fetchUnreadCount();
 
-  // Actualizar cada 30 segundos
-  setInterval(fetchUnreadCount, 30000);
+  // Actualizar cada 3 segundos para actualizaciones en tiempo real
+  setInterval(fetchUnreadCount, 3000);
 }
