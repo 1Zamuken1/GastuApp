@@ -73,11 +73,36 @@ public class PreferenciasController {
      * @return ID del usuario autenticado
      */
     private Long obtenerUsuarioId(Authentication authentication) {
-        if (authentication != null && authentication.getPrincipal() instanceof GastuApp.User.CustomUserDetails) {
-            GastuApp.User.CustomUserDetails userDetails = (GastuApp.User.CustomUserDetails) authentication
-                    .getPrincipal();
-            return userDetails.getId();
+        if (authentication == null) {
+            throw new RuntimeException("No hay información de autenticación");
         }
-        throw new RuntimeException("No se pudo obtener el ID del usuario autenticado");
+
+        Object principal = authentication.getPrincipal();
+
+        if (principal instanceof GastuApp.User.CustomUserDetails) {
+            return ((GastuApp.User.CustomUserDetails) principal).getId();
+        }
+
+        // Fallback: si el principal es un String (username) o UserDetails estándar
+        String username = null;
+        if (principal instanceof org.springframework.security.core.userdetails.UserDetails) {
+            username = ((org.springframework.security.core.userdetails.UserDetails) principal).getUsername();
+        } else if (principal instanceof String) {
+            username = (String) principal;
+        }
+
+        if (username != null) {
+            // Aquí idealmente inyectaríamos UsuarioRepository para buscar el ID,
+            // pero por ahora lanzamos una excepción más descriptiva.
+            // Si esto ocurre frecuentemente, inyectaremos el repositorio.
+            System.err.println("Principal no es CustomUserDetails. Es: " + principal.getClass().getName()
+                    + ", Username: " + username);
+        } else {
+            System.err
+                    .println("Principal desconocido: " + (principal != null ? principal.getClass().getName() : "null"));
+        }
+
+        throw new RuntimeException("No se pudo obtener el ID del usuario. Tipo de principal: " +
+                (principal != null ? principal.getClass().getName() : "null"));
     }
 }

@@ -13,7 +13,8 @@ import java.util.Map;
 
 /**
  * Manejador global de excepciones para el microservicio.
- * Captura y formatea excepciones para devolver respuestas consistentes al cliente.
+ * Captura y formatea excepciones para devolver respuestas consistentes al
+ * cliente.
  */
 @RestControllerAdvice
 public class GlobalExceptionHandler {
@@ -79,7 +80,7 @@ public class GlobalExceptionHandler {
         respuesta.put("mensaje", "Ha ocurrido un error inesperado. Por favor contacte al administrador.");
 
         // En desarrollo, puedes descomentar esta linea para ver el stack trace
-        // ex.printStackTrace();
+        ex.printStackTrace();
 
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(respuesta);
     }

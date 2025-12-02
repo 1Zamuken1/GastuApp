@@ -6,6 +6,7 @@ import GastuApp.Movimientos.Entity.Movimiento;
 import GastuApp.Movimientos.Entity.Movimiento.TipoMovimiento;
 import GastuApp.Movimientos.Repository.MovimientoRepository;
 import GastuApp.Conceptos.Service.ConceptoService;
+import GastuApp.Notificaciones.Service.AlertAnalysisService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -20,10 +21,14 @@ public class IngresoService {
 
     private final MovimientoRepository movimientoRepository;
     private final ConceptoService conceptoService;
+    private final AlertAnalysisService alertAnalysisService;
 
-    public IngresoService(MovimientoRepository movimientoRepository, ConceptoService conceptoService) {
+    public IngresoService(MovimientoRepository movimientoRepository,
+            ConceptoService conceptoService,
+            AlertAnalysisService alertAnalysisService) {
         this.movimientoRepository = movimientoRepository;
         this.conceptoService = conceptoService;
+        this.alertAnalysisService = alertAnalysisService;
     }
 
     /**
@@ -88,6 +93,9 @@ public class IngresoService {
         // Guardar
         Movimiento ingresoGuardado = movimientoRepository.save(ingreso);
 
+        // Analizar y generar alertas asíncronamente
+        alertAnalysisService.analizarMovimiento(usuarioId, ingresoGuardado, TipoMovimiento.INGRESO);
+
         return convertirADTO(ingresoGuardado);
     }
 
@@ -124,6 +132,9 @@ public class IngresoService {
 
         // Guardar cambios
         Movimiento ingresoActualizado = movimientoRepository.save(ingreso);
+
+        // Re-analizar alertas tras actualización
+        alertAnalysisService.analizarMovimiento(usuarioId, ingresoActualizado, TipoMovimiento.INGRESO);
 
         return convertirADTO(ingresoActualizado);
     }
