@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
   <head th:replace="fragments/head :: head('Mi Perfil - GastuApp', ~{::link})">
     <!-- Custom CSS for Profile -->
@@ -39,10 +39,11 @@
                 <li class="nav-item">
                   <a
                     class="nav-link"
-                    th:classappend="${activeTab == 'preferencias'} ? 'active fw-bold'"
-                    href="/perfil?tab=preferencias"
+                    th:classappend="${activeTab == 'alertas'} ? 'active fw-bold'"
+                    href="/perfil?tab=alertas"
                   >
-                    <i class="bi bi-sliders me-2"></i>Preferencias
+                    <i class="bi bi-sliders me-2"></i>Configuración de
+                    Notificaciones
                   </a>
                 </li>
                 <li class="nav-item">
@@ -51,7 +52,7 @@
                     th:classappend="${activeTab == 'notificaciones'} ? 'active fw-bold'"
                     href="/perfil?tab=notificaciones"
                   >
-                    <i class="bi bi-bell me-2"></i>Notificaciones
+                    <i class="bi bi-bell me-2"></i>Mis Notificaciones
                   </a>
                 </li>
               </ul>
@@ -101,91 +102,1019 @@
                 </form>
               </div>
 
-              <!-- Preferencias Tab -->
-              <div th:if="${activeTab == 'preferencias'}">
-                <h4 class="mb-4">Configuración Financiera</h4>
-
-                <form id="formPreferenciasFinancieras">
-                  <div class="alert alert-info mb-4">
-                    <i class="bi bi-info-circle me-2"></i>
-                    <strong>Control de Gastos:</strong> Configura los umbrales
-                    para recibir alertas automáticas sobre tu salud financiera.
-                  </div>
-
-                  <div class="mb-4">
-                    <label class="form-label fw-bold" for="umbralAdvertencia">
-                      Umbral de Advertencia
-                      <i
-                        class="bi bi-info-circle text-muted ms-1"
-                        title="Porcentaje de ingresos vs egresos antes de alertar"
-                      ></i>
-                    </label>
-                    <div class="input-group">
-                      <input
-                        type="number"
-                        class="form-control"
-                        id="umbralAdvertencia"
-                        min="0"
-                        max="100"
-                        required
-                      />
-                      <span class="input-group-text">%</span>
-                    </div>
-                    <small class="form-text text-muted">
-                      Recibirás una alerta cuando tus gastos superen este
-                      porcentaje de tus ingresos.
-                    </small>
-                  </div>
-
-                  <div class="mb-4">
-                    <label class="form-label fw-bold" for="egresoGrande">
-                      Definir Egreso Grande
-                      <i
-                        class="bi bi-info-circle text-muted ms-1"
-                        title="Porcentaje que define un gasto como 'grande'"
-                      ></i>
-                    </label>
-                    <div class="input-group">
-                      <input
-                        type="number"
-                        class="form-control"
-                        id="egresoGrande"
-                        min="0"
-                        max="100"
-                        required
-                      />
-                      <span class="input-group-text">%</span>
-                    </div>
-                    <small class="form-text text-muted">
-                      Un gasto será considerado "grande" si supera este
-                      porcentaje de tus ingresos.
-                    </small>
-                  </div>
-
-                  <div class="mb-4">
-                    <div class="form-check form-switch">
-                      <input
-                        class="form-check-input"
-                        type="checkbox"
-                        id="alertaEgresoGrande"
-                      />
-                      <label
-                        class="form-check-label fw-bold"
-                        for="alertaEgresoGrande"
+              <!-- Configuración de Alertas Tab (merged) -->
+              <div th:if="${activeTab == 'alertas'}" class="fade show active">
+                <h4 class="mb-4">Configuración de Notificaciones</h4>
+                <form id="formConfiguracionCompleta">
+                  <div class="accordion mb-4" id="accordionAlertas">
+                    <!-- 1. Control de Gastos (Básico) -->
+                    <div class="accordion-item">
+                      <h2 class="accordion-header" id="headingBasico">
+                        <button
+                          class="accordion-button collapsed"
+                          type="button"
+                          data-bs-toggle="collapse"
+                          data-bs-target="#collapseBasico"
+                          aria-expanded="false"
+                          aria-controls="collapseBasico"
+                        >
+                          <i class="bi bi-sliders me-2"></i>
+                          Control de Gastos
+                        </button>
+                      </h2>
+                      <div
+                        id="collapseBasico"
+                        class="accordion-collapse collapse"
+                        data-bs-parent="#accordionAlertas"
                       >
-                        Activar Alertas de Egresos Grandes
-                      </label>
-                    </div>
-                    <small class="form-text text-muted d-block mt-2">
-                      Recibirás una notificación cuando registres un egreso
-                      grande.
-                    </small>
-                  </div>
+                        <div class="accordion-body bg-light">
+                          <div
+                            class="alert alert-light border-0 mb-4 d-flex align-items-start"
+                          >
+                            <div class="icon-container me-3 flex-shrink-0">
+                              <i class="bi bi-info-circle"></i>
+                            </div>
+                            <div>
+                              <small
+                                class="d-block fw-semibold mb-1 text-primary-blue"
+                                >Configuración Básica</small
+                              >
+                              <small class="text-muted d-block">
+                                Define los umbrales generales para recibir
+                                alertas automáticas sobre tu salud financiera.
+                              </small>
+                            </div>
+                          </div>
 
-                  <div class="d-flex gap-2">
-                    <button type="submit" class="btn btn-primary">
-                      <i class="bi bi-check-lg me-1"></i>Guardar Configuración
-                    </button>
+                          <div class="row g-4">
+                            <div class="col-md-6">
+                              <div class="config-card p-3 border rounded h-100">
+                                <div class="d-flex align-items-center mb-3">
+                                  <div
+                                    class="icon-container me-2"
+                                    style="
+                                      width: 32px;
+                                      height: 32px;
+                                      font-size: 0.9rem;
+                                    "
+                                  >
+                                    <i class="bi bi-speedometer2"></i>
+                                  </div>
+                                  <label
+                                    class="form-label fw-bold mb-0"
+                                    for="umbralAdvertencia"
+                                  >
+                                    Umbral de Advertencia
+                                  </label>
+                                  <i
+                                    class="bi bi-info-circle text-muted ms-auto"
+                                    title="Porcentaje de ingresos vs egresos antes de alertar"
+                                    style="cursor: help"
+                                  ></i>
+                                </div>
+                                <div class="input-group mb-2">
+                                  <input
+                                    type="number"
+                                    class="form-control"
+                                    id="umbralAdvertencia"
+                                    min="0"
+                                    max="100"
+                                    required
+                                  />
+                                  <span class="input-group-text">%</span>
+                                </div>
+                                <small
+                                  class="form-text text-muted d-flex align-items-center"
+                                >
+                                  <i
+                                    class="bi bi-check-circle me-1 text-success"
+                                  ></i>
+                                  Alerta cuando gastos > % ingresos
+                                </small>
+                              </div>
+                            </div>
+
+                            <div class="col-md-6">
+                              <div class="config-card p-3 border rounded h-100">
+                                <div class="d-flex align-items-center mb-3">
+                                  <div
+                                    class="icon-container me-2"
+                                    style="
+                                      width: 32px;
+                                      height: 32px;
+                                      font-size: 0.9rem;
+                                    "
+                                  >
+                                    <i class="bi bi-calculator"></i>
+                                  </div>
+                                  <label
+                                    class="form-label fw-bold mb-0"
+                                    for="egresoGrande"
+                                  >
+                                    Definir Egreso Grande
+                                  </label>
+                                  <i
+                                    class="bi bi-info-circle text-muted ms-auto"
+                                    title="Porcentaje que define un gasto como 'grande'"
+                                    style="cursor: help"
+                                  ></i>
+                                </div>
+                                <div class="input-group mb-2">
+                                  <input
+                                    type="number"
+                                    class="form-control"
+                                    id="egresoGrande"
+                                    min="0"
+                                    max="100"
+                                    required
+                                  />
+                                  <span class="input-group-text">%</span>
+                                </div>
+                                <small
+                                  class="form-text text-muted d-flex align-items-center"
+                                >
+                                  <i
+                                    class="bi bi-check-circle me-1 text-success"
+                                  ></i>
+                                  Gasto grande si > % ingresos
+                                </small>
+                              </div>
+                            </div>
+
+                            <div class="col-12">
+                              <div class="config-card p-3 border rounded">
+                                <div class="d-flex align-items-start">
+                                  <div
+                                    class="icon-container me-3 flex-shrink-0"
+                                    style="
+                                      width: 32px;
+                                      height: 32px;
+                                      font-size: 0.9rem;
+                                    "
+                                  >
+                                    <i class="bi bi-bell"></i>
+                                  </div>
+                                  <div class="flex-grow-1">
+                                    <div class="form-check form-switch mb-2">
+                                      <input
+                                        class="form-check-input"
+                                        type="checkbox"
+                                        id="alertaEgresoGrande"
+                                      />
+                                      <label
+                                        class="form-check-label fw-bold"
+                                        for="alertaEgresoGrande"
+                                      >
+                                        Activar Alertas de Egresos Grandes
+                                      </label>
+                                    </div>
+                                    <small
+                                      class="text-muted d-flex align-items-center"
+                                    >
+                                      <i class="bi bi-info-circle me-1"></i>
+                                      Recibirás una notificación inmediata
+                                      cuando registres un egreso grande
+                                    </small>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div class="accordion-item">
+                      <h2 class="accordion-header" id="headingTendencias">
+                        <button
+                          class="accordion-button collapsed"
+                          type="button"
+                          data-bs-toggle="collapse"
+                          data-bs-target="#collapseTendencias"
+                          aria-expanded="false"
+                          aria-controls="collapseTendencias"
+                        >
+                          <i class="bi bi-graph-up me-2"></i>
+                          Tendencias y Patrones
+                        </button>
+                      </h2>
+                      <div
+                        id="collapseTendencias"
+                        class="accordion-collapse collapse"
+                        data-bs-parent="#accordionAlertas"
+                      >
+                        <div class="accordion-body bg-light">
+                          <!-- Gasto Incremental -->
+                          <div class="config-card p-3 border rounded mb-3">
+                            <div class="d-flex align-items-start">
+                              <div
+                                class="icon-container me-3"
+                                style="
+                                  width: 32px;
+                                  height: 32px;
+                                  font-size: 0.9rem;
+                                "
+                              >
+                                <i class="bi bi-graph-up-arrow"></i>
+                              </div>
+                              <div class="flex-grow-1">
+                                <div class="form-check form-switch mb-3">
+                                  <input
+                                    class="form-check-input"
+                                    type="checkbox"
+                                    id="alertGastoIncrementalEnabled"
+                                  />
+                                  <label
+                                    class="form-check-label fw-bold"
+                                    for="alertGastoIncrementalEnabled"
+                                    >Alerta de Gasto Incremental</label
+                                  >
+                                </div>
+                                <div class="row g-3">
+                                  <div class="col-md-6">
+                                    <label
+                                      class="form-label small"
+                                      for="alertGastoIncrementalPorcentaje"
+                                    >
+                                      <i
+                                        class="bi bi-percent me-1 text-primary-blue"
+                                      ></i>
+                                      Incremento (%)
+                                    </label>
+                                    <div class="input-group input-group-sm">
+                                      <input
+                                        type="number"
+                                        class="form-control"
+                                        id="alertGastoIncrementalPorcentaje"
+                                      />
+                                      <span class="input-group-text">%</span>
+                                    </div>
+                                  </div>
+                                  <div class="col-md-6">
+                                    <label
+                                      class="form-label small"
+                                      for="alertGastoIncrementalMeses"
+                                    >
+                                      <i
+                                        class="bi bi-calendar-range me-1 text-primary-blue"
+                                      ></i>
+                                      Meses Consecutivos
+                                    </label>
+                                    <input
+                                      type="number"
+                                      class="form-control form-control-sm"
+                                      id="alertGastoIncrementalMeses"
+                                    />
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+
+                          <!-- Reducción Ingresos -->
+                          <div class="config-card p-3 border rounded mb-3">
+                            <div class="d-flex align-items-start">
+                              <div
+                                class="icon-container me-3"
+                                style="
+                                  width: 32px;
+                                  height: 32px;
+                                  font-size: 0.9rem;
+                                "
+                              >
+                                <i class="bi bi-graph-down-arrow"></i>
+                              </div>
+                              <div class="flex-grow-1">
+                                <div class="form-check form-switch mb-3">
+                                  <input
+                                    class="form-check-input"
+                                    type="checkbox"
+                                    id="alertReduccionIngresosEnabled"
+                                  />
+                                  <label
+                                    class="form-check-label fw-bold"
+                                    for="alertReduccionIngresosEnabled"
+                                    >Alerta de Reducción de Ingresos</label
+                                  >
+                                </div>
+                                <div class="row g-3">
+                                  <div class="col-md-6">
+                                    <label
+                                      class="form-label small"
+                                      for="alertReduccionIngresosPorcentaje"
+                                    >
+                                      <i
+                                        class="bi bi-percent me-1 text-primary-blue"
+                                      ></i>
+                                      Reducción (%)
+                                    </label>
+                                    <div class="input-group input-group-sm">
+                                      <input
+                                        type="number"
+                                        class="form-control"
+                                        id="alertReduccionIngresosPorcentaje"
+                                      />
+                                      <span class="input-group-text">%</span>
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+
+                          <!-- Velocidad Gasto -->
+                          <div class="config-card p-3 border rounded">
+                            <div class="d-flex align-items-center">
+                              <div
+                                class="icon-container me-3"
+                                style="
+                                  width: 32px;
+                                  height: 32px;
+                                  font-size: 0.9rem;
+                                "
+                              >
+                                <i class="bi bi-speedometer"></i>
+                              </div>
+                              <div class="flex-grow-1">
+                                <div class="form-check form-switch mb-0">
+                                  <input
+                                    class="form-check-input"
+                                    type="checkbox"
+                                    id="alertVelocidadGastoEnabled"
+                                  />
+                                  <label
+                                    class="form-check-label fw-bold"
+                                    for="alertVelocidadGastoEnabled"
+                                    >Alerta de Velocidad de Gasto</label
+                                  >
+                                </div>
+                                <small
+                                  class="text-muted d-flex align-items-center mt-2"
+                                >
+                                  <i class="bi bi-info-circle me-1"></i>
+                                  Detecta cuando gastas muy rápido
+                                </small>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div class="accordion-item">
+                      <h2 class="accordion-header" id="headingAnomalias">
+                        <button
+                          class="accordion-button collapsed"
+                          type="button"
+                          data-bs-toggle="collapse"
+                          data-bs-target="#collapseAnomalias"
+                          aria-expanded="false"
+                          aria-controls="collapseAnomalias"
+                        >
+                          <i class="bi bi-exclamation-triangle me-2"></i>
+                          Anomalías Detectadas
+                        </button>
+                      </h2>
+                      <div
+                        id="collapseAnomalias"
+                        class="accordion-collapse collapse"
+                        data-bs-parent="#accordionAlertas"
+                      >
+                        <div class="accordion-body bg-light">
+                          <!-- Patrón Inusual -->
+                          <div class="config-card p-3 border rounded mb-3">
+                            <div class="d-flex align-items-center">
+                              <div
+                                class="icon-container me-3"
+                                style="
+                                  width: 32px;
+                                  height: 32px;
+                                  font-size: 0.9rem;
+                                "
+                              >
+                                <i class="bi bi-question-circle"></i>
+                              </div>
+                              <div class="flex-grow-1">
+                                <div class="form-check form-switch mb-0">
+                                  <input
+                                    class="form-check-input"
+                                    type="checkbox"
+                                    id="alertPatronInusualEnabled"
+                                  />
+                                  <label
+                                    class="form-check-label fw-bold"
+                                    for="alertPatronInusualEnabled"
+                                    >Alerta de Patrón Inusual</label
+                                  >
+                                </div>
+                                <small
+                                  class="text-muted d-flex align-items-center mt-2"
+                                >
+                                  <i class="bi bi-info-circle me-1"></i>
+                                  Detecta comportamientos financieros atípicos
+                                </small>
+                              </div>
+                            </div>
+                          </div>
+
+                          <!-- Concentración Gastos -->
+                          <div class="config-card p-3 border rounded mb-3">
+                            <div class="d-flex align-items-start">
+                              <div
+                                class="icon-container me-3"
+                                style="
+                                  width: 32px;
+                                  height: 32px;
+                                  font-size: 0.9rem;
+                                "
+                              >
+                                <i class="bi bi-pie-chart"></i>
+                              </div>
+                              <div class="flex-grow-1">
+                                <div class="form-check form-switch mb-3">
+                                  <input
+                                    class="form-check-input"
+                                    type="checkbox"
+                                    id="alertConcentracionGastosEnabled"
+                                  />
+                                  <label
+                                    class="form-check-label fw-bold"
+                                    for="alertConcentracionGastosEnabled"
+                                    >Alerta de Concentración de Gastos</label
+                                  >
+                                </div>
+                                <div class="row g-3">
+                                  <div class="col-md-6">
+                                    <label
+                                      class="form-label small"
+                                      for="alertConcentracionGastosPorcentaje"
+                                    >
+                                      <i
+                                        class="bi bi-percent me-1 text-primary-blue"
+                                      ></i>
+                                      Concentración (%)
+                                    </label>
+                                    <div class="input-group input-group-sm">
+                                      <input
+                                        type="number"
+                                        class="form-control"
+                                        id="alertConcentracionGastosPorcentaje"
+                                      />
+                                      <span class="input-group-text">%</span>
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+
+                          <!-- Ingreso Inusual -->
+                          <div class="config-card p-3 border rounded mb-3">
+                            <div class="d-flex align-items-center">
+                              <div
+                                class="icon-container me-3"
+                                style="
+                                  width: 32px;
+                                  height: 32px;
+                                  font-size: 0.9rem;
+                                "
+                              >
+                                <i class="bi bi-cash-coin"></i>
+                              </div>
+                              <div class="flex-grow-1">
+                                <div class="form-check form-switch mb-0">
+                                  <input
+                                    class="form-check-input"
+                                    type="checkbox"
+                                    id="alertIngresoInusualEnabled"
+                                  />
+                                  <label
+                                    class="form-check-label fw-bold"
+                                    for="alertIngresoInusualEnabled"
+                                    >Alerta de Ingreso Inusual</label
+                                  >
+                                </div>
+                                <small
+                                  class="text-muted d-flex align-items-center mt-2"
+                                >
+                                  <i class="bi bi-info-circle me-1"></i>
+                                  Detecta ingresos fuera de lo normal
+                                </small>
+                              </div>
+                            </div>
+                          </div>
+
+                          <!-- Inactividad Ingresos -->
+                          <div class="config-card p-3 border rounded">
+                            <div class="d-flex align-items-start">
+                              <div
+                                class="icon-container me-3"
+                                style="
+                                  width: 32px;
+                                  height: 32px;
+                                  font-size: 0.9rem;
+                                "
+                              >
+                                <i class="bi bi-clock-history"></i>
+                              </div>
+                              <div class="flex-grow-1">
+                                <div class="form-check form-switch mb-3">
+                                  <input
+                                    class="form-check-input"
+                                    type="checkbox"
+                                    id="alertInactividadIngresosEnabled"
+                                  />
+                                  <label
+                                    class="form-check-label fw-bold"
+                                    for="alertInactividadIngresosEnabled"
+                                    >Alerta de Inactividad de Ingresos</label
+                                  >
+                                </div>
+                                <div class="row g-3">
+                                  <div class="col-md-6">
+                                    <label
+                                      class="form-label small"
+                                      for="alertInactividadDias"
+                                    >
+                                      <i
+                                        class="bi bi-calendar-x me-1 text-primary-blue"
+                                      ></i>
+                                      Días de Inactividad
+                                    </label>
+                                    <input
+                                      type="number"
+                                      class="form-control form-control-sm"
+                                      id="alertInactividadDias"
+                                    />
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div class="accordion-item">
+                      <h2 class="accordion-header" id="headingAhorro">
+                        <button
+                          class="accordion-button collapsed"
+                          type="button"
+                          data-bs-toggle="collapse"
+                          data-bs-target="#collapseAhorro"
+                          aria-expanded="false"
+                          aria-controls="collapseAhorro"
+                        >
+                          <i class="bi bi-piggy-bank me-2"></i>
+                          Metas y Ahorro
+                        </button>
+                      </h2>
+                      <div
+                        id="collapseAhorro"
+                        class="accordion-collapse collapse"
+                        data-bs-parent="#accordionAlertas"
+                      >
+                        <div class="accordion-body bg-light">
+                          <!-- Meta Ahorro -->
+                          <div class="config-card p-3 border rounded mb-3">
+                            <div class="d-flex align-items-start">
+                              <div
+                                class="icon-container me-3"
+                                style="
+                                  width: 32px;
+                                  height: 32px;
+                                  font-size: 0.9rem;
+                                "
+                              >
+                                <i class="bi bi-piggy-bank"></i>
+                              </div>
+                              <div class="flex-grow-1">
+                                <div class="form-check form-switch mb-3">
+                                  <input
+                                    class="form-check-input"
+                                    type="checkbox"
+                                    id="alertMetaAhorroEnabled"
+                                  />
+                                  <label
+                                    class="form-check-label fw-bold"
+                                    for="alertMetaAhorroEnabled"
+                                    >Alerta de Meta de Ahorro</label
+                                  >
+                                </div>
+                                <div class="row g-3">
+                                  <div class="col-md-6">
+                                    <label
+                                      class="form-label small"
+                                      for="metaAhorroMensual"
+                                    >
+                                      <i
+                                        class="bi bi-currency-dollar me-1 text-primary-blue"
+                                      ></i>
+                                      Meta Mensual ($)
+                                    </label>
+                                    <div class="input-group input-group-sm">
+                                      <input
+                                        type="number"
+                                        class="form-control"
+                                        id="metaAhorroMensual"
+                                      />
+                                      <span class="input-group-text">$</span>
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+
+                          <!-- Balance Crítico -->
+                          <div class="config-card p-3 border rounded mb-3">
+                            <div class="d-flex align-items-center">
+                              <div
+                                class="icon-container me-3"
+                                style="
+                                  width: 32px;
+                                  height: 32px;
+                                  font-size: 0.9rem;
+                                "
+                              >
+                                <i class="bi bi-exclamation-triangle"></i>
+                              </div>
+                              <div class="flex-grow-1">
+                                <div class="form-check form-switch mb-0">
+                                  <input
+                                    class="form-check-input"
+                                    type="checkbox"
+                                    id="alertBalanceCriticoEnabled"
+                                  />
+                                  <label
+                                    class="form-check-label fw-bold"
+                                    for="alertBalanceCriticoEnabled"
+                                    >Alerta de Balance Crítico</label
+                                  >
+                                </div>
+                                <small
+                                  class="text-muted d-flex align-items-center mt-2"
+                                >
+                                  <i class="bi bi-info-circle me-1"></i>
+                                  Alerta cuando tu balance esté muy bajo
+                                </small>
+                              </div>
+                            </div>
+                          </div>
+
+                          <!-- Proyección Sobregasto -->
+                          <div class="config-card p-3 border rounded">
+                            <div class="d-flex align-items-center">
+                              <div
+                                class="icon-container me-3"
+                                style="
+                                  width: 32px;
+                                  height: 32px;
+                                  font-size: 0.9rem;
+                                "
+                              >
+                                <i class="bi bi-graph-up"></i>
+                              </div>
+                              <div class="flex-grow-1">
+                                <div class="form-check form-switch mb-0">
+                                  <input
+                                    class="form-check-input"
+                                    type="checkbox"
+                                    id="alertProyeccionSobregastoEnabled"
+                                  />
+                                  <label
+                                    class="form-check-label fw-bold"
+                                    for="alertProyeccionSobregastoEnabled"
+                                    >Alerta de Proyección de Sobregasto</label
+                                  >
+                                </div>
+                                <small
+                                  class="text-muted d-flex align-items-center mt-2"
+                                >
+                                  <i class="bi bi-info-circle me-1"></i>
+                                  Proyecta si vas a gastar más de lo que tienes
+                                </small>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div class="accordion-item">
+                      <h2 class="accordion-header" id="headingMicro">
+                        <button
+                          class="accordion-button collapsed"
+                          type="button"
+                          data-bs-toggle="collapse"
+                          data-bs-target="#collapseMicro"
+                          aria-expanded="false"
+                          aria-controls="collapseMicro"
+                        >
+                          <i class="bi bi-droplet me-2"></i>
+                          Micro-gastos
+                        </button>
+                      </h2>
+                      <div
+                        id="collapseMicro"
+                        class="accordion-collapse collapse"
+                        data-bs-parent="#accordionAlertas"
+                      >
+                        <div class="accordion-body bg-light">
+                          <!-- Micro-gastos -->
+                          <div class="config-card p-3 border rounded mb-3">
+                            <div class="d-flex align-items-start">
+                              <div
+                                class="icon-container me-3"
+                                style="
+                                  width: 32px;
+                                  height: 32px;
+                                  font-size: 0.9rem;
+                                "
+                              >
+                                <i class="bi bi-droplet"></i>
+                              </div>
+                              <div class="flex-grow-1">
+                                <div class="form-check form-switch mb-3">
+                                  <input
+                                    class="form-check-input"
+                                    type="checkbox"
+                                    id="alertMicroGastosEnabled"
+                                  />
+                                  <label
+                                    class="form-check-label fw-bold"
+                                    for="alertMicroGastosEnabled"
+                                    >Alerta de Micro-gastos</label
+                                  >
+                                </div>
+                                <div class="row g-3">
+                                  <div class="col-md-6">
+                                    <label
+                                      class="form-label small"
+                                      for="alertMicroGastosCantidad"
+                                    >
+                                      <i
+                                        class="bi bi-hash me-1 text-primary-blue"
+                                      ></i>
+                                      Cantidad de Gastos
+                                    </label>
+                                    <input
+                                      type="number"
+                                      class="form-control form-control-sm"
+                                      id="alertMicroGastosCantidad"
+                                    />
+                                  </div>
+                                  <div class="col-md-6">
+                                    <label
+                                      class="form-label small"
+                                      for="alertMicroGastosMontoMax"
+                                    >
+                                      <i
+                                        class="bi bi-currency-dollar me-1 text-primary-blue"
+                                      ></i>
+                                      Monto Máximo ($)
+                                    </label>
+                                    <div class="input-group input-group-sm">
+                                      <input
+                                        type="number"
+                                        class="form-control"
+                                        id="alertMicroGastosMontoMax"
+                                      />
+                                      <span class="input-group-text">$</span>
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+
+                          <!-- Gastos Hormiga -->
+                          <div class="config-card p-3 border rounded">
+                            <div class="d-flex align-items-start">
+                              <div
+                                class="icon-container me-3"
+                                style="
+                                  width: 32px;
+                                  height: 32px;
+                                  font-size: 0.9rem;
+                                "
+                              >
+                                <i class="bi bi-bug"></i>
+                              </div>
+                              <div class="flex-grow-1">
+                                <div class="form-check form-switch mb-3">
+                                  <input
+                                    class="form-check-input"
+                                    type="checkbox"
+                                    id="alertGastosHormigaEnabled"
+                                  />
+                                  <label
+                                    class="form-check-label fw-bold"
+                                    for="alertGastosHormigaEnabled"
+                                    >Alerta de Gastos Hormiga</label
+                                  >
+                                </div>
+                                <div class="row g-3">
+                                  <div class="col-md-6">
+                                    <label
+                                      class="form-label small"
+                                      for="alertGastosHormigaMontoMax"
+                                    >
+                                      <i
+                                        class="bi bi-currency-dollar me-1 text-primary-blue"
+                                      ></i>
+                                      Monto Máximo ($)
+                                    </label>
+                                    <div class="input-group input-group-sm">
+                                      <input
+                                        type="number"
+                                        class="form-control"
+                                        id="alertGastosHormigaMontoMax"
+                                      />
+                                      <span class="input-group-text">$</span>
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div class="accordion-item">
+                      <h2 class="accordion-header" id="headingOtros">
+                        <button
+                          class="accordion-button collapsed"
+                          type="button"
+                          data-bs-toggle="collapse"
+                          data-bs-target="#collapseOtros"
+                          aria-expanded="false"
+                          aria-controls="collapseOtros"
+                        >
+                          <i class="bi bi-gear me-2"></i>
+                          Otras Configuraciones
+                        </button>
+                      </h2>
+                      <div
+                        id="collapseOtros"
+                        class="accordion-collapse collapse"
+                        data-bs-parent="#accordionAlertas"
+                      >
+                        <div class="accordion-body bg-light">
+                          <!-- Concepto Sin Uso -->
+                          <div class="config-card p-3 border rounded mb-3">
+                            <div class="d-flex align-items-start">
+                              <div
+                                class="icon-container me-3"
+                                style="
+                                  width: 32px;
+                                  height: 32px;
+                                  font-size: 0.9rem;
+                                "
+                              >
+                                <i class="bi bi-archive"></i>
+                              </div>
+                              <div class="flex-grow-1">
+                                <div class="form-check form-switch mb-3">
+                                  <input
+                                    class="form-check-input"
+                                    type="checkbox"
+                                    id="alertConceptoSinUsoEnabled"
+                                  />
+                                  <label
+                                    class="form-check-label fw-bold"
+                                    for="alertConceptoSinUsoEnabled"
+                                    >Alerta de Concepto Sin Uso</label
+                                  >
+                                </div>
+                                <div class="row g-3">
+                                  <div class="col-md-6">
+                                    <label
+                                      class="form-label small"
+                                      for="alertConceptoSinUsoDias"
+                                    >
+                                      <i
+                                        class="bi bi-calendar-x me-1 text-primary-blue"
+                                      ></i>
+                                      Días Sin Uso
+                                    </label>
+                                    <input
+                                      type="number"
+                                      class="form-control form-control-sm"
+                                      id="alertConceptoSinUsoDias"
+                                    />
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+
+                          <!-- Egresos Agrupados -->
+                          <div class="config-card p-3 border rounded mb-3">
+                            <div class="d-flex align-items-start">
+                              <div
+                                class="icon-container me-3"
+                                style="
+                                  width: 32px;
+                                  height: 32px;
+                                  font-size: 0.9rem;
+                                "
+                              >
+                                <i class="bi bi-collection"></i>
+                              </div>
+                              <div class="flex-grow-1">
+                                <div class="form-check form-switch mb-3">
+                                  <input
+                                    class="form-check-input"
+                                    type="checkbox"
+                                    id="alertEgresosAgrupadosEnabled"
+                                  />
+                                  <label
+                                    class="form-check-label fw-bold"
+                                    for="alertEgresosAgrupadosEnabled"
+                                    >Alerta de Egresos Agrupados</label
+                                  >
+                                </div>
+                                <div class="row g-3">
+                                  <div class="col-md-6">
+                                    <label
+                                      class="form-label small"
+                                      for="alertEgresosAgrupadosCantidad"
+                                    >
+                                      <i
+                                        class="bi bi-hash me-1 text-primary-blue"
+                                      ></i>
+                                      Cantidad
+                                    </label>
+                                    <input
+                                      type="number"
+                                      class="form-control form-control-sm"
+                                      id="alertEgresosAgrupadosCantidad"
+                                    />
+                                  </div>
+                                  <div class="col-md-6">
+                                    <label
+                                      class="form-label small"
+                                      for="alertEgresosAgrupadosHoras"
+                                    >
+                                      <i
+                                        class="bi bi-clock me-1 text-primary-blue"
+                                      ></i>
+                                      Ventana (Horas)
+                                    </label>
+                                    <input
+                                      type="number"
+                                      class="form-control form-control-sm"
+                                      id="alertEgresosAgrupadosHoras"
+                                    />
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+
+                          <!-- Egreso Sin Concepto -->
+                          <div class="config-card p-3 border rounded">
+                            <div class="d-flex align-items-center">
+                              <div
+                                class="icon-container me-3"
+                                style="
+                                  width: 32px;
+                                  height: 32px;
+                                  font-size: 0.9rem;
+                                "
+                              >
+                                <i class="bi bi-question-diamond"></i>
+                              </div>
+                              <div class="flex-grow-1">
+                                <div class="form-check form-switch mb-0">
+                                  <input
+                                    class="form-check-input"
+                                    type="checkbox"
+                                    id="alertEgresoSinConceptoEnabled"
+                                  />
+                                  <label
+                                    class="form-check-label fw-bold"
+                                    for="alertEgresoSinConceptoEnabled"
+                                    >Alerta de Egreso Sin Concepto</label
+                                  >
+                                </div>
+                                <small
+                                  class="text-muted d-flex align-items-center mt-2"
+                                >
+                                  <i class="bi bi-info-circle me-1"></i>
+                                  Alerta cuando registras un egreso sin
+                                  categorizar
+                                </small>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="d-flex justify-content-end gap-2 mt-4">
                     <button
                       type="button"
                       class="btn btn-outline-secondary"
@@ -194,90 +1123,70 @@
                       <i class="bi bi-arrow-clockwise me-1"></i>Restaurar
                       Predeterminados
                     </button>
-                  </div>
-                </form>
-              </div>
-
-              <!-- Notificaciones Tab -->
-              <div th:if="${activeTab == 'notificaciones'}">
-                <h4 class="mb-4">Configuración de Alertas</h4>
-
-                <div class="alert alert-info mb-4">
-                  <i class="bi bi-info-circle me-2"></i>
-                  <strong>Sistema de Notificaciones:</strong> Las alertas te
-                  ayudan a mantener control sobre tus finanzas personales.
-                </div>
-
-                <form id="formNotificaciones">
-                  <!-- Egreso Grande Threshold -->
-                  <div class="card mb-3">
-                    <div class="card-body">
-                      <h5 class="card-title mb-3">
-                        <i class="bi bi-percent text-primary me-2"></i>
-                        Umbral de Egreso Grande
-                      </h5>
-                      <div class="mb-3">
-                        <label
-                          class="form-label fw-bold"
-                          for="egresoGrandeNotif"
-                        >
-                          Porcentaje que define un "egreso grande"
-                        </label>
-                        <div class="input-group">
-                          <input
-                            type="number"
-                            class="form-control"
-                            id="egresoGrandeNotif"
-                            min="0"
-                            max="100"
-                            required
-                          />
-                          <span class="input-group-text">%</span>
-                        </div>
-                        <small class="text-muted">
-                          Un gasto será considerado "grande" si supera este
-                          porcentaje de tus ingresos totales.
-                        </small>
-                      </div>
-                    </div>
-                  </div>
-
-                  <!-- Enable/Disable Alert -->
-                  <div class="card">
-                    <div class="card-body">
-                      <div
-                        class="d-flex justify-content-between align-items-start"
-                      >
-                        <div class="flex-grow-1">
-                          <h5 class="card-title mb-2">
-                            <i
-                              class="bi bi-exclamation-triangle text-warning me-2"
-                            ></i>
-                            Alertas de Egresos Grandes
-                          </h5>
-                          <p class="card-text text-muted mb-0">
-                            Recibe una notificación cuando registres un egreso
-                            que supere el umbral configurado arriba.
-                          </p>
-                        </div>
-                        <div class="form-check form-switch ms-3">
-                          <input
-                            class="form-check-input"
-                            type="checkbox"
-                            id="alertaEgresoGrandeNotif"
-                            style="width: 3em; height: 1.5em"
-                          />
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div class="mt-4">
                     <button type="submit" class="btn btn-primary">
                       <i class="bi bi-check-lg me-1"></i>Guardar Configuración
                     </button>
                   </div>
                 </form>
+              </div>
+
+              <!-- Mis Notificaciones Tab -->
+              <div th:if="${activeTab == 'notificaciones'}">
+                <div
+                  class="d-flex justify-content-between align-items-center mb-4"
+                >
+                  <h4 class="mb-0">Mis Notificaciones</h4>
+                  <button
+                    type="button"
+                    class="btn btn-sm btn-outline-primary"
+                    id="btnMarcarTodasLeidas"
+                  >
+                    <i class="bi bi-check-all me-1"></i> Marcar todas como
+                    leídas
+                  </button>
+                </div>
+
+                <div class="mb-3">
+                  <div class="btn-group" role="group">
+                    <button
+                      type="button"
+                      class="btn btn-sm btn-outline-secondary active"
+                      data-filter="all"
+                    >
+                      <i class="bi bi-list-ul me-1"></i> Todas
+                    </button>
+                    <button
+                      type="button"
+                      class="btn btn-sm btn-outline-secondary"
+                      data-filter="unread"
+                    >
+                      <i class="bi bi-envelope me-1"></i> No leídas
+                    </button>
+                    <button
+                      type="button"
+                      class="btn btn-sm btn-outline-secondary"
+                      data-filter="AHORRO"
+                    >
+                      <i class="bi bi-piggy-bank me-1"></i> Ahorro
+                    </button>
+                    <button
+                      type="button"
+                      class="btn btn-sm btn-outline-secondary"
+                      data-filter="MOVIMIENTO"
+                    >
+                      <i class="bi bi-arrow-left-right me-1"></i> Movimientos
+                    </button>
+                  </div>
+                </div>
+
+                <div id="notificaciones-list">
+                  <div class="text-center py-5">
+                    <div class="spinner-border text-primary" role="status">
+                      <span class="visually-hidden">Cargando...</span>
+                    </div>
+                    <p class="text-muted mt-2">Cargando notificaciones...</p>
+                  </div>
+                </div>
               </div>
             </div>
           </div>

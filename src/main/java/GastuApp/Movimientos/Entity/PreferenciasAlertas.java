@@ -1,69 +1,162 @@
-package GastuApp.Movimientos.DTO;
+package GastuApp.Movimientos.Entity;
 
+import jakarta.persistence.*;
 import java.math.BigDecimal;
 
 /**
- * DTO extendido para preferencias financieras y de alertas del usuario.
- * Define límites y configuraciones para el control de gastos y notificaciones.
+ * Entidad JPA para almacenar las preferencias de alertas del usuario.
+ * Esta tabla es independiente y no modifica estructuras existentes.
  */
-public class PreferenciasFinancierasDTO {
+@Entity
+@Table(name = "preferencias_alertas")
+public class PreferenciasAlertas {
 
-    // ALERTAS EXISTENTES
-    private Integer umbralAdvertenciaPorcentaje;
-    private Integer egresoGrandePorcentaje;
-    private Boolean alertaEgresoGrandeActiva;
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id")
+    private Long id;
 
-    // ALERTAS BASADAS EN TENDENCIAS
-    private Boolean alertGastoIncrementalEnabled;
-    private Integer alertGastoIncrementalPorcentaje;
-    private Integer alertGastoIncrementalMeses;
-    private Boolean alertReduccionIngresosEnabled;
-    private Integer alertReduccionIngresosPorcentaje;
-    private Boolean alertPatronInusualEnabled;
+    @Column(name = "usuario_id", nullable = false, unique = true)
+    private Long usuarioId;
 
-    // ALERTAS BASADAS EN CONCEPTOS
-    private Boolean alertConcentracionGastosEnabled;
-    private Integer alertConcentracionGastosPorcentaje;
-    private Boolean alertConceptoSinUsoEnabled;
-    private Integer alertConceptoSinUsoDias;
+    // ==================== ALERTAS EXISTENTES ====================
+    @Column(name = "umbral_advertencia_porcentaje")
+    private Integer umbralAdvertenciaPorcentaje = 80;
 
-    // ALERTAS BASADAS EN TIEMPO
-    private Boolean alertVelocidadGastoEnabled;
-    private Boolean alertInactividadIngresosEnabled;
-    private Integer alertInactividadDias;
-    private Boolean alertEgresosAgrupadosEnabled;
-    private Integer alertEgresosAgrupadosCantidad;
-    private Integer alertEgresosAgrupadosHoras;
+    @Column(name = "egreso_grande_porcentaje")
+    private Integer egresoGrandePorcentaje = 30;
 
-    // ALERTAS DE AHORRO/BALANCE
-    private BigDecimal metaAhorroMensual;
-    private Boolean alertMetaAhorroEnabled;
-    private Boolean alertBalanceCriticoEnabled;
+    @Column(name = "alerta_egreso_grande_activa")
+    private Boolean alertaEgresoGrandeActiva = true;
 
-    // ALERTAS DE "SANGRÍA" (Micro-gastos)
-    private Boolean alertMicroGastosEnabled;
-    private Integer alertMicroGastosCantidad;
-    private BigDecimal alertMicroGastosMontoMax;
-    private Boolean alertGastosHormigaEnabled;
-    private BigDecimal alertGastosHormigaMontoMax;
+    // ==================== ALERTAS BASADAS EN TENDENCIAS ====================
+    @Column(name = "alert_gasto_incremental_enabled")
+    private Boolean alertGastoIncrementalEnabled = true;
 
-    // ALERTAS PREDICTIVAS/PROACTIVAS
-    private Boolean alertProyeccionSobregastoEnabled;
-    private Boolean alertComparacionPeriodoEnabled;
-    private Boolean alertDiaMesCriticoEnabled;
-    private Integer alertDiaMesCriticoPorcentaje;
+    @Column(name = "alert_gasto_incremental_porcentaje")
+    private Integer alertGastoIncrementalPorcentaje = 25; // % de incremento vs promedio histórico
 
-    // ALERTAS DE INCONSISTENCIAS
-    private Boolean alertEgresoSinConceptoEnabled;
-    private Integer alertEgresoSinConceptoCantidad;
-    private Boolean alertIngresoInusualEnabled;
-    private Integer alertIngresoInusualMultiplicador;
+    @Column(name = "alert_gasto_incremental_meses")
+    private Integer alertGastoIncrementalMeses = 3; // Comparar con promedio de últimos N meses
+
+    @Column(name = "alert_reduccion_ingresos_enabled")
+    private Boolean alertReduccionIngresosEnabled = true;
+
+    @Column(name = "alert_reduccion_ingresos_porcentaje")
+    private Integer alertReduccionIngresosPorcentaje = 20; // % de reducción vs promedio
+
+    @Column(name = "alert_patron_inusual_enabled")
+    private Boolean alertPatronInusualEnabled = true;
+
+    // ==================== ALERTAS BASADAS EN CONCEPTOS ====================
+    @Column(name = "alert_concentracion_gastos_enabled")
+    private Boolean alertConcentracionGastosEnabled = true;
+
+    @Column(name = "alert_concentracion_gastos_porcentaje")
+    private Integer alertConcentracionGastosPorcentaje = 50; // Un solo concepto representa X% del total
+
+    @Column(name = "alert_concepto_sin_uso_enabled")
+    private Boolean alertConceptoSinUsoEnabled = false; // Deshabilitada por defecto
+
+    @Column(name = "alert_concepto_sin_uso_dias")
+    private Integer alertConceptoSinUsoDias = 30; // Días sin registrar concepto recurrente
+
+    // ==================== ALERTAS BASADAS EN TIEMPO ====================
+    @Column(name = "alert_velocidad_gasto_enabled")
+    private Boolean alertVelocidadGastoEnabled = true;
+
+    @Column(name = "alert_inactividad_ingresos_enabled")
+    private Boolean alertInactividadIngresosEnabled = true;
+
+    @Column(name = "alert_inactividad_dias")
+    private Integer alertInactividadDias = 7; // Días sin registrar ingresos
+
+    @Column(name = "alert_egresos_agrupados_enabled")
+    private Boolean alertEgresosAgrupadosEnabled = true;
+
+    @Column(name = "alert_egresos_agrupados_cantidad")
+    private Integer alertEgresosAgrupadosCantidad = 5; // N transacciones en periodo corto
+
+    @Column(name = "alert_egresos_agrupados_horas")
+    private Integer alertEgresosAgrupadosHoras = 2; // Periodo en horas
+
+    // ==================== ALERTAS DE AHORRO/BALANCE ====================
+    @Column(name = "meta_ahorro_mensual", precision = 12, scale = 2)
+    private BigDecimal metaAhorroMensual = BigDecimal.ZERO;
+
+    @Column(name = "alert_meta_ahorro_enabled")
+    private Boolean alertMetaAhorroEnabled = false; // Usuario debe configurar meta primero
+
+    @Column(name = "alert_balance_critico_enabled")
+    private Boolean alertBalanceCriticoEnabled = true;
+
+    // ==================== ALERTAS DE "SANGRÍA" (Micro-gastos) ====================
+    @Column(name = "alert_micro_gastos_enabled")
+    private Boolean alertMicroGastosEnabled = true;
+
+    @Column(name = "alert_micro_gastos_cantidad")
+    private Integer alertMicroGastosCantidad = 10; // Cantidad de gastos pequeños
+
+    @Column(name = "alert_micro_gastos_monto_max", precision = 12, scale = 2)
+    private BigDecimal alertMicroGastosMontoMax = new BigDecimal("5.00"); // Monto máximo para considerar "micro"
+
+    @Column(name = "alert_gastos_hormiga_enabled")
+    private Boolean alertGastosHormigaEnabled = true;
+
+    @Column(name = "alert_gastos_hormiga_monto_max", precision = 12, scale = 2)
+    private BigDecimal alertGastosHormigaMontoMax = new BigDecimal("10.00"); // Umbral diario
+
+    // ==================== ALERTAS PREDICTIVAS/PROACTIVAS ====================
+    @Column(name = "alert_proyeccion_sobregasto_enabled")
+    private Boolean alertProyeccionSobregastoEnabled = true;
+
+    @Column(name = "alert_comparacion_periodo_enabled")
+    private Boolean alertComparacionPeriodoEnabled = true;
+
+    @Column(name = "alert_dia_mes_critico_enabled")
+    private Boolean alertDiaMesCriticoEnabled = true;
+
+    @Column(name = "alert_dia_mes_critico_porcentaje")
+    private Integer alertDiaMesCriticoPorcentaje = 70; // % gastado vs día del mes
+
+    // ==================== ALERTAS DE INCONSISTENCIAS ====================
+    @Column(name = "alert_egreso_sin_concepto_enabled")
+    private Boolean alertEgresoSinConceptoEnabled = false; // Opcional
+
+    @Column(name = "alert_egreso_sin_concepto_cantidad")
+    private Integer alertEgresoSinConceptoCantidad = 5; // N movimientos sin categorizar
+
+    @Column(name = "alert_ingreso_inusual_enabled")
+    private Boolean alertIngresoInusualEnabled = true;
+
+    @Column(name = "alert_ingreso_inusual_multiplicador")
+    private Integer alertIngresoInusualMultiplicador = 2; // Ingreso X veces mayor al promedio
 
     // Constructores
-    public PreferenciasFinancierasDTO() {
+    public PreferenciasAlertas() {
     }
 
-    // Getters and Setters
+    public PreferenciasAlertas(Long usuarioId) {
+        this.usuarioId = usuarioId;
+    }
+
+    // Getters y Setters
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public Long getUsuarioId() {
+        return usuarioId;
+    }
+
+    public void setUsuarioId(Long usuarioId) {
+        this.usuarioId = usuarioId;
+    }
+
     public Integer getUmbralAdvertenciaPorcentaje() {
         return umbralAdvertenciaPorcentaje;
     }

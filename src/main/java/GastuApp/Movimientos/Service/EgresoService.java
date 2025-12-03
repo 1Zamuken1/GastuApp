@@ -8,6 +8,7 @@ import GastuApp.Movimientos.Entity.Movimiento.TipoMovimiento;
 import GastuApp.Notificaciones.Entity.Notificacion.TipoNotificacion;
 import GastuApp.Conceptos.Service.ConceptoService;
 import GastuApp.Notificaciones.Service.NotificacionService;
+import GastuApp.Notificaciones.Service.AlertAnalysisService;
 import GastuApp.Movimientos.Repository.MovimientoRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -28,15 +29,18 @@ public class EgresoService {
     private final NotificacionService notificacionService;
     private final PreferenciasUsuarioService preferenciasService;
     private final ConceptoService conceptoService;
+    private final AlertAnalysisService alertAnalysisService;
 
     public EgresoService(MovimientoRepository movimientoRepository,
             NotificacionService notificacionService,
             PreferenciasUsuarioService preferenciasService,
-            ConceptoService conceptoService) {
+            ConceptoService conceptoService,
+            AlertAnalysisService alertAnalysisService) {
         this.movimientoRepository = movimientoRepository;
         this.notificacionService = notificacionService;
         this.preferenciasService = preferenciasService;
         this.conceptoService = conceptoService;
+        this.alertAnalysisService = alertAnalysisService;
     }
 
     /**
@@ -104,8 +108,8 @@ public class EgresoService {
         // Guardar
         Movimiento egresoGuardado = movimientoRepository.save(egreso);
 
-        // Validar salud financiera y generar notificaciones si es necesario
-        validarSaludFinanciera(usuarioId, egresoGuardado);
+        // Analizar y generar alertas asíncronamente
+        alertAnalysisService.analizarMovimiento(usuarioId, egresoGuardado, TipoMovimiento.EGRESO);
 
         return convertirADTO(egresoGuardado);
     }
@@ -145,8 +149,8 @@ public class EgresoService {
         // Guardar cambios
         Movimiento egresoActualizado = movimientoRepository.save(egreso);
 
-        // Re-validar salud financiera después de la actualización
-        validarSaludFinanciera(usuarioId, egresoActualizado);
+        // Re-analizar alertas tras actualización
+        alertAnalysisService.analizarMovimiento(usuarioId, egresoActualizado, TipoMovimiento.EGRESO);
 
         return convertirADTO(egresoActualizado);
     }
@@ -169,81 +173,6 @@ public class EgresoService {
         }
 
         movimientoRepository.delete(egreso);
-    }
-
-    /**
-     * Valida la salud financiera del usuario después de registrar/actualizar un
-     * egreso.
-     * Genera notificaciones según las preferencias configuradas por el usuario.
-     *
-     * @param usuarioId ID del usuario
-     * @param egreso    Egreso recién creado o actualizado
-     */
-    private void validarSaludFinanciera(Long usuarioId, Movimiento egreso) {
-        // Obtener totales
-        BigDecimal totalIngresos = movimientoRepository.calcularTotalIngresos(usuarioId);
-        BigDecimal totalEgresos = movimientoRepository.calcularTotalEgresos(usuarioId);
-
-        // Obtener preferencias del usuario
-        PreferenciasFinancierasDTO preferencias = preferenciasService.obtenerPreferencias(usuarioId);
-
-        // Validación 1: Egresos superan ingresos (siempre activa)
-        if (totalEgresos.compareTo(totalIngresos) > 0) {
-            BigDecimal diferencia = totalEgresos.subtract(totalIngresos);
-            notificacionService.crearNotificacion(
-                    usuarioId,
-                    TipoNotificacion.MOVIMIENTO,
-                    egreso.getId(),
-                    "Egresos superan ingresos",
-                    String.format("Tus egresos totales ($%.2f) han superado tus ingresos ($%.2f) por $%.2f. " +
-                            "Considera revisar tus gastos para mantener un balance financiero saludable.",
-                            totalEgresos, totalIngresos, diferencia));
-        }
-
-        // Validación 2: Umbral de advertencia configurable
-        if (totalIngresos.compareTo(BigDecimal.ZERO) > 0) {
-            BigDecimal porcentajeUsado = totalEgresos
-                    .multiply(BigDecimal.valueOf(100))
-                    .divide(totalIngresos, 2, RoundingMode.HALF_UP);
-
-            int umbralAdvertencia = preferencias.getUmbralAdvertenciaPorcentaje();
-
-            if (porcentajeUsado.compareTo(BigDecimal.valueOf(umbralAdvertencia)) >= 0 &&
-                    totalEgresos.compareTo(totalIngresos) <= 0) { // Solo si no se superó el 100%
-
-                notificacionService.crearNotificacion(
-                        usuarioId,
-                        TipoNotificacion.MOVIMIENTO,
-                        egreso.getId(),
-                        "Umbral de gastos alcanzado",
-                        String.format("Has utilizado el %.2f%% de tus ingresos ($%.2f de $%.2f). " +
-                                "Tu umbral de advertencia está configurado en %d%%. " +
-                                "Considera moderar tus gastos.",
-                                porcentajeUsado, totalEgresos, totalIngresos, umbralAdvertencia));
-            }
-        }
-
-        // Validación 3: Egreso individual grande (configurable)
-        if (preferencias.getAlertaEgresoGrandeActiva() && totalIngresos.compareTo(BigDecimal.ZERO) > 0) {
-            BigDecimal porcentajeEgreso = egreso.getMonto()
-                    .multiply(BigDecimal.valueOf(100))
-                    .divide(totalIngresos, 2, RoundingMode.HALF_UP);
-
-            int umbralEgresoGrande = preferencias.getEgresoGrandePorcentaje();
-
-            if (porcentajeEgreso.compareTo(BigDecimal.valueOf(umbralEgresoGrande)) >= 0) {
-                notificacionService.crearNotificacion(
-                        usuarioId,
-                        TipoNotificacion.MOVIMIENTO,
-                        egreso.getId(),
-                        "Egreso individual significativo",
-                        String.format(
-                                "Has registrado un egreso de $%.2f que representa el %.2f%% de tus ingresos totales. " +
-                                        "Tu umbral de egreso grande está configurado en %d%%. " +
-                                        "Verifica que este gasto esté dentro de tu planificación.",
-                                egreso.getMonto(), porcentajeEgreso, umbralEgresoGrande));
-            }
-        }
     }
 
     /**
