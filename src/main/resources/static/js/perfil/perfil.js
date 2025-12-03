@@ -14,16 +14,13 @@ document.addEventListener("DOMContentLoaded", function () {
   const modalPassword = document.getElementById("modalCambiarPassword");
 
   // Preferencias Tab (General)
-  const formPreferencias = document.getElementById(
-    "formPreferenciasFinancieras"
+  const formConfiguracionCompleta = document.getElementById(
+    "formConfiguracionCompleta"
   );
   const btnReset = document.getElementById("btnResetPreferencias");
   const umbralInput = document.getElementById("umbralAdvertencia");
   const egresoGrandeInput = document.getElementById("egresoGrande");
   const alertaCheckbox = document.getElementById("alertaEgresoGrande");
-
-  // Notificaciones Tab (Alertas Avanzadas)
-  const formNotificaciones = document.getElementById("formNotificaciones");
 
   const API_USUARIO = "/api/usuario";
   const API_PREFERENCIAS = "/api/movimientos/preferencias";
@@ -70,7 +67,7 @@ document.addEventListener("DOMContentLoaded", function () {
     cargarDatosUsuario();
   }
 
-  if (formPreferencias || formNotificaciones) {
+  if (formConfiguracionCompleta) {
     cargarPreferencias();
   }
 
@@ -200,6 +197,8 @@ document.addEventListener("DOMContentLoaded", function () {
         if (element) {
           if (field.type === "checkbox") {
             element.checked = preferencias[field.id] === true;
+
+            // Auto-expand logic removed to keep accordions closed by default
           } else {
             element.value =
               preferencias[field.id] !== null ? preferencias[field.id] : "";
@@ -212,47 +211,14 @@ document.addEventListener("DOMContentLoaded", function () {
     }
   }
 
-  if (formPreferencias) {
-    formPreferencias.addEventListener("submit", async function (e) {
+  if (formConfiguracionCompleta) {
+    formConfiguracionCompleta.addEventListener("submit", async function (e) {
       e.preventDefault();
-      await guardarPreferenciasGenerales();
+      await guardarPreferenciasCompletas();
     });
   }
 
-  async function guardarPreferenciasGenerales() {
-    // Get current full preferences first to avoid overwriting other fields with null
-    let currentPrefs = {};
-    try {
-      const getResponse = await fetch(API_PREFERENCIAS, {
-        credentials: "include",
-      });
-      if (getResponse.ok) {
-        currentPrefs = await getResponse.json();
-      }
-    } catch (e) {
-      console.warn(
-        "Could not fetch current prefs, proceeding with partial update"
-      );
-    }
-
-    const data = {
-      ...currentPrefs, // Keep existing values
-      umbralAdvertenciaPorcentaje: parseInt(umbralInput.value),
-      egresoGrandePorcentaje: parseInt(egresoGrandeInput.value),
-      alertaEgresoGrandeActiva: alertaCheckbox.checked,
-    };
-
-    await enviarPreferencias(data, "Preferencias guardadas exitosamente");
-  }
-
-  if (formNotificaciones) {
-    formNotificaciones.addEventListener("submit", async function (e) {
-      e.preventDefault();
-      await guardarConfiguracionAlertas();
-    });
-  }
-
-  async function guardarConfiguracionAlertas() {
+  async function guardarPreferenciasCompletas() {
     // Get current full preferences first
     let currentPrefs = {};
     try {
@@ -263,13 +229,16 @@ document.addEventListener("DOMContentLoaded", function () {
         currentPrefs = await getResponse.json();
       }
     } catch (e) {
-      console.warn(
-        "Could not fetch current prefs, proceeding with partial update"
-      );
+      console.warn("Could not fetch current prefs");
     }
 
-    // Build update object
-    const updates = {};
+    // Build update object combining general and advanced
+    const updates = {
+      umbralAdvertenciaPorcentaje: parseInt(umbralInput.value),
+      egresoGrandePorcentaje: parseInt(egresoGrandeInput.value),
+      alertaEgresoGrandeActiva: alertaCheckbox.checked,
+    };
+
     alertFields.forEach((field) => {
       const element = document.getElementById(field.id);
       if (element) {
@@ -286,7 +255,7 @@ document.addEventListener("DOMContentLoaded", function () {
       ...updates,
     };
 
-    await enviarPreferencias(data, "Configuración de alertas guardada");
+    await enviarPreferencias(data, "Configuración guardada exitosamente");
   }
 
   async function enviarPreferencias(data, successMessage) {
@@ -383,8 +352,14 @@ document.addEventListener("DOMContentLoaded", function () {
 
   // Load notifications if we are on the notifications tab
   const urlParams = new URLSearchParams(window.location.search);
+  const notificationId = urlParams.get("notificationId");
+
   if (urlParams.get("tab") === "notificaciones") {
-    cargarNotificaciones();
+    cargarNotificaciones().then(() => {
+      if (notificationId) {
+        highlightNotification(notificationId);
+      }
+    });
   }
 
   // Event Listeners
@@ -453,19 +428,28 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     notificacionesList.innerHTML = notificaciones
-      .map(
-        (n) => `
+      .map((n) => {
+        const colorCategory = getNotificationColorCategory(
+          n.tipo,
+          n.titulo,
+          n.descripcion
+        );
+        return `
       <div class="card mb-3 notification-card ${
-        !n.leida ? "border-primary shadow-sm" : ""
+        !n.leida
+          ? `${colorCategory.borderClass} border-start border-4 shadow-sm`
+          : ""
       }" data-id="${n.id}">
         <div class="card-body">
           <div class="d-flex justify-content-between align-items-start">
             <h5 class="card-title mb-1">
-              <i class="bi bi-${getIconForType(n.tipo)} me-2"></i>
+              <i class="bi ${colorCategory.icon} me-2 ${
+          colorCategory.textClass
+        }"></i>
               ${n.titulo}
               ${
                 !n.leida
-                  ? '<span class="badge bg-primary ms-2">Nueva</span>'
+                  ? `<span class="badge ${colorCategory.badgeClass} ms-2">Nueva</span>`
                   : ""
               }
             </h5>
@@ -479,7 +463,10 @@ document.addEventListener("DOMContentLoaded", function () {
             ${
               !n.leida
                 ? `
-              <button class="btn btn-sm btn-outline-primary btn-marcar-leida" onclick="window.marcarLeida(${n.id})">
+              <button class="btn btn-sm btn-outline-${colorCategory.textClass.replace(
+                "text-",
+                ""
+              )} btn-marcar-leida" onclick="window.marcarLeida(${n.id})">
                 <i class="bi bi-check2"></i> Marcar como leída
               </button>
             `
@@ -488,9 +475,43 @@ document.addEventListener("DOMContentLoaded", function () {
           </div>
         </div>
       </div>
-    `
-      )
+    `;
+      })
       .join("");
+  }
+
+  function getNotificationColorCategory(tipo, titulo, descripcion) {
+    // Combine text for broader search
+    const textToSearch = `${tipo || ""} ${titulo || ""} ${
+      descripcion || ""
+    }`.toUpperCase();
+
+    if (textToSearch.includes("INGRE") || textToSearch.includes("INCOME")) {
+      return {
+        borderClass: "border-success",
+        badgeClass: "bg-success",
+        textClass: "text-success",
+        icon: "bi-graph-up-arrow",
+      };
+    } else if (
+      textToSearch.includes("EGRE") ||
+      textToSearch.includes("GASTO") ||
+      textToSearch.includes("EXPENSE")
+    ) {
+      return {
+        borderClass: "border-danger",
+        badgeClass: "bg-danger",
+        textClass: "text-danger",
+        icon: "bi-graph-down-arrow",
+      };
+    } else {
+      return {
+        borderClass: "border-primary",
+        badgeClass: "bg-primary",
+        textClass: "text-primary",
+        icon: "bi-bell",
+      };
+    }
   }
 
   function getIconForType(tipo) {
@@ -506,19 +527,52 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 
   // Expose to global scope for onclick handlers
+  // Expose to global scope for onclick handlers
   window.marcarLeida = async function (id) {
     try {
-      const response = await fetch(`/api/notificaciones/${id}/leida`, {
+      const response = await fetch(`/api/notificaciones/${id}/marcar-leida`, {
         method: "PUT",
       });
 
       if (response.ok) {
         mostrarNotificacion("Notificación marcada como leída", "success");
-        // Refresh current view
-        const activeFilter =
-          document.querySelector("[data-filter].active")?.dataset.filter ||
-          "all";
-        cargarNotificaciones(activeFilter);
+
+        // Update DOM directly without reloading
+        const card = document.querySelector(
+          `.notification-card[data-id="${id}"]`
+        );
+        if (card) {
+          // Remove unread styles
+          const colorClasses = [
+            "border-success",
+            "border-danger",
+            "border-primary",
+            "border-warning",
+          ];
+          card.classList.remove(
+            "border-start",
+            "border-4",
+            "shadow-sm",
+            ...colorClasses
+          );
+
+          // Remove "Nueva" badge
+          const badge = card.querySelector(".card-title .badge");
+          if (badge) badge.remove();
+
+          // Update button to "Leída" text
+          const btnContainer =
+            card.querySelector(".btn-marcar-leida")?.parentElement;
+          if (btnContainer) {
+            btnContainer.innerHTML =
+              '<small class="text-success"><i class="bi bi-check-circle"></i> Leída</small>';
+          }
+        }
+
+        // Update navbar badge if available
+        if (window.fetchUnreadCount) {
+          window.fetchUnreadCount();
+        }
       }
     } catch (error) {
       console.error(error);
@@ -541,18 +595,89 @@ document.addEventListener("DOMContentLoaded", function () {
       // Mark each as read (since we don't have a bulk endpoint yet)
       let successCount = 0;
       for (const n of unread) {
-        await fetch(`/api/notificaciones/${n.id}/leida`, { method: "PUT" });
-        successCount++;
+        const response = await fetch(
+          `/api/notificaciones/${n.id}/marcar-leida`,
+          {
+            method: "PUT",
+          }
+        );
+        if (response.ok) {
+          successCount++;
+
+          // Update DOM immediately for each success
+          const card = document.querySelector(
+            `.notification-card[data-id="${n.id}"]`
+          );
+          if (card) {
+            const colorClasses = [
+              "border-success",
+              "border-danger",
+              "border-primary",
+              "border-warning",
+            ];
+            card.classList.remove(
+              "border-start",
+              "border-4",
+              "shadow-sm",
+              ...colorClasses
+            );
+
+            const badge = card.querySelector(".card-title .badge");
+            if (badge) badge.remove();
+
+            const btnContainer =
+              card.querySelector(".btn-marcar-leida")?.parentElement;
+            if (btnContainer) {
+              btnContainer.innerHTML =
+                '<small class="text-success"><i class="bi bi-check-circle"></i> Leída</small>';
+            }
+          }
+        }
       }
 
       mostrarNotificacion(
         `${successCount} notificaciones marcadas como leídas`,
         "success"
       );
-      cargarNotificaciones("all");
+
+      // Update navbar badge
+      if (window.fetchUnreadCount) {
+        window.fetchUnreadCount();
+      }
     } catch (error) {
       console.error(error);
       mostrarNotificacion("Error al marcar notificaciones", "danger");
+    }
+  }
+
+  function highlightNotification(notificationId) {
+    const card = document.querySelector(
+      `.notification-card[data-id="${notificationId}"]`
+    );
+    if (card) {
+      card.scrollIntoView({ behavior: "smooth", block: "center" });
+
+      // Determine color category for correct highlight class
+      const title = card.querySelector(".card-title").innerText;
+      const desc = card.querySelector(".card-text").innerText;
+      // Extract type from badge if possible, or guess
+      const typeBadge = card.querySelector(".badge.bg-light");
+      const type = typeBadge ? typeBadge.innerText : "";
+
+      const colorCategory = getNotificationColorCategory(type, title, desc);
+      const highlightClass = `highlight-${colorCategory.textClass.replace(
+        "text-",
+        ""
+      )}`; // e.g., highlight-success
+
+      card.classList.add(highlightClass);
+
+      // Remove highlight on click
+      const removeHighlight = () => {
+        card.classList.remove(highlightClass);
+        document.removeEventListener("click", removeHighlight);
+      };
+      document.addEventListener("click", removeHighlight);
     }
   }
 });
