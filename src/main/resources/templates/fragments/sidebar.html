@@ -46,6 +46,28 @@
           <span class="sidebar-text ms-2">Egresos</span>
         </a>
       </li>
+      <li class="nav-item">
+        <a
+          class="nav-link text-white d-flex align-items-center"
+          th:classappend="${activePage == 'Presupuesto'} ? 'active bg-warning text-dark'"
+          href="/Presupuestos"
+          title="Presupeustos"
+      >
+          <i class="bi bi-calendar-check sidebar-icon"></i>
+          <span class="sidebar-text ms-2">Presupuestos</span>
+      </a>
+      <a
+        class="nav-link text-white d-flex align-items-center"
+        th:classappend="${activePage == 'planificacion'} ? 'active bg-warning text-dark'"
+        href="/planificacion"
+        title="Planificación"
+    >
+        <i class="bi bi-calendar-check sidebar-icon"></i>
+        <span class="sidebar-text ms-2">Programaciónes</span>
+    </a>
+
+  </li>
+
     </ul>
 
     <hr class="my-3 border-secondary mx-2" />

@@ -1,0 +1,54 @@
+/* ========================================
+   PLANIFICACIÓN - CSS MÍNIMO
+   Solo efectos de hover y transiciones
+   ======================================== */
+
+/* Efecto hover en cards de presupuesto */
+.hover-shadow {
+    transition: all 0.3s ease;
+}
+
+.hover-shadow:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 0.5rem 1rem rgba(13, 110, 253, 0.2) !important;
+}
+
+/* Efecto hover en cards de concepto */
+.concepto-card {
+    transition: all 0.3s ease;
+    position: relative;
+}
+
+.concepto-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 0.5rem 1rem rgba(13, 110, 253, 0.2) !important;
+    border-color: #0d6efd !important;
+}
+
+/* Card seleccionado */
+.concepto-card.selected {
+    border-color: #0d6efd !important;
+    background-color: #f0f7ff !important;
+}
+
+.concepto-card.selected::after {
+    content: "✓";
+    position: absolute;
+    top: 0.5rem;
+    right: 0.5rem;
+    width: 28px;
+    height: 28px;
+    background: #0d6efd;
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 1.1rem;
+}
+
+/* Smooth scroll para modal */
+.modal-body {
+    scroll-behavior: smooth;
+}

@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+<div th:fragment="editarModal">
+  <div class="modal fade" id="editarModal" tabindex="-1" aria-labelledby="editarModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content card-presupuesto">
+        <div class="modal-header bg-warning">
+          <h5 class="modal-title" id="editarModalLabel"><i class="bi bi-pencil-square me-2"></i> Editar presupuesto</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+
+        <form id="formEditarPresupuesto">
+          <input type="hidden" id="id" name="id">
+          <div class="modal-body">
+            <div class="mb-3">
+              <label for="editConceptoId" class="form-label">Concepto *</label>
+              <div class="input-group">
+                <select class="form-select" id="editConceptoId" name="conceptoId" required>
+                  <option value="">Seleccionar concepto...</option>
+                  <option th:each="c : ${conceptos}" th:value="${c.id}" th:text="${c.nombre}"></option>
+                </select>
+                <button class="btn btn-outline-secondary" type="button" id="btnAbrirConceptoEditar" title="Seleccionar concepto">
+                  <i class="bi bi-search"></i>
+                </button>
+              </div>
+            </div>
+
+            <div class="mb-3">
+              <label for="editLimite" class="form-label">Límite *</label>
+              <div class="input-group">
+                <span class="input-group-text">$</span>
+                <input type="number" class="form-control" id="editLimite" name="limite" step="0.01" min="0.01" required>
+              </div>
+            </div>
+
+            <div class="mb-3">
+              <label for="editFechaInicio" class="form-label">Fecha Inicio</label>
+              <input type="date" class="form-control" id="editFechaInicio" name="fechaInicio">
+            </div>
+
+            <div class="mb-3">
+              <label for="editFechaFin" class="form-label">Fecha Fin</label>
+              <input type="date" class="form-control" id="editFechaFin" name="fechaFin">
+            </div>
+
+            <div class="form-check form-switch mb-2">
+              <input class="form-check-input" type="checkbox" id="editActivo" name="activo">
+              <label class="form-check-label" for="editActivo">Activo</label>
+            </div>
+          </div>
+
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+            <button type="submit" class="btn btn-warning"><i class="bi bi-arrow-repeat me-1"></i> Actualizar</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+</body>
+</html>
