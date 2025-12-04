@@ -84,7 +84,7 @@ public class AhorroService {
         return dto; 
     }
 
-    private AporteAhorroDTO toAporteDTO(AporteAhorro ap) {
+    public AporteAhorroDTO toAporteDTO(AporteAhorro ap) {
         AporteAhorroDTO dtoAp = new AporteAhorroDTO();
         dtoAp.setMetaId(ap.getMetaId());
         dtoAp.setAporteAhorroId(ap.getAporteAhorroId());
@@ -450,7 +450,7 @@ public class AhorroService {
 // Ver todos los aporte de un ahorro especifico
 @Transactional(readOnly = true)
     public List<AporteAhorroDTO> listarAportesPorMeta(Long metaId, Long usuarioId) {
-        AhorroMeta meta = ahorroMetaRepository.findByAhorroIdAndUsuarioId(metaId, usuarioId)
+        ahorroMetaRepository.findByAhorroIdAndUsuarioId(metaId, usuarioId)
                 .orElseThrow(() -> new IllegalArgumentException("Ahorro no encontrado o sin permisos"));
         return aporteAhorroRepository.findByMetaIdOrderByFechaLimiteAsc(metaId)
                 .stream()
@@ -470,18 +470,6 @@ public class AhorroService {
                 changed = true;
             }
         }
-        if (changed) {
-        }
-    }
-
-//METODO QUE PONE UNA CUOTA DISPONIBLE A UNA SEMANA DEL PAGO
-    private Optional<AporteAhorro> pasarCuotaADisponible(Long metaId) {
-        LocalDate hoy = LocalDate.now();
-        List<AporteAhorro> todas = aporteAhorroRepository.findByMetaIdOrderByFechaLimiteAsc(metaId);
-        return todas.stream()
-                .filter(a -> a.getEstado() == AporteAhorro.EstadoAp.PENDIENTE)
-                .filter(a -> !a.getFechaLimite().isAfter(hoy.plusDays(7)))
-                .findFirst();
     }
 
 //METODO QUE PASA UNA CUOTA A DISPONIBLE
@@ -515,14 +503,19 @@ public class AhorroService {
     }
 
 
-//METODO QUE OBTINE LA CUOTA DISPONIBLE
-    private Optional<AporteAhorro> obtenerCuotaDisponible(Long metaId) {
+//muestra la proxima cuota disponible
+    public Optional<AporteAhorro> obtenerCuotaDisponible(Long metaId, Long usuarioId) {
+        ahorroMetaRepository.findByAhorroIdAndUsuarioId(metaId, usuarioId)
+            .orElseThrow(() -> new IllegalArgumentException("Ahorro no encontrado o sin permisos"));
+
         LocalDate hoy = LocalDate.now();
         List<AporteAhorro> todas = aporteAhorroRepository.findByMetaIdOrderByFechaLimiteAsc(metaId);
+        
         return todas.stream()
-                .filter(a -> a.getEstado() == AporteAhorro.EstadoAp.PENDIENTE)
-                .filter(a -> !a.getFechaLimite().isAfter(hoy.plusDays(7)))
-                .findFirst();
+        .filter(a -> a.getEstado() == AporteAhorro.EstadoAp.PENDIENTE)
+        .filter(a -> !a.getFechaLimite().isAfter(hoy.plusDays(7)))
+        .findFirst();
+
     }
    
 // registrar un aporte
@@ -544,7 +537,7 @@ public class AhorroService {
             cuota = aporteAhorroRepository.findByAporteAhorroIdAndMetaId(aporteId, metaId)
                     .orElseThrow(() -> new RuntimeException("Cuota no encontrada para esta meta"));
         } else {
-            cuota = obtenerCuotaDisponible(metaId)
+            cuota = obtenerCuotaDisponible(metaId, usuarioId)
                     .orElseThrow(() -> new RuntimeException("No hay cuota disponible para aportar hoy"));
         }
         // validar que cuota esté PENDIENTE
