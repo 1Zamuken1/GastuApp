@@ -21,6 +21,9 @@ public class AporteAhorro {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long aporteAhorroId;
 
+    @Column(name = "meta_id", nullable = false)
+    private Long metaId;
+
     @Column(name="aporteAsignado")
     private BigDecimal aporteAsignado;
 
@@ -42,8 +45,6 @@ public class AporteAhorro {
     @Column(name = "fechaRegistro", nullable = false, updatable = false)
     private LocalDate fechaRegistro;
     
-    @Column(name = "meta_id", nullable = false)
-    private Long metaId;
 
     @PrePersist
     protected void onCreate() {
@@ -53,15 +54,15 @@ public class AporteAhorro {
     public AporteAhorro() {
     }
 
-    public AporteAhorro(Long aporteAhorroId, BigDecimal aporteAsignado, BigDecimal aporte, LocalDate fechaLimite, 
-                        Estado estado, LocalDate fechaRegistro, Long metaId) {
+    public AporteAhorro(Long aporteAhorroId, Long metaId, BigDecimal aporteAsignado, BigDecimal aporte, LocalDate fechaLimite, 
+                        Estado estado, LocalDate fechaRegistro) {
         this.aporteAhorroId = aporteAhorroId;
+        this.metaId = metaId;
         this.aporteAsignado = aporteAsignado;
         this.aporte=aporte;
         this.fechaLimite = fechaLimite;
         this.estado = estado;
         this.fechaRegistro=fechaRegistro;
-        this.metaId = metaId;
     }
 
     public Long getAporteAhorroId() {
@@ -70,6 +71,14 @@ public class AporteAhorro {
 
     public void setAporteAhorroId(Long aporteAhorroId) {
         this.aporteAhorroId = aporteAhorroId;
+    }
+
+    public Long getMetaId() {
+        return metaId;
+    }
+
+    public void setMetaId(Long metaId) {
+        this.metaId = metaId;
     }
 
     public BigDecimal getAporteAsignado() {
@@ -109,13 +118,6 @@ public class AporteAhorro {
         return fechaRegistro;
     }
     
-    public Long getMetaId() {
-        return metaId;
-    }
-
-    public void setMetaId(Long metaId) {
-        this.metaId = metaId;
-    }
 
 // tiene una relacion uno a muchos con ahorro meta
 }

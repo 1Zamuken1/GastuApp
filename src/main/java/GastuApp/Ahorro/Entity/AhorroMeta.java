@@ -20,6 +20,12 @@ public class AhorroMeta {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long ahorroId;
 
+    @Column(name= "usuarioId", nullable = false)
+    private Long usuarioId;
+
+    @Column(name= "conceptoId", nullable = false)
+    private Long conceptoId;
+
     @Column(name = "descripcion", length = 100)
     private String descripcion;
 
@@ -61,11 +67,7 @@ public class AhorroMeta {
     @Column(name= "cantidadCuotas", nullable = false)
     private Integer cantidadCuotas;
 
-    @Column(name= "usuarioId", nullable = false)
-    private Long usuarioId;
 
-    @Column(name= "conceptoId", nullable = false)
-    private Long conceptoId;
 
     /**
      * Establece la fecha de creacion automaticamente antes de persistir.
@@ -80,12 +82,13 @@ public class AhorroMeta {
 
     }
 
-    public AhorroMeta(Long id, String descripcion, BigDecimal montoMeta,
+    public AhorroMeta(Long id, Long usuarioId, Long conceptoId, String descripcion, BigDecimal montoMeta,
                       BigDecimal totalAcumulado, Frecuencia frecuencia, LocalDate fechaCreacion, LocalDate fechaMeta,
-                      Estado estado, Integer cantidadCuotas,
-                      Long usuarioId, Long conceptoId ){
+                      Estado estado, Integer cantidadCuotas ){
 
     this.ahorroId= id;
+    this.usuarioId=usuarioId;
+    this.conceptoId=conceptoId;
     this.descripcion= descripcion;
     this.montoMeta= montoMeta;
     this.totalAcumulado= totalAcumulado;
@@ -94,8 +97,7 @@ public class AhorroMeta {
     this.fechaMeta=fechaMeta;
     this.estado= estado;
     this.cantidadCuotas=cantidadCuotas;
-    this.usuarioId=usuarioId;
-    this.conceptoId=conceptoId;
+
 
     }
 // getter-> controla la salida del dato
@@ -107,6 +109,22 @@ public class AhorroMeta {
 
     public void setId(Long ahorroId){
         this.ahorroId= ahorroId;
+    }
+
+    public Long getUsuarioId(){
+        return usuarioId;
+    }
+
+    public void setUsuarioId(Long usuarioId){
+        this.usuarioId=usuarioId;
+    }
+
+    public Long getConceptoId(){
+        return conceptoId;
+    }
+
+    public void setConceptoId(Long conceptoId){
+        this.conceptoId=conceptoId;
     }
 
     public String getDescripcion(){
@@ -173,21 +191,5 @@ public class AhorroMeta {
         this.cantidadCuotas= cantidadCuotas;
     }
 
-    public Long getUsuarioId(){
-        return usuarioId;
-    }
-
-    public void setUsuarioId(Long usuarioId){
-        this.usuarioId=usuarioId;
-    }
-
-    public Long getConceptoId(){
-        return conceptoId;
-    }
-
-    public void setConceptoId(Long conceptoId){
-        this.conceptoId=conceptoId;
-    }
-    //TIENE RELACION UNO A MUCHOS CON USUARIO
-    //  Y UNA RELACION UNO A UNO CON CONCEPTOS
+    //TIENE RELACION UNO A MUCHOS CON USUARIOS Y CON CONCEPTOS
 }
