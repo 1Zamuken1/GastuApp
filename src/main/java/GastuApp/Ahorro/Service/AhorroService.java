@@ -26,7 +26,6 @@ import GastuApp.Ahorro.Entity.AporteAhorro;
 import GastuApp.Ahorro.Repository.AhorroMetaRepository;
 import GastuApp.Ahorro.Repository.AporteAhorroRepository;
 import GastuApp.Conceptos.DTO.ConceptoDTO;
-import GastuApp.Conceptos.Entity.Concepto;
 import GastuApp.Conceptos.Service.ConceptoService;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -137,7 +136,10 @@ public class AhorroService {
         if (conceptoId == null) {
             throw new IllegalArgumentException("El concepto es requerido");
         }
-        conceptoService.obtenerPorId(conceptoId);
+        ConceptoDTO concepto = conceptoService.obtenerPorId(conceptoId);
+        if (!"AHORRO".equals(concepto.getTipo())) {
+        throw new IllegalArgumentException("El concepto debe ser de tipo AHORRO");
+    }
     }
 
 // METODO QUE VALIDA QUE CONCEPTO, FRECUENCIA Y MONTO META SEAN OBLIGATORIOS

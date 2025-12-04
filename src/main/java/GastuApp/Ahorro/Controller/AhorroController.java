@@ -19,12 +19,12 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/ahorros")
-public class AhorroMetaController {
+public class AhorroController {
 
     private final AhorroService ahorroService;
 
     @Autowired
-    public AhorroMetaController(AhorroService ahorroService) {
+    public AhorroController(AhorroService ahorroService) {
         this.ahorroService = ahorroService;
     }
 
