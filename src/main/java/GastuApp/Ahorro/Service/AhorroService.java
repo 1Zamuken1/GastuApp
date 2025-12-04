@@ -13,6 +13,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.stereotype.Service;
 
 import GastuApp.Ahorro.DTO.AhorroDTO;
 import GastuApp.Ahorro.DTO.AporteAhorroDTO;
@@ -29,6 +30,7 @@ import GastuApp.Conceptos.Entity.Concepto;
 import GastuApp.Conceptos.Service.ConceptoService;
 import org.springframework.transaction.annotation.Transactional;
 
+@Service
 public class AhorroService {
     
     private final AhorroMetaRepository ahorroMetaRepository;
@@ -82,24 +84,14 @@ public class AhorroService {
         return dto; 
     }
 
-    private AporteAhorro toAporteEntity(AporteAhorroDTO dto) {
-        AporteAhorro ap = new AporteAhorro();
-        ap.setMetaId(dto.getMetaId());
-        ap.setAporteAsignado(dto.getAporteAsignado());
-        ap.setAporte(dto.getAporte());
-        ap.setFechaLimite(dto.getFechaLimite());
-        ap.setEstado(ap.getEstado());
-        return ap;
-    }
-
-    private AporteAhorroDTO toAporteDTO(AporteAhorro a) {
+    private AporteAhorroDTO toAporteDTO(AporteAhorro ap) {
         AporteAhorroDTO dtoAp = new AporteAhorroDTO();
-        dtoAp.setMetaId(a.getMetaId());
-        dtoAp.setAporteAhorroId(a.getAporteAhorroId());
-        dtoAp.setAporteAsignado(a.getAporteAsignado());
-        dtoAp.setAporte(a.getAporte());
-        dtoAp.setFechaLimite(a.getFechaLimite());
-        dtoAp.setEstado(dtoAp.getEstado());
+        dtoAp.setMetaId(ap.getMetaId());
+        dtoAp.setAporteAhorroId(ap.getAporteAhorroId());
+        dtoAp.setAporteAsignado(ap.getAporteAsignado());
+        dtoAp.setAporte(ap.getAporte());
+        dtoAp.setFechaLimite(ap.getFechaLimite());
+        dtoAp.setEstado(ap.getEstado());
         return dtoAp;
     }
 
@@ -118,7 +110,7 @@ public class AhorroService {
     @Transactional(readOnly = true)
     public AhorroDTO obtenerPorIdYUsuario(Long id, Long usuarioId) {
         AhorroMeta existente = ahorroMetaRepository.findByAhorroIdAndUsuarioId(id, usuarioId)
-                .orElseThrow(() -> new RuntimeException("Ahorro no encontrado o sin permisos"));
+                .orElseThrow(() -> new IllegalArgumentException("Ahorro no encontrado o sin permisos"));
         return toDTO(existente);
     }
 
@@ -143,7 +135,7 @@ public class AhorroService {
 // METODO PARA VALIDAR EL CONCEPTO
         private void validarConcepto(Long conceptoId) {
         if (conceptoId == null) {
-            throw new RuntimeException("El concepto es requerido");
+            throw new IllegalArgumentException("El concepto es requerido");
         }
         conceptoService.obtenerPorId(conceptoId);
     }
@@ -151,14 +143,14 @@ public class AhorroService {
 // METODO QUE VALIDA QUE CONCEPTO, FRECUENCIA Y MONTO META SEAN OBLIGATORIOS
     private void validarCamposCrearAhorro(CrearAhorroDTO dto) {
     if (dto.getConceptoId() == null) {
-        throw new RuntimeException("El concepto es obligatorio");
+        throw new IllegalArgumentException("El concepto es obligatorio");
     }
     if (dto.getFrecuencia() == null) {
-        throw new RuntimeException("La frecuencia es obligatoria");
+        throw new IllegalArgumentException("La frecuencia es obligatoria");
     }
     
     if (dto.getMonto() == null || dto.getMonto().compareTo(BigDecimal.ZERO) <= 0) {
-        throw new RuntimeException("El monto meta es obligatorio y debe ser mayor que cero.");
+        throw new IllegalArgumentException("El monto meta es obligatorio y debe ser mayor que cero.");
     }
 
     int ingreso = 0;
@@ -166,7 +158,7 @@ public class AhorroService {
     if (dto.getCantCuotas() != null) ingreso++;
     
     if (ingreso < 1) { 
-        throw new RuntimeException("Debes proveer la fecha meta o la cantidad de cuotas (o ambas)");
+        throw new IllegalArgumentException("Debes proveer la fecha meta o la cantidad de cuotas (o ambas)");
     }
 }
 
@@ -238,8 +230,7 @@ public class AhorroService {
         }
 
         //  falta fechaMeta -> calcular sumando (cantidadCuotas -1) periodos a la fechaCreacion
-        if (!tieneFecha && tieneCantidad && (tieneMonto || true /* monto opcional */)) {
-            int periodDays = calcularPeriodo(entidad.getFrecuencia());
+        if (!tieneFecha && tieneCantidad) {
             LocalDate inicio = entidad.getCreacion();
             // Si la cantidad es 1 -> fechaMeta = inicio
             if (entidad.getCantCuotas() <= 1) {
@@ -257,7 +248,7 @@ public class AhorroService {
         }
 
         // fallback (no debería llegar por validación previa)
-        throw new RuntimeException("No se pudo calcular campos faltantes: combinación inválida");
+        throw new IllegalArgumentException("No se pudo calcular campos faltantes: combinación inválida");
     }
 
 //METODO QUE GENERA LAS CUOTAS
@@ -280,7 +271,7 @@ public class AhorroService {
             ap.setMetaId(meta.getId());
             ap.setAporteAsignado(cuotaBase);
             ap.setAporte(BigDecimal.ZERO);
-            ap.setEstado(AporteAhorro.Estado.PENDIENTE);
+            ap.setEstado(AporteAhorro.EstadoAp.PENDIENTE);
             LocalDate fechaLimite = sumarFrecuencia(inicio, meta.getFrecuencia(), i);
             ap.setFechaLimite(fechaLimite);
             resultado.add(ap);
@@ -342,12 +333,12 @@ public class AhorroService {
         List<AporteAhorro> todas = aporteAhorroRepository.findByMetaIdOrderByFechaLimiteAsc(meta.getId());
 
         BigDecimal aportado = todas.stream()
-                .filter(a -> a.getEstado() == AporteAhorro.Estado.APORTADO)
+                .filter(a -> a.getEstado() == AporteAhorro.EstadoAp.APORTADO)
                 .map(a -> a.getAporte() == null ? BigDecimal.ZERO : a.getAporte())
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
 
         List<AporteAhorro> pendientes = todas.stream()
-                .filter(a -> a.getEstado() == AporteAhorro.Estado.PENDIENTE)
+                .filter(a -> a.getEstado() == AporteAhorro.EstadoAp.PENDIENTE)
                 .collect(Collectors.toList());
 
         int restantes = pendientes.size();
@@ -387,11 +378,11 @@ public class AhorroService {
 
         // separar aportadas vs pendientes
         List<AporteAhorro> aportadas = todas.stream()
-                .filter(a -> a.getEstado() == AporteAhorro.Estado.APORTADO)
+                .filter(a -> a.getEstado() == AporteAhorro.EstadoAp.APORTADO)
                 .collect(Collectors.toList());
 
         List<AporteAhorro> pendientes = todas.stream()
-                .filter(a -> a.getEstado() == AporteAhorro.Estado.PENDIENTE)
+                .filter(a -> a.getEstado() == AporteAhorro.EstadoAp.PENDIENTE)
                 .collect(Collectors.toList());
 
         // generar nuevas fechas para las pendientes según la nueva configuración
@@ -426,7 +417,7 @@ public class AhorroService {
                 .orElseThrow(() -> new RuntimeException("Ahorro no encontrado o sin permisos"));
 
         if (dto.getFrecuencia() == null) {
-            throw new RuntimeException("La frecuencia es obligatoria");
+            throw new IllegalArgumentException("La frecuencia es obligatoria");
         }
 
         if (dto.getDescripcion() != null) existente.setDescripcion(dto.getDescripcion());
@@ -460,7 +451,7 @@ public class AhorroService {
 @Transactional(readOnly = true)
     public List<AporteAhorroDTO> listarAportesPorMeta(Long metaId, Long usuarioId) {
         AhorroMeta meta = ahorroMetaRepository.findByAhorroIdAndUsuarioId(metaId, usuarioId)
-                .orElseThrow(() -> new RuntimeException("Ahorro no encontrado o sin permisos"));
+                .orElseThrow(() -> new IllegalArgumentException("Ahorro no encontrado o sin permisos"));
         return aporteAhorroRepository.findByMetaIdOrderByFechaLimiteAsc(metaId)
                 .stream()
                 .map(this::toAporteDTO)
@@ -473,8 +464,8 @@ public class AhorroService {
         List<AporteAhorro> todas = aporteAhorroRepository.findByMetaIdOrderByFechaLimiteAsc(meta.getId());
         boolean changed = false;
         for (AporteAhorro a : todas) {
-            if (a.getEstado() == AporteAhorro.Estado.PENDIENTE && a.getFechaLimite().isBefore(hoy)) {
-                a.setEstado(AporteAhorro.Estado.PERDIDO);
+            if (a.getEstado() == AporteAhorro.EstadoAp.PENDIENTE && a.getFechaLimite().isBefore(hoy)) {
+                a.setEstado(AporteAhorro.EstadoAp.PERDIDO);
                 aporteAhorroRepository.save(a);
                 changed = true;
             }
@@ -488,7 +479,7 @@ public class AhorroService {
         LocalDate hoy = LocalDate.now();
         List<AporteAhorro> todas = aporteAhorroRepository.findByMetaIdOrderByFechaLimiteAsc(metaId);
         return todas.stream()
-                .filter(a -> a.getEstado() == AporteAhorro.Estado.PENDIENTE)
+                .filter(a -> a.getEstado() == AporteAhorro.EstadoAp.PENDIENTE)
                 .filter(a -> !a.getFechaLimite().isAfter(hoy.plusDays(7)))
                 .findFirst();
     }
@@ -517,7 +508,7 @@ public class AhorroService {
         // ordenar por fecha asc (ya lo está) y tomar últimas 3
         List<AporteAhorro> ultimas3 = verTresAportes(todas, 3);
         boolean tresPerdidas = ultimas3.stream()
-                .allMatch(a -> a.getEstado() == AporteAhorro.Estado.PERDIDO);
+                .allMatch(a -> a.getEstado() == AporteAhorro.EstadoAp.PERDIDO);
         if (tresPerdidas) {
             meta.setEstado(Estado.ABANDONADO);
         }
@@ -529,7 +520,7 @@ public class AhorroService {
         LocalDate hoy = LocalDate.now();
         List<AporteAhorro> todas = aporteAhorroRepository.findByMetaIdOrderByFechaLimiteAsc(metaId);
         return todas.stream()
-                .filter(a -> a.getEstado() == AporteAhorro.Estado.PENDIENTE)
+                .filter(a -> a.getEstado() == AporteAhorro.EstadoAp.PENDIENTE)
                 .filter(a -> !a.getFechaLimite().isAfter(hoy.plusDays(7)))
                 .findFirst();
     }
@@ -543,7 +534,7 @@ public class AhorroService {
         //validad que el monto ingresado sea mayor a 0
         BigDecimal aporteIngresado = dto.getAporte() == null ? BigDecimal.ZERO : dto.getAporte();
         if (aporteIngresado.compareTo(BigDecimal.ZERO) <= 0) {
-        throw new RuntimeException("El monto del aporte debe ser mayor que cero para registrar un pago.");
+        throw new  IllegalArgumentException("El monto del aporte debe ser mayor que cero para registrar un pago.");
     }        
         // marcar cuotas vencidas como PERDIDO si su fechaLimite < hoy y siguen PENDIENTE
         pasarCuotasAPerdias(meta);
@@ -553,23 +544,22 @@ public class AhorroService {
             cuota = aporteAhorroRepository.findByAporteAhorroIdAndMetaId(aporteId, metaId)
                     .orElseThrow(() -> new RuntimeException("Cuota no encontrada para esta meta"));
         } else {
-            cuota = pasarCuotaADisponible(metaId)
+            cuota = obtenerCuotaDisponible(metaId)
                     .orElseThrow(() -> new RuntimeException("No hay cuota disponible para aportar hoy"));
         }
         // validar que cuota esté PENDIENTE
-        if (cuota.getEstado() != AporteAhorro.Estado.PENDIENTE) {
-            throw new RuntimeException("La cuota seleccionada no está disponible para aportar (estado=" + cuota.getEstado() + ")");
+        if (cuota.getEstado() != AporteAhorro.EstadoAp.PENDIENTE) {
+            throw new IllegalArgumentException("La cuota seleccionada no está disponible para aportar (estado=" + cuota.getEstado() + ")");
         }
 
         // validar disponibilidad 7 días antes
         if (!cuotaDisponiblePago(cuota)) {
-            throw new RuntimeException("La cuota no está disponible para pago todavía (solo 7 días antes)");
+            throw new IllegalArgumentException("La cuota no está disponible para pago todavía (solo 7 días antes)");
         }
 
         // Registrar aporte: actualizar aporte y estado
-        cuota.setAporte(aporteIngresado); 
         cuota.setAporte(aporteIngresado);
-        cuota.setEstado(AporteAhorro.Estado.APORTADO);
+        cuota.setEstado(AporteAhorro.EstadoAp.APORTADO);
         aporteAhorroRepository.save(cuota);
 
         // actualizar acumulado de la meta
@@ -577,15 +567,15 @@ public class AhorroService {
         acumuladoActual = acumuladoActual.add(aporteIngresado);
         meta.setAcumulado(acumuladoActual);
 
-        // si era SININICIAR -> pasar a ACTIVO
-        if (meta.getEstado() == Estado.SININICIAR) {
-            meta.setEstado(Estado.ACTIVO);
+        //  Reanudar o Iniciar: Si se hizo un pago, el estado debe ser ACTIVO, a menos que se complete.
+        if (meta.getEstado() == Estado.SININICIAR || meta.getEstado() == Estado.ABANDONADO) {
+        meta.setEstado(Estado.ACTIVO);
         }
 
-        // si total alcanzado o superado -> COMPLETADO
+        //Si total alcanzado o superado -> COMPLETADO
         BigDecimal montoMeta = meta.getMonto() == null ? BigDecimal.ZERO : meta.getMonto();
         if (montoMeta.compareTo(BigDecimal.ZERO) > 0 && acumuladoActual.compareTo(montoMeta) >= 0) {
-            meta.setEstado(Estado.COMPLETADO);
+        meta.setEstado(Estado.COMPLETADO);
         }
 
         // Si aporte ingresado difiere del asignado -> recalcular cuotas pendientes
@@ -594,20 +584,8 @@ public class AhorroService {
             recalcularAportesRestantes(meta);
         }
 
-        // detectar abandono
+        // detectar abandono DEBE ir después de la lógica de reanudación para capturar el nuevo estado
         abandonoAhorro(meta);
-
-        // Si estaba ABANDONADO y usuario aportó sobre la cuota correcta según fecha -> reanudar (ACTIVO)
-        if (meta.getEstado() == Estado.ABANDONADO) {
-            // si la cuota aportada es la que corresponde a la fecha actual -> reanudar
-            Optional<AporteAhorro> prox = obtenerCuotaDisponible(meta.getId());
-            if (prox.isPresent()) {
-            // si la cuota que pagó coincide con la prox disponible -> reanudar
-                if (prox.get().getAporteAhorroId().equals(cuota.getAporteAhorroId())) {
-                    meta.setEstado(Estado.ACTIVO);
-                }
-            }
-        }
         ahorroMetaRepository.save(meta);
 
         return toAporteDTO(cuota);

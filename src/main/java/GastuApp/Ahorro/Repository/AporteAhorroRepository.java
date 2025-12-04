@@ -4,8 +4,11 @@ import java.util.List;
 import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
+
 import GastuApp.Ahorro.Entity.AporteAhorro;
 
+@Repository
 public interface AporteAhorroRepository extends JpaRepository<AporteAhorro, Long> {
 
 // ver todas las cuotas de una meta ordenadas por fecha límite

@@ -3,7 +3,7 @@ package GastuApp.Ahorro.DTO;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
-import GastuApp.Ahorro.Entity.AhorroMeta.Estado;
+import GastuApp.Ahorro.Entity.AporteAhorro.EstadoAp;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.NotNull;
 
@@ -18,20 +18,20 @@ public class AporteAhorroDTO {
     private BigDecimal aporte;
     
     private LocalDate fechaLimite;
-    private Estado estado;
+    private EstadoAp estadoAp;
     private LocalDate fechaRegistro;
 
     public AporteAhorroDTO() {
     }
 
     public AporteAhorroDTO(Long metaId, Long aporteAhorroId, BigDecimal aporteAsignado, BigDecimal aporte, LocalDate fechaLimite, 
-                        Estado estado, LocalDate fechaRegistro) {
+                        EstadoAp estadoAp, LocalDate fechaRegistro) {
         this.metaId = metaId;
         this.aporteAhorroId = aporteAhorroId;
         this.aporteAsignado = aporteAsignado;
         this.aporte=aporte;
         this.fechaLimite = fechaLimite;
-        this.estado = estado;
+        this.estadoAp = estadoAp;
         this.fechaRegistro=fechaRegistro;
         
     }
@@ -76,12 +76,12 @@ public class AporteAhorroDTO {
         this.fechaLimite = fechaLimite;
     }
 
-    public Estado getEstado() {
-        return estado;
+    public EstadoAp getEstado() {
+        return estadoAp;
     }
 
-    public void setEstado(Estado estado) {
-        this.estado = estado;
+    public void setEstado(EstadoAp estadoAp) {
+        this.estadoAp = estadoAp;
     }
 
     // Fecha Registro Solo Getter, no debe ser modificable después de la creación

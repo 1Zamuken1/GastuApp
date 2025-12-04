@@ -33,14 +33,14 @@ public class AporteAhorro {
     @Column(name="fechaLimite", nullable = false)
     private LocalDate fechaLimite;
 
-    public enum Estado{
+    public enum EstadoAp{
         APORTADO,
         PERDIDO,
         PENDIENTE
     }
     @Enumerated(EnumType.STRING)
     @Column(name = "estado", nullable = false)
-    private Estado estado;
+    private EstadoAp estadoAp;
 
     @Column(name = "fechaRegistro", nullable = false, updatable = false)
     private LocalDate fechaRegistro;
@@ -55,13 +55,13 @@ public class AporteAhorro {
     }
 
     public AporteAhorro(Long aporteAhorroId, Long metaId, BigDecimal aporteAsignado, BigDecimal aporte, LocalDate fechaLimite, 
-                        Estado estado, LocalDate fechaRegistro) {
+                        EstadoAp estadoAp, LocalDate fechaRegistro) {
         this.aporteAhorroId = aporteAhorroId;
         this.metaId = metaId;
         this.aporteAsignado = aporteAsignado;
         this.aporte=aporte;
         this.fechaLimite = fechaLimite;
-        this.estado = estado;
+        this.estadoAp = estadoAp;
         this.fechaRegistro=fechaRegistro;
     }
 
@@ -105,12 +105,12 @@ public class AporteAhorro {
         this.fechaLimite = fechaLimite;
     }
 
-    public Estado getEstado() {
-        return estado;
+    public EstadoAp getEstado() {
+        return estadoAp;
     }
 
-    public void setEstado(Estado estado) {
-        this.estado = estado;
+    public void setEstado(EstadoAp estadoAp) {
+        this.estadoAp = estadoAp;
     }
 
     // Fecha Registro Solo Getter, no debe ser modificable después de la creación
