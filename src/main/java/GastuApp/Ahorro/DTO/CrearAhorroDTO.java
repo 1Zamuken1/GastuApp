@@ -14,7 +14,7 @@ public class CrearAhorroDTO {
     @Size(max=100, message = "La descripción no puede superar los 100 caracteres")
     private String descripcion;
 
-
+    @NotNull(message = "El monto meta es obligatorio")
     private BigDecimal montoMeta;
 
     @NotNull(message = "la frecuencia es obligatoria")

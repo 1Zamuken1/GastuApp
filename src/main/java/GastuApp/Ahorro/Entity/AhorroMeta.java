@@ -37,7 +37,7 @@ public class AhorroMeta {
 
     public enum Frecuencia{
         DIARIA,
-        SEMANNAL,
+        SEMANAL,
         QUINCENAL,
         MENSUAL,
         TRIMESTRAL,
