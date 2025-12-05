@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+    <head th:replace="fragments/head :: head('Ahorros - GastuApp', ~{::link})">
+        <link rel="stylesheet" th:href="@{/css/ahorros/ahorro.css}" />
+    </head>
+    <body>
+        <nav th:replace="fragments/navbar :: navbar"></nav>
+
+        <nav th:replace="fragments/sidebar :: sidebar" class="d-md-block bg-light sidebar collapse"></nav>
+
+        <main class="px-md-4 py-4">
+            <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                <h1 class="h2">Mis Ahorros</h1>
+                <div class="btn-toolbar mb-2 mb-md-0">
+                    <button class="btn btn-warning text-white" onclick="abrirModalCrear()">
+                        <i class="bi bi-plus-circle"></i> Nueva Meta
+                    </button>
+                </div>
+            </div>
+
+            <!-- Dashboard Cards -->
+            <div class="row mb-4">
+                <div class="col-md-3 mb-3">
+                    <div class="card border-0 shadow-sm bg-light">
+                        <div class="card-body">
+                            <h6 class="card-title text-muted">Total Ahorrado</h6>
+                            <h3 class="text-warning-custom fw-bold" id="totalAhorrado">$0</h3>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <div class="card border-0 shadow-sm bg-light">
+                        <div class="card-body">
+                            <h6 class="card-title text-muted">Metas</h6>
+                            <h3 class="fw-bold" id="statMetas">0</h3>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <div class="card border-0 shadow-sm bg-light">
+                        <div class="card-body">
+                            <h6 class="card-title text-muted">Completadas</h6>
+                            <h3 class="text-success fw-bold" id="statCompletadas">0</h3>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <div class="card border-0 shadow-sm bg-light">
+                        <div class="card-body">
+                            <h6 class="card-title text-muted">Próxima Meta</h6>
+                            <h5 class="text-info fw-bold" id="statProximaMeta">N/A</h5>
+                        </div>
+                    </div>
+                </div>
+
+            <!-- Search / Filter -->
+            <div class="card shadow-sm mb-4 border-0">
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="search-container">
+                                <input type="text" id="buscador" class="form-control search-input" placeholder="Buscar meta de ahorro...">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <select id="estadoFilter" class="form-select">
+                                <option value="">Todos los estados</option>
+                                <option value="SININICIAR">Sin Iniciar</option>
+                                <option value="ACTIVO">Activo</option>
+                                <option value="COMPLETADO">Completado</option>
+                                <option value="ABANDONADO">Abandonado</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Grid -->
+            <div id="ahorrosGrid" class="row row-cols-1 row-cols-md-3 row-cols-lg-4 g-4 mb-4"></div>
+
+            <!-- Export Buttons -->
+            <div class="mt-3 text-center">
+                <button class="btn btn-outline-secondary btn-sm me-2" onclick="exportarReporte('pdf')"><i class="bi bi-file-pdf"></i> PDF</button>
+                <button class="btn btn-outline-secondary btn-sm me-2" onclick="exportarReporte('excel')"><i class="bi bi-file-excel"></i> Excel</button>
+                <button class="btn btn-outline-secondary btn-sm" onclick="exportarReporte('csv')"><i class="bi bi-file-csv"></i> CSV</button>
+            </div>
+
+            <!-- Modal: Detalle -->
+            <div class="modal fade" id="modalDetalle" tabindex="-1">
+                <div class="modal-dialog modal-lg">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="modalDetalleTitle">Detalle de Meta</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                        </div>
+                        <div class="modal-body">
+                            <!-- Especificaciones del ahorro -->
+                            <div class="card mb-3 border-0 bg-light">
+                                <div class="card-body">
+                                    <h6 class="card-title">Especificaciones</h6>
+                                    <div class="row">
+                                        <div class="col-md-6 mb-2">
+                                            <small class="text-muted">Concepto:</small>
+                                            <p class="fw-bold" id="detalleConcepto">-</p>
+                                        </div>
+                                        <div class="col-md-6 mb-2">
+                                            <small class="text-muted">Descripción:</small>
+                                            <p class="fw-bold" id="detalleDescripcion">-</p>
+                                        </div>
+                                        <div class="col-md-6 mb-2">
+                                            <small class="text-muted">Monto Meta:</small>
+                                            <p class="fw-bold" id="detalleMontoMeta">-</p>
+                                        </div>
+                                        <div class="col-md-6 mb-2">
+                                            <small class="text-muted">Total Acumulado:</small>
+                                            <p class="fw-bold text-warning-custom" id="detalleTotalAcumulado">-</p>
+                                        </div>
+                                        <div class="col-md-6 mb-2">
+                                            <small class="text-muted">Frecuencia:</small>
+                                            <p class="fw-bold" id="detalleFrecuencia">-</p>
+                                        </div>
+                                        <div class="col-md-6 mb-2">
+                                            <small class="text-muted">Fecha Meta:</small>
+                                            <p class="fw-bold" id="detalleFechaMeta">-</p>
+                                        </div>
+                                        <div class="col-md-6 mb-2">
+                                            <small class="text-muted">Cantidad de Cuotas:</small>
+                                            <p class="fw-bold" id="detalleCantidadCuotas">-</p>
+                                        </div>
+                                        <div class="col-md-6 mb-2">
+                                            <small class="text-muted">Estado:</small>
+                                            <p class="fw-bold"><span class="badge" id="detalleEstado">-</span></p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Resumen de cuotas -->
+                            <div id="resumenCuotas" class="alert alert-info mb-3">-</div>
+
+                            <!-- Tabla de cuotas -->
+                            <h6 class="mb-3">Cuotas Detalladas</h6>
+                            <table class="table table-sm">
+                                <thead>
+                                    <tr>
+                                        <th>Cuota</th>
+                                        <th>Asignado</th>
+                                        <th>Aportado</th>
+                                        <th>Fecha Límite</th>
+                                        <th>Estado</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="tablaCuotasBody"></tbody>
+                            </table>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Modal: Form Ahorro -->
+            <div class="modal fade" id="modalFormAhorro" tabindex="-1">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="formAhorroTitle">Nueva Meta de Ahorro</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                        </div>
+                        <div class="modal-body">
+                            <form id="formAhorro">
+                                <input type="hidden" id="ahorroId" />
+
+                                <div class="mb-3">
+                                    <label for="conceptoId" class="form-label">Concepto</label>
+                                    <select id="conceptoId" class="form-select" required>
+                                        <option value="">Selecciona un concepto...</option>
+                                    </select>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="montoMeta" class="form-label">Monto Meta</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text">$</span>
+                                        <input type="number" step="0.01" id="montoMeta" class="form-control" required />
+                                    </div>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label for="frecuencia" class="form-label">Frecuencia</label>
+                                        <select id="frecuencia" class="form-select" required>
+                                            <option value="">Seleccione frecuencia</option>
+                                            <option value="DIARIA">Diaria</option>
+                                            <option value="SEMANAL">Semanal</option>
+                                            <option value="QUINCENAL">Quincenal</option>
+                                            <option value="MENSUAL">Mensual</option>
+                                            <option value="TRIMESTRAL">Trimestral</option>
+                                            <option value="SEMESTRAL">Semestral</option>
+                                            <option value="ANUAL">Anual</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label for="cantidadCuotas" class="form-label">Cantidad de Cuotas</label>
+                                        <input type="number" id="cantidadCuotas" class="form-control" min="1" placeholder="Opcional" />
+                                    </div>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="fechaMeta" class="form-label">Fecha Meta</label>
+                                    <input type="date" id="fechaMeta" class="form-control" />
+                                    <div class="form-text">Ingresa la Fecha Meta O la Cantidad de Cuotas. El sistema calculará el otro.</div>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="descripcion" class="form-label">Descripción (Opcional)</label>
+                                    <textarea id="descripcion" class="form-control" rows="3" maxlength="100"></textarea>
+                                </div>
+                            </form>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                            <button type="button" class="btn btn-warning text-white" id="btnGuardarAhorro" onclick="document.getElementById('formAhorro').dispatchEvent(new Event('submit'))">Guardar</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Modal Seleccionar Concepto -->
+            <div class="modal fade" id="modalSeleccionConcepto" tabindex="-1">
+                <div class="modal-dialog modal-lg">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title">Seleccionar Concepto</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                        </div>
+                        <div class="modal-body">
+                            <input type="text" id="buscadorModal" class="form-control mb-3" placeholder="Buscar concepto..." />
+                            <div id="listaConceptosSeleccion" class="row g-3"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Modal Form Aporte -->
+            <div class="modal fade" id="modalFormAporte" tabindex="-1">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title">Registrar Aporte</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                        </div>
+                        <div class="modal-body">
+                            <form id="formAporte">
+                                <input type="hidden" id="aporteAhorroId" />
+                                <input type="hidden" id="aporteCuotaId" />
+                                <div class="mb-3">
+                                    <label class="form-label">Meta</label>
+                                    <input type="text" id="aporteMetaNombre" class="form-control" readonly />
+                                </div>
+                                <div class="mb-3">
+                                    <label for="aporteMontoInput" class="form-label">Monto a Aportar</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text">$</span>
+                                        <input type="number" step="0.01" id="aporteMontoInput" class="form-control" required />
+                                    </div>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="aporteDescripcionInput" class="form-label">Descripción (Opcional)</label>
+                                    <textarea id="aporteDescripcionInput" class="form-control" rows="2"></textarea>
+                                </div>
+                            </form>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                            <button type="button" class="btn btn-warning text-white" onclick="document.getElementById('formAporte').dispatchEvent(new Event('submit'))">Registrar</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Modal Eliminar -->
+            <div class="modal fade" id="modalEliminar" tabindex="-1">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title">Confirmar Eliminación</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                        </div>
+                        <div class="modal-body">
+                            <p>¿Estás seguro de que deseas eliminar esta meta de ahorro?</p>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                            <button type="button" class="btn btn-danger" id="btnConfirmarEliminar">Eliminar</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </main>
+
+        <div th:replace="fragments/head :: scripts"></div>
+        <script th:src="@{/js/ahorros/ahorro.js}"></script>
+    </body>
+</html>

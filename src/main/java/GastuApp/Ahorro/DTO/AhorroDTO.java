@@ -10,6 +10,7 @@ public class AhorroDTO {
     
     private Long ahorroId;
     private Long conceptoId;
+    private String nombreConcepto;
     private String descripcion;
     private BigDecimal montoMeta;
     private BigDecimal totalAcumulado;
@@ -23,9 +24,10 @@ public class AhorroDTO {
 
     }
 
-    public AhorroDTO(Long ahorro,Long concepto, String descripcion, BigDecimal montoMeta, BigDecimal acumulado, Frecuencia frecuencia, LocalDate fechaCreacion, LocalDate fechaMeta, Estado estado, Integer cantCuotas){
+    public AhorroDTO(Long ahorro,Long concepto, String nombreConcepto, String descripcion, BigDecimal montoMeta, BigDecimal acumulado, Frecuencia frecuencia, LocalDate fechaCreacion, LocalDate fechaMeta, Estado estado, Integer cantCuotas){
         this.ahorroId=ahorro;
         this.conceptoId=concepto;
+        this.nombreConcepto=nombreConcepto;
         this.descripcion=descripcion;
         this.montoMeta=montoMeta;
         this.totalAcumulado=acumulado;
@@ -52,6 +54,14 @@ public class AhorroDTO {
         this.conceptoId=conceptoId;
     }
 
+    public String getNombreConcepto(){
+        return nombreConcepto;
+    }
+    
+    public void setNombreConcepto(String nombreConcepto){
+        this.nombreConcepto = nombreConcepto;
+    }
+    
     public String getDescripcion(){
         return descripcion;
     }
@@ -100,6 +110,14 @@ public class AhorroDTO {
         this.fechaMeta=fechaMeta;
     }
 
+    public LocalDate getFechaMeta(){
+        return fechaMeta;
+    }
+
+    public void setFechaMeta(LocalDate fechaMeta){
+        this.fechaMeta=fechaMeta;
+    }
+
     public Estado getEstado(){
         return estado;
     }
@@ -114,6 +132,14 @@ public class AhorroDTO {
 
     public void setCantCuotas( Integer cantidadCuotas){
         this.cantidadCuotas= cantidadCuotas;
+    }
+
+    public Integer getCantidadCuotas(){
+        return cantidadCuotas;
+    }
+
+    public void setCantidadCuotas(Integer cantidadCuotas){
+        this.cantidadCuotas = cantidadCuotas;
     }
     
 }
