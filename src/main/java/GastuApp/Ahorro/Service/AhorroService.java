@@ -31,14 +31,14 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class AhorroService {
-    
+
     private final AhorroMetaRepository ahorroMetaRepository;
     private final AporteAhorroRepository aporteAhorroRepository;
     private final ConceptoService conceptoService;
 
     public AhorroService(AhorroMetaRepository ahorroMetaRepository,
-                        AporteAhorroRepository aporteAhorroRepository,
-                        ConceptoService conceptoService) {
+            AporteAhorroRepository aporteAhorroRepository,
+            ConceptoService conceptoService) {
         this.ahorroMetaRepository = ahorroMetaRepository;
         this.aporteAhorroRepository = aporteAhorroRepository;
         this.conceptoService = conceptoService;
@@ -51,16 +51,19 @@ public class AhorroService {
         a.setUsuarioId(usuarioId);
         a.setConceptoId(dto.getConceptoId());
         a.setDescripcion(dto.getDescripcion());
-        if (dto.getMonto() != null) a.setMonto(dto.getMonto());
+        if (dto.getMontoMeta() != null)
+            a.setMonto(dto.getMontoMeta());
         a.setFrecuencia(dto.getFrecuencia());
-        if (dto.getMeta() != null) a.setMeta(dto.getMeta());
-        if (dto.getCantCuotas() != null) a.setCantCuotas(dto.getCantCuotas());
+        if (dto.getFechaMeta() != null)
+            a.setMeta(dto.getFechaMeta());
+        if (dto.getCantidadCuotas() != null)
+            a.setCantCuotas(dto.getCantidadCuotas());
         a.setAcumulado(BigDecimal.ZERO);
         a.setEstado(Estado.SININICIAR);
         return a;
     }
 
-        private AhorroDTO toDTO(AhorroMeta a) {
+    private AhorroDTO toDTO(AhorroMeta a) {
         AhorroDTO dto = new AhorroDTO();
         dto.setId(a.getId());
         dto.setConceptoId(a.getConceptoId());
@@ -74,13 +77,13 @@ public class AhorroService {
         dto.setCantCuotas(a.getCantCuotas());
 
         ConceptoDTO c = conceptoService.obtenerPorId(a.getConceptoId());
-        
+
         if (c != null) {
             dto.setNombreConcepto(c.getNombre());
         } else {
             throw new DataIntegrityViolationException("Concepto asociado no encontrado para Ahorro ID: " + a.getId());
         }
-        return dto; 
+        return dto;
     }
 
     public AporteAhorroDTO toAporteDTO(AporteAhorro ap) {
@@ -94,9 +97,9 @@ public class AhorroService {
         return dtoAp;
     }
 
-    //-----------------CRUD AHORRRO META----------------------
+    // -----------------CRUD AHORRRO META----------------------
 
-    //VER todo por usuario
+    // VER todo por usuario
     @Transactional(readOnly = true)
     public List<AhorroDTO> listarTodosPorUsuario(Long usuarioId) {
         return ahorroMetaRepository.findByUsuarioIdOrderByFechaCreacionDesc(usuarioId)
@@ -113,7 +116,7 @@ public class AhorroService {
         return toDTO(existente);
     }
 
-//ver un concepto por nombre
+    // ver un concepto por nombre
     @Transactional(readOnly = true)
     public List<AhorroDTO> buscarPorConceptoParcial(Long usuarioId, String texto) {
         return ahorroMetaRepository.buscarPorConceptoParcial(usuarioId, texto)
@@ -122,7 +125,7 @@ public class AhorroService {
                 .collect(Collectors.toList());
     }
 
-// filtrar por estado
+    // filtrar por estado
     @Transactional(readOnly = true)
     public List<AhorroDTO> filtrarPorEstado(Long usuarioId, Estado estado) {
         return ahorroMetaRepository.findByUsuarioIdAndEstadoOrderByFechaCreacionDesc(usuarioId, estado)
@@ -131,42 +134,45 @@ public class AhorroService {
                 .collect(Collectors.toList());
     }
 
-// METODO PARA VALIDAR EL CONCEPTO
-        private void validarConcepto(Long conceptoId) {
+    // METODO PARA VALIDAR EL CONCEPTO
+    private void validarConcepto(Long conceptoId) {
         if (conceptoId == null) {
             throw new IllegalArgumentException("El concepto es requerido");
         }
         ConceptoDTO concepto = conceptoService.obtenerPorId(conceptoId);
         if (!"AHORRO".equals(concepto.getTipo())) {
-        throw new IllegalArgumentException("El concepto debe ser de tipo AHORRO");
-    }
+            throw new IllegalArgumentException("El concepto debe ser de tipo AHORRO");
+        }
     }
 
-// METODO QUE VALIDA QUE CONCEPTO, FRECUENCIA Y MONTO META SEAN OBLIGATORIOS
+    // METODO QUE VALIDA QUE CONCEPTO, FRECUENCIA Y MONTO META SEAN OBLIGATORIOS
     private void validarCamposCrearAhorro(CrearAhorroDTO dto) {
-    if (dto.getConceptoId() == null) {
-        throw new IllegalArgumentException("El concepto es obligatorio");
-    }
-    if (dto.getFrecuencia() == null) {
-        throw new IllegalArgumentException("La frecuencia es obligatoria");
-    }
-    
-    if (dto.getMonto() == null || dto.getMonto().compareTo(BigDecimal.ZERO) <= 0) {
-        throw new IllegalArgumentException("El monto meta es obligatorio y debe ser mayor que cero.");
+        if (dto.getConceptoId() == null) {
+            throw new IllegalArgumentException("El concepto es obligatorio");
+        }
+        if (dto.getFrecuencia() == null) {
+            throw new IllegalArgumentException("La frecuencia es obligatoria");
+        }
+
+        if (dto.getMontoMeta() == null || dto.getMontoMeta().compareTo(BigDecimal.ZERO) <= 0) {
+            throw new IllegalArgumentException("El monto meta es obligatorio y debe ser mayor que cero.");
+        }
+
+        int ingreso = 0;
+        if (dto.getFechaMeta() != null)
+            ingreso++;
+        if (dto.getCantidadCuotas() != null)
+            ingreso++;
+
+        if (ingreso < 1) {
+            throw new IllegalArgumentException("Debes proveer la fecha meta o la cantidad de cuotas (o ambas)");
+        }
     }
 
-    int ingreso = 0;
-    if (dto.getMeta() != null) ingreso++;
-    if (dto.getCantCuotas() != null) ingreso++;
-    
-    if (ingreso < 1) { 
-        throw new IllegalArgumentException("Debes proveer la fecha meta o la cantidad de cuotas (o ambas)");
-    }
-}
-
-//METODO QUE CALCULA LA FRECUENCIA
+    // METODO QUE CALCULA LA FRECUENCIA
     private int calcularPeriodo(Frecuencia frecuencia) {
-        if (frecuencia == null) return 30;
+        if (frecuencia == null)
+            return 30;
         switch (frecuencia) {
             case DIARIA:
                 return 1;
@@ -187,10 +193,12 @@ public class AhorroService {
         }
     }
 
-// METODO QUE SUMA LA FRECUENCIA
+    // METODO QUE SUMA LA FRECUENCIA
     private LocalDate sumarFrecuencia(LocalDate base, Frecuencia frecuencia, int count) {
-        if (base == null) base = LocalDate.now();
-        if (count <= 0) return base;
+        if (base == null)
+            base = LocalDate.now();
+        if (count <= 0)
+            return base;
         switch (frecuencia) {
             case DIARIA:
                 return base.plusDays(count);
@@ -210,7 +218,8 @@ public class AhorroService {
                 return base.plusDays((long) count * 30);
         }
     }
-// METODO QUE CALCULA EL CAMPO FALTANTE
+
+    // METODO QUE CALCULA EL CAMPO FALTANTE
     private void calcularCampoFaltante(AhorroMeta entidad, CrearAhorroDTO dto) {
         // Asegurar fechaCreacion no nula
         if (entidad.getCreacion() == null) {
@@ -221,17 +230,19 @@ public class AhorroService {
         boolean tieneFecha = entidad.getMeta() != null;
         boolean tieneCantidad = entidad.getCantCuotas() != null;
 
-        //  falta cantidadCuotas -> calcular por periodos entre creacion y fechaMeta
+        // falta cantidadCuotas -> calcular por periodos entre creacion y fechaMeta
         if (!tieneCantidad && tieneFecha && tieneMonto) {
             int periodoDias = calcularPeriodo(entidad.getFrecuencia());
             long dias = ChronoUnit.DAYS.between(entidad.getCreacion(), entidad.getMeta());
-            if (dias < 0) dias = 0;
+            if (dias < 0)
+                dias = 0;
             int cantidad = (int) Math.max(1, Math.ceil((double) (dias + 1) / periodoDias));
             entidad.setCantCuotas(cantidad);
             return;
         }
 
-        //  falta fechaMeta -> calcular sumando (cantidadCuotas -1) periodos a la fechaCreacion
+        // falta fechaMeta -> calcular sumando (cantidadCuotas -1) periodos a la
+        // fechaCreacion
         if (!tieneFecha && tieneCantidad) {
             LocalDate inicio = entidad.getCreacion();
             // Si la cantidad es 1 -> fechaMeta = inicio
@@ -244,7 +255,7 @@ public class AhorroService {
             }
             return;
         }
-        //  nada que calcular
+        // nada que calcular
         if (tieneMonto && tieneFecha && tieneCantidad) {
             return;
         }
@@ -253,12 +264,13 @@ public class AhorroService {
         throw new IllegalArgumentException("No se pudo calcular campos faltantes: combinación inválida");
     }
 
-//METODO QUE GENERA LAS CUOTAS
+    // METODO QUE GENERA LAS CUOTAS
     private List<AporteAhorro> generarCuotas(AhorroMeta meta) {
         List<AporteAhorro> resultado = new ArrayList<>();
         Integer obj = meta.getCantCuotas();
         int n = (obj == null) ? 0 : obj;
-        if (n <= 0) return resultado;
+        if (n <= 0)
+            return resultado;
 
         BigDecimal monto = meta.getMonto() == null ? BigDecimal.ZERO : meta.getMonto();
         BigDecimal cuotaBase = BigDecimal.ZERO;
@@ -287,7 +299,8 @@ public class AhorroService {
             BigDecimal diff = monto.subtract(sumaAsignados).setScale(2, RoundingMode.HALF_UP);
             if (diff.compareTo(BigDecimal.ZERO) != 0 && !resultado.isEmpty()) {
                 AporteAhorro ultima = resultado.get(resultado.size() - 1);
-                BigDecimal nuevo = (ultima.getAporteAsignado() == null ? BigDecimal.ZERO : ultima.getAporteAsignado()).add(diff);
+                BigDecimal nuevo = (ultima.getAporteAsignado() == null ? BigDecimal.ZERO : ultima.getAporteAsignado())
+                        .add(diff);
                 ultima.setAporteAsignado(nuevo);
             }
         } else {
@@ -298,7 +311,7 @@ public class AhorroService {
         return resultado;
     }
 
-// Crear ahorro 
+    // Crear ahorro
     @Transactional
     public AhorroDTO crear(CrearAhorroDTO dto, Long usuarioId) {
         validarConcepto(dto.getConceptoId());
@@ -315,8 +328,10 @@ public class AhorroService {
         calcularCampoFaltante(entidad, dto);
 
         // totalAcumulado y estado por defecto
-        if (entidad.getAcumulado() == null) entidad.setAcumulado(BigDecimal.ZERO);
-        if (entidad.getEstado() == null) entidad.setEstado(Estado.SININICIAR);
+        if (entidad.getAcumulado() == null)
+            entidad.setAcumulado(BigDecimal.ZERO);
+        if (entidad.getEstado() == null)
+            entidad.setEstado(Estado.SININICIAR);
 
         // persistir meta para obtener ID
         AhorroMeta guardado = ahorroMetaRepository.save(entidad);
@@ -330,7 +345,7 @@ public class AhorroService {
         return toDTO(guardado);
     }
 
-//METODO QUE CALCULA LOS APORTES RESTANTES
+    // METODO QUE CALCULA LOS APORTES RESTANTES
     private void recalcularAportesRestantes(AhorroMeta meta) {
         List<AporteAhorro> todas = aporteAhorroRepository.findByMetaIdOrderByFechaLimiteAsc(meta.getId());
 
@@ -369,12 +384,13 @@ public class AhorroService {
         BigDecimal diff = restante.subtract(sumaAsignados).setScale(2, RoundingMode.HALF_UP);
         if (diff.compareTo(BigDecimal.ZERO) != 0 && !pendientes.isEmpty()) {
             AporteAhorro last = pendientes.get(pendientes.size() - 1);
-            last.setAporteAsignado((last.getAporteAsignado() == null ? BigDecimal.ZERO : last.getAporteAsignado()).add(diff));
+            last.setAporteAsignado(
+                    (last.getAporteAsignado() == null ? BigDecimal.ZERO : last.getAporteAsignado()).add(diff));
             aporteAhorroRepository.save(last);
         }
     }
 
-//METODO QUE ME RECALCULA LAS CUOTAS AL EDITAR UN AHORRO
+    // METODO QUE ME RECALCULA LAS CUOTAS AL EDITAR UN AHORRO
     private void recalcularAportes(AhorroMeta meta) {
         List<AporteAhorro> todas = aporteAhorroRepository.findByMetaIdOrderByFechaLimiteAsc(meta.getId());
 
@@ -388,11 +404,13 @@ public class AhorroService {
                 .collect(Collectors.toList());
 
         // generar nuevas fechas para las pendientes según la nueva configuración
-        // estrategia: empezar desde fechaCreacion y saltar periodos, pero respetar el número total de cuotas
+        // estrategia: empezar desde fechaCreacion y saltar periodos, pero respetar el
+        // número total de cuotas
         Integer cantidad = meta.getCantCuotas() == null ? (aportadas.size() + pendientes.size()) : meta.getCantCuotas();
         LocalDate inicio = meta.getCreacion() == null ? LocalDate.now() : meta.getCreacion();
 
-        // Generamos la lista completa de fechas para 'cantidad' cuotas y luego reasignamos las fechas
+        // Generamos la lista completa de fechas para 'cantidad' cuotas y luego
+        // reasignamos las fechas
         List<LocalDate> fechas = new ArrayList<>();
         for (int i = 0; i < cantidad; i++) {
             fechas.add(sumarFrecuencia(inicio, meta.getFrecuencia(), i));
@@ -400,7 +418,8 @@ public class AhorroService {
 
         // Mantener las aportadas en sus posiciones iniciales por fecha si coinciden
         // reasignar a las pendientes las fechas que no estén ocupadas por aportadas
-        Set<LocalDate> fechasAportadas = aportadas.stream().map(AporteAhorro::getFechaLimite).collect(Collectors.toSet());
+        Set<LocalDate> fechasAportadas = aportadas.stream().map(AporteAhorro::getFechaLimite)
+                .collect(Collectors.toSet());
         Iterator<LocalDate> it = fechas.stream().filter(f -> !fechasAportadas.contains(f)).iterator();
         for (AporteAhorro p : pendientes) {
             if (it.hasNext()) {
@@ -412,7 +431,7 @@ public class AhorroService {
         recalcularAportesRestantes(meta);
     }
 
-// editar un ahorro
+    // editar un ahorro
     @Transactional
     public AhorroDTO actualizar(Long id, EditarAhorroDTO dto, Long usuarioId) {
         AhorroMeta existente = ahorroMetaRepository.findByAhorroIdAndUsuarioId(id, usuarioId)
@@ -422,11 +441,15 @@ public class AhorroService {
             throw new IllegalArgumentException("La frecuencia es obligatoria");
         }
 
-        if (dto.getDescripcion() != null) existente.setDescripcion(dto.getDescripcion());
-        if (dto.getMonto() != null) existente.setMonto(dto.getMonto());
+        if (dto.getDescripcion() != null)
+            existente.setDescripcion(dto.getDescripcion());
+        if (dto.getMontoMeta() != null)
+            existente.setMonto(dto.getMontoMeta());
         existente.setFrecuencia(dto.getFrecuencia());
-        if (dto.getMeta() != null) existente.setMeta(dto.getMeta());
-        if (dto.getCantCuotas() != null) existente.setCantCuotas(dto.getCantCuotas());
+        if (dto.getFechaMeta() != null)
+            existente.setMeta(dto.getFechaMeta());
+        if (dto.getCantidadCuotas() != null)
+            existente.setCantCuotas(dto.getCantidadCuotas());
 
         // Recalcular cuotas pendientes (no tocar las aportadas)
         recalcularAportes(existente);
@@ -435,7 +458,7 @@ public class AhorroService {
         return toDTO(actualizado);
     }
 
-// eliminar un ahorro por id
+    // eliminar un ahorro por id
     @Transactional
     public void eliminar(Long id, Long usuarioId) {
         AhorroMeta existente = ahorroMetaRepository.findByAhorroIdAndUsuarioId(id, usuarioId)
@@ -447,10 +470,10 @@ public class AhorroService {
         ahorroMetaRepository.delete(existente);
     }
 
-//-------------CREAR Y LISTAR APORTES---------------------
+    // -------------CREAR Y LISTAR APORTES---------------------
 
-// Ver todos los aporte de un ahorro especifico
-@Transactional(readOnly = true)
+    // Ver todos los aporte de un ahorro especifico
+    @Transactional(readOnly = true)
     public List<AporteAhorroDTO> listarAportesPorMeta(Long metaId, Long usuarioId) {
         ahorroMetaRepository.findByAhorroIdAndUsuarioId(metaId, usuarioId)
                 .orElseThrow(() -> new IllegalArgumentException("Ahorro no encontrado o sin permisos"));
@@ -460,8 +483,8 @@ public class AhorroService {
                 .collect(Collectors.toList());
     }
 
-//METODO QUE PASA EL ESTADO DE LAS CUOTAS A PERDIDA
-   private void pasarCuotasAPerdias(AhorroMeta meta) {
+    // METODO QUE PASA EL ESTADO DE LAS CUOTAS A PERDIDA
+    private void pasarCuotasAPerdias(AhorroMeta meta) {
         LocalDate hoy = LocalDate.now();
         List<AporteAhorro> todas = aporteAhorroRepository.findByMetaIdOrderByFechaLimiteAsc(meta.getId());
         boolean changed = false;
@@ -474,26 +497,29 @@ public class AhorroService {
         }
     }
 
-//METODO QUE PASA UNA CUOTA A DISPONIBLE
+    // METODO QUE PASA UNA CUOTA A DISPONIBLE
     private boolean cuotaDisponiblePago(AporteAhorro cuota) {
-        if (cuota == null) return false;
+        if (cuota == null)
+            return false;
         LocalDate hoy = LocalDate.now();
         // disponible si fechaLimite <= hoy + 7 días
         return !cuota.getFechaLimite().isAfter(hoy.plusDays(7));
     }
 
-//METODO QUE MUESTRA LOS 3 APORTES
+    // METODO QUE MUESTRA LOS 3 APORTES
     private <T> List<T> verTresAportes(List<T> list, int n) {
-        if (list == null || list.isEmpty()) return Collections.emptyList();
+        if (list == null || list.isEmpty())
+            return Collections.emptyList();
         int size = list.size();
         int start = Math.max(0, size - n);
         return list.subList(start, size);
     }
 
-//METODO QUE Al DETECTAR 3 CUOTAS PERDIDAS, PASA EL AHORRO A ESTADO ABANDONADO
+    // METODO QUE Al DETECTAR 3 CUOTAS PERDIDAS, PASA EL AHORRO A ESTADO ABANDONADO
     private void abandonoAhorro(AhorroMeta meta) {
         List<AporteAhorro> todas = aporteAhorroRepository.findByMetaIdOrderByFechaLimiteAsc(meta.getId());
-        if (todas.size() < 3) return;
+        if (todas.size() < 3)
+            return;
 
         // ordenar por fecha asc (ya lo está) y tomar últimas 3
         List<AporteAhorro> ultimas3 = verTresAportes(todas, 3);
@@ -504,34 +530,34 @@ public class AhorroService {
         }
     }
 
-
-//muestra la proxima cuota disponible
+    // muestra la proxima cuota disponible
     public Optional<AporteAhorro> obtenerCuotaDisponible(Long metaId, Long usuarioId) {
         ahorroMetaRepository.findByAhorroIdAndUsuarioId(metaId, usuarioId)
-            .orElseThrow(() -> new IllegalArgumentException("Ahorro no encontrado o sin permisos"));
+                .orElseThrow(() -> new IllegalArgumentException("Ahorro no encontrado o sin permisos"));
 
         LocalDate hoy = LocalDate.now();
         List<AporteAhorro> todas = aporteAhorroRepository.findByMetaIdOrderByFechaLimiteAsc(metaId);
-        
+
         return todas.stream()
-        .filter(a -> a.getEstado() == AporteAhorro.EstadoAp.PENDIENTE)
-        .filter(a -> !a.getFechaLimite().isAfter(hoy.plusDays(7)))
-        .findFirst();
+                .filter(a -> a.getEstado() == AporteAhorro.EstadoAp.PENDIENTE)
+                .filter(a -> !a.getFechaLimite().isAfter(hoy.plusDays(7)))
+                .findFirst();
 
     }
-   
-// registrar un aporte
+
+    // registrar un aporte
     @Transactional
     public AporteAhorroDTO registrarAporte(Long metaId, Long aporteId, AporteAhorroDTO dto, Long usuarioId) {
         AhorroMeta meta = ahorroMetaRepository.findByAhorroIdAndUsuarioId(metaId, usuarioId)
                 .orElseThrow(() -> new RuntimeException("Ahorro no encontrado o sin permisos"));
 
-        //validad que el monto ingresado sea mayor a 0
+        // validad que el monto ingresado sea mayor a 0
         BigDecimal aporteIngresado = dto.getAporte() == null ? BigDecimal.ZERO : dto.getAporte();
         if (aporteIngresado.compareTo(BigDecimal.ZERO) <= 0) {
-        throw new  IllegalArgumentException("El monto del aporte debe ser mayor que cero para registrar un pago.");
-    }        
-        // marcar cuotas vencidas como PERDIDO si su fechaLimite < hoy y siguen PENDIENTE
+            throw new IllegalArgumentException("El monto del aporte debe ser mayor que cero para registrar un pago.");
+        }
+        // marcar cuotas vencidas como PERDIDO si su fechaLimite < hoy y siguen
+        // PENDIENTE
         pasarCuotasAPerdias(meta);
 
         AporteAhorro cuota;
@@ -544,7 +570,8 @@ public class AhorroService {
         }
         // validar que cuota esté PENDIENTE
         if (cuota.getEstado() != AporteAhorro.EstadoAp.PENDIENTE) {
-            throw new IllegalArgumentException("La cuota seleccionada no está disponible para aportar (estado=" + cuota.getEstado() + ")");
+            throw new IllegalArgumentException(
+                    "La cuota seleccionada no está disponible para aportar (estado=" + cuota.getEstado() + ")");
         }
 
         // validar disponibilidad 7 días antes
@@ -562,15 +589,16 @@ public class AhorroService {
         acumuladoActual = acumuladoActual.add(aporteIngresado);
         meta.setAcumulado(acumuladoActual);
 
-        //  Reanudar o Iniciar: Si se hizo un pago, el estado debe ser ACTIVO, a menos que se complete.
+        // Reanudar o Iniciar: Si se hizo un pago, el estado debe ser ACTIVO, a menos
+        // que se complete.
         if (meta.getEstado() == Estado.SININICIAR || meta.getEstado() == Estado.ABANDONADO) {
-        meta.setEstado(Estado.ACTIVO);
+            meta.setEstado(Estado.ACTIVO);
         }
 
-        //Si total alcanzado o superado -> COMPLETADO
+        // Si total alcanzado o superado -> COMPLETADO
         BigDecimal montoMeta = meta.getMonto() == null ? BigDecimal.ZERO : meta.getMonto();
         if (montoMeta.compareTo(BigDecimal.ZERO) > 0 && acumuladoActual.compareTo(montoMeta) >= 0) {
-        meta.setEstado(Estado.COMPLETADO);
+            meta.setEstado(Estado.COMPLETADO);
         }
 
         // Si aporte ingresado difiere del asignado -> recalcular cuotas pendientes
@@ -579,7 +607,8 @@ public class AhorroService {
             recalcularAportesRestantes(meta);
         }
 
-        // detectar abandono DEBE ir después de la lógica de reanudación para capturar el nuevo estado
+        // detectar abandono DEBE ir después de la lógica de reanudación para capturar
+        // el nuevo estado
         abandonoAhorro(meta);
         ahorroMetaRepository.save(meta);
 

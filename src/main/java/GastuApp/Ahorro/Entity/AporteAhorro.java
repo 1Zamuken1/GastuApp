@@ -14,37 +14,38 @@ import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
 
 @Entity
-@Table(name= "aporteAhorro")
+@Table(name = "aporte_ahorro")
 public class AporteAhorro {
-    
+
     @Id
+    @Column(name = "aporte_ahorro_id")
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long aporteAhorroId;
 
-    @Column(name = "meta_id", nullable = false)
+    @Column(name = "ahorro_meta_id", nullable = false)
     private Long metaId;
 
-    @Column(name="aporteAsignado")
+    @Column(name = "aporte_asignado")
     private BigDecimal aporteAsignado;
 
-    @Column(name="aporte")
+    @Column(name = "aporte")
     private BigDecimal aporte;
 
-    @Column(name="fechaLimite", nullable = false)
+    @Column(name = "fecha_limite", nullable = false)
     private LocalDate fechaLimite;
 
-    public enum EstadoAp{
+    public enum EstadoAp {
         APORTADO,
         PERDIDO,
         PENDIENTE
     }
+
     @Enumerated(EnumType.STRING)
     @Column(name = "estado", nullable = false)
     private EstadoAp estadoAp;
 
-    @Column(name = "fechaRegistro", nullable = false, updatable = false)
+    @Column(name = "fecha_registro", nullable = false, updatable = false)
     private LocalDate fechaRegistro;
-    
 
     @PrePersist
     protected void onCreate() {
@@ -54,15 +55,16 @@ public class AporteAhorro {
     public AporteAhorro() {
     }
 
-    public AporteAhorro(Long aporteAhorroId, Long metaId, BigDecimal aporteAsignado, BigDecimal aporte, LocalDate fechaLimite, 
-                        EstadoAp estadoAp, LocalDate fechaRegistro) {
+    public AporteAhorro(Long aporteAhorroId, Long metaId, BigDecimal aporteAsignado, BigDecimal aporte,
+            LocalDate fechaLimite,
+            EstadoAp estadoAp, LocalDate fechaRegistro) {
         this.aporteAhorroId = aporteAhorroId;
         this.metaId = metaId;
         this.aporteAsignado = aporteAsignado;
-        this.aporte=aporte;
+        this.aporte = aporte;
         this.fechaLimite = fechaLimite;
         this.estadoAp = estadoAp;
-        this.fechaRegistro=fechaRegistro;
+        this.fechaRegistro = fechaRegistro;
     }
 
     public Long getAporteAhorroId() {
@@ -117,7 +119,6 @@ public class AporteAhorro {
     public LocalDate getFechaRegistro() {
         return fechaRegistro;
     }
-    
 
-// tiene una relacion uno a muchos con ahorro meta
+    // tiene una relacion uno a muchos con ahorro meta
 }

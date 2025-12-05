@@ -37,3 +37,18 @@ INSERT INTO concepto (tipo, nombre, descripcion) VALUES
 --
 -- Para crear un egreso, usa conceptoId: 6, 7, 8, 9 o 10
 -- Para crear un ingreso, usa conceptoId: 1, 2, 3, 4 o 5
+
+-- ============================================
+-- SCRIPT PARA CREAR CONCEPTOS DE AHORRO
+-- ============================================
+-- INSERT INTO concepto (tipo, nombre, descripcion) VALUES
+--('AHORRO', 'Vacaciones', 'Ahorro para viajes y vacaciones'),
+--('AHORRO', 'Emergencias', 'Fondo de emergencia'),
+--('AHORRO', 'Educación', 'Ahorro para estudios'),
+--('AHORRO', 'Vivienda', 'Ahorro para compra de casa o apartamento'),
+--('AHORRO', 'Vehículo', 'Ahorro para compra de vehículo'),
+--('AHORRO', 'Inversión', 'Ahorro para inversiones'),
+--('AHORRO', 'Jubilación', 'Ahorro para retiro'),
+--('AHORRO', 'Tecnología', 'Ahorro para compra de tecnología'),
+--('AHORRO', 'Salud', 'Ahorro para gastos médicos'),
+--('AHORRO', 'Otro', 'Otros ahorros');
