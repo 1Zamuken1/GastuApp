@@ -104,8 +104,16 @@ public class AhorroService {
     public List<AhorroDTO> listarTodosPorUsuario(Long usuarioId) {
         return ahorroMetaRepository.findByUsuarioIdOrderByFechaCreacionDesc(usuarioId)
                 .stream()
-                .map(this::toDTO)
-                .collect(Collectors.toList());
+                .map(a -> {
+                    try {
+                    return this.toDTO(a);
+                } catch (DataIntegrityViolationException e) {
+                    System.err.println("Error de Integridad al cargar Ahorro ID " + a.getId() + ": " + e.getMessage());
+                    return null;
+                }
+            })
+            .filter(dto -> dto != null) 
+            .collect(Collectors.toList());
     }
 
     // ver un ahorro por id
@@ -121,8 +129,16 @@ public class AhorroService {
     public List<AhorroDTO> buscarPorConceptoParcial(Long usuarioId, String texto) {
         return ahorroMetaRepository.buscarPorConceptoParcial(usuarioId, texto)
                 .stream()
-                .map(this::toDTO)
-                .collect(Collectors.toList());
+                .map(a -> {
+            try {
+                return this.toDTO(a);
+            } catch (DataIntegrityViolationException e) {
+                System.err.println("Error de Integridad al cargar Ahorro ID " + a.getId() + " por concepto: " + e.getMessage());
+                return null; 
+            }
+        })
+        .filter(dto -> dto != null) 
+        .collect(Collectors.toList());
     }
 
     // filtrar por estado
@@ -130,8 +146,16 @@ public class AhorroService {
     public List<AhorroDTO> filtrarPorEstado(Long usuarioId, Estado estado) {
         return ahorroMetaRepository.findByUsuarioIdAndEstadoOrderByFechaCreacionDesc(usuarioId, estado)
                 .stream()
-                .map(this::toDTO)
-                .collect(Collectors.toList());
+                .map(a -> {
+            try {
+                return this.toDTO(a);
+            } catch (DataIntegrityViolationException e) {
+                System.err.println("Error de Integridad al cargar Ahorro ID " + a.getId() + " por estado: " + e.getMessage());
+                return null; 
+            }
+        })
+        .filter(dto -> dto != null)
+        .collect(Collectors.toList());
     }
 
     // METODO PARA VALIDAR EL CONCEPTO

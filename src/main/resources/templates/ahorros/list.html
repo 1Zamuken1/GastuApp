@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+  <head
+    th:replace="~{fragments/head :: head(title='Ahorros - GastuApp')}"
+  ></head>
+  <body>
+    <div th:replace="~{fragments/navbar :: navbar}"></div>
+
+    <div class="container-fluid">
+      <div class="row">
+        <div
+          th:replace="~{fragments/sidebar :: sidebar(activePage='ahorros')}"
+        ></div>
+
+        <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+          <div
+            class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom"
+          >
+            <h1 class="h2">Ahorros</h1>
+            <div class="btn-toolbar mb-2 mb-md-0">
+              <a href="/ahorros/nuevo" class="btn btn-sm btn-warning text-dark fw-bold">
+                <i class="bi bi-plus-circle"></i> Nuevo Ahorro
+              </a>
+            </div>
+          </div>
+
+          <!-- Filtros -->
+          <div class="card mb-3">
+            <div class="card-body">
+              <div class="row g-3">
+                <div class="col-md-6">
+                  <input 
+                    type="text" 
+                    id="filtroConcepto" 
+                    class="form-control" 
+                    placeholder="Buscar por concepto..."
+                  />
+                </div>
+                <div class="col-md-6">
+                  <select id="filtroEstado" class="form-select">
+                    <option value="">Todos los estados</option>
+                    <option value="SININICIAR">Sin iniciar</option>
+                    <option value="ACTIVO">Activo</option>
+                    <option value="COMPLETADO">Completado</option>
+                    <option value="ABANDONADO">Abandonado</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Tabla responsiva -->
+          <div class="table-responsive">
+            <table class="table table-striped table-hover">
+              <thead class="table-light">
+                <tr>
+                  <th>Concepto</th>
+                  <th>Descripción</th>
+                  <th class="text-end">Monto Objetivo</th>
+                  <th class="text-end">Acumulado</th>
+                  <th class="text-center">Progreso</th>
+                  <th class="text-center">Estado</th>
+                  <th class="text-center">Acciones</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr th:each="ahorro : ${ahorros}">
+                  <td>
+                    <strong th:text="${ahorro.nombreConcepto}"></strong>
+                  </td>
+                  <td th:text="${ahorro.descripcion ?: 'Sin descripción'}"></td>
+                  <td
+                    class="text-end fw-bold"
+                    th:text="${'$ ' + #numbers.formatDecimal(ahorro.montoMeta, 1, 'POINT', 2, 'COMMA')}"
+                  ></td>
+                  <td
+                    class="text-end text-warning-custom fw-bold"
+                    th:text="${'$ ' + #numbers.formatDecimal(ahorro.totalAcumulado, 1, 'POINT', 2, 'COMMA')}"
+                  ></td>
+                  <td class="text-center">
+                    <div class="progress" style="height: 20px; min-width: 100px;">
+                      <div
+                        class="progress-bar bg-warning-custom"
+                        role="progressbar"
+                        th:attr="style=${'width: ' + ((ahorro.totalAcumulado / ahorro.montoMeta) * 100) + '%'}"
+                        th:text="${((ahorro.totalAcumulado / ahorro.montoMeta) * 100).intValue() + '%'}"
+                      ></div>
+                    </div>
+                  </td>
+                  <td class="text-center">
+                    <span
+                      class="badge"
+                      th:classappend="${ahorro.estado == 'ACTIVO' ? 'bg-success' : ahorro.estado == 'COMPLETADO' ? 'bg-info' : ahorro.estado == 'ABANDONADO' ? 'bg-danger' : 'bg-secondary'}"
+                      th:text="${ahorro.estado}"
+                    ></span>
+                  </td>
+                  <td class="text-center">
+                    <div class="btn-group btn-group-sm" role="group">
+                      <a
+                        th:href="@{/ahorros/ver/{id}(id=${ahorro.ahorroId})}"
+                        class="btn btn-outline-info"
+                        title="Ver detalles"
+                      >
+                        <i class="bi bi-eye"></i>
+                      </a>
+                      <a
+                        th:href="@{/ahorros/editar/{id}(id=${ahorro.ahorroId})}"
+                        class="btn btn-outline-secondary"
+                        title="Editar"
+                      >
+                        <i class="bi bi-pencil"></i>
+                      </a>
+                      <a
+                        th:href="@{/ahorros/eliminar/{id}(id=${ahorro.ahorroId})}"
+                        class="btn btn-outline-danger"
+                        onclick="return confirm('¿Estás seguro de eliminar este ahorro?')"
+                        title="Eliminar"
+                      >
+                        <i class="bi bi-trash"></i>
+                      </a>
+                    </div>
+                  </td>
+                </tr>
+                <tr th:if="${#lists.isEmpty(ahorros)}">
+                  <td colspan="7" class="text-center py-4 text-muted">
+                    <i class="bi bi-inbox"></i> No hay ahorros registrados.
+                    <a href="/ahorros/nuevo">Crea uno aquí</a>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Resumen de estadísticas -->
+          <div class="row mt-4">
+            <div class="col-md-3">
+              <div class="card text-center">
+                <div class="card-body">
+                  <h5 class="card-title">Total Ahorrado</h5>
+                  <p class="card-text h4 text-warning-custom" id="totalAhorrado">$ 0.00</p>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-3">
+              <div class="card text-center">
+                <div class="card-body">
+                  <h5 class="card-title">Metas Activas</h5>
+                  <p class="card-text h4 text-success" id="metasActivas">0</p>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-3">
+              <div class="card text-center">
+                <div class="card-body">
+                  <h5 class="card-title">Completadas</h5>
+                  <p class="card-text h4 text-info" id="completadas">0</p>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-3">
+              <div class="card text-center">
+                <div class="card-body">
+                  <h5 class="card-title">Abandonadas</h5>
+                  <p class="card-text h4 text-danger" id="abandonadas">0</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </main>
+      </div>
+    </div>
+
+    <script>
+      // Calcular estadísticas
+      function actualizarEstadisticas() {
+        const ahorros = document.querySelectorAll('tbody tr:not(:last-child)');
+        let totalAhorrado = 0;
+        let metasActivas = 0;
+        let completadas = 0;
+        let abandonadas = 0;
+
+        ahorros.forEach(row => {
+          // Extraer monto acumulado
+          const acumuladoText = row.cells[3].innerText;
+          const acumulado = parseFloat(acumuladoText.replace('$ ', '').replace(/,/g, '.'));
+          if (!isNaN(acumulado)) totalAhorrado += acumulado;
+
+          // Contar estados
+          const estado = row.cells[5].innerText.trim();
+          if (estado === 'ACTIVO') metasActivas++;
+          else if (estado === 'COMPLETADO') completadas++;
+          else if (estado === 'ABANDONADO') abandonadas++;
+        });
+
+        document.getElementById('totalAhorrado').innerText =
+          '$ ' + totalAhorrado.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+        document.getElementById('metasActivas').innerText = metasActivas;
+        document.getElementById('completadas').innerText = completadas;
+        document.getElementById('abandonadas').innerText = abandonadas;
+      }
+
+      // Filtrado dinámico
+      const filtroConcepto = document.getElementById('filtroConcepto');
+      const filtroEstado = document.getElementById('filtroEstado');
+
+      function aplicarFiltros() {
+        const rows = document.querySelectorAll('tbody tr');
+        const conceptoBuscar = filtroConcepto.value.toLowerCase();
+        const estadoBuscar = filtroEstado.value;
+
+        rows.forEach(row => {
+          // Si es la fila de "no hay datos", no filtrar
+          if (row.cells.length === 1) return;
+
+          const concepto = row.cells[0].innerText.toLowerCase();
+          const estado = row.cells[5].innerText.trim();
+
+          const conceptoMatch = concepto.includes(conceptoBuscar);
+          const estadoMatch = !estadoBuscar || estado === estadoBuscar;
+
+          row.style.display = conceptoMatch && estadoMatch ? '' : 'none';
+        });
+
+        actualizarEstadisticas();
+      }
+
+      filtroConcepto.addEventListener('keyup', aplicarFiltros);
+      filtroEstado.addEventListener('change', aplicarFiltros);
+
+      // Inicializar estadísticas
+      actualizarEstadisticas();
+    </script>
+
+    <style>
+      .text-warning-custom {
+        color: #830563;
+      }
+
+      .bg-warning-custom {
+        background-color: #c4a961;
+      }
+
+      .progress-bar.bg-warning-custom {
+        background-color: #c4a961 !important;
+      }
+
+      .table-responsive {
+        border-radius: 0.25rem;
+      }
+
+      .btn-outline-info:hover {
+        color: #fff;
+        background-color: #0dcaf0;
+        border-color: #0dcaf0;
+      }
+    </style>
+
+    <div th:replace="~{fragments/head :: scripts}"></div>
+  </body>
+</html>

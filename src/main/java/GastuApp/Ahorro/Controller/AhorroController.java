@@ -9,11 +9,11 @@ import GastuApp.Ahorro.Entity.AhorroMeta;
 import GastuApp.Ahorro.Service.AhorroService;
 import GastuApp.User.CustomUserDetails;
 import jakarta.validation.Valid;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
-
+import java.util.Optional;
+import GastuApp.Ahorro.Entity.AporteAhorro;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -23,7 +23,6 @@ public class AhorroController {
 
     private final AhorroService ahorroService;
 
-    @Autowired
     public AhorroController(AhorroService ahorroService) {
         this.ahorroService = ahorroService;
     }
@@ -73,6 +72,19 @@ public class AhorroController {
                 ahorroService.obtenerPorIdYUsuario(id, usuarioId)
         );
     }
+
+    // OBTENER AHORRO POR ID
+    @GetMapping("/concepto")
+    public ResponseEntity<List<AhorroDTO>> buscarPorConcepto(
+        @RequestParam String texto,
+        Authentication authentication) {
+
+    Long usuarioId = obtenerUsuarioId(authentication);
+
+    return ResponseEntity.ok(
+            ahorroService.buscarPorConceptoParcial(usuarioId, texto)
+    );
+}
 
     //  CREAR NUEVO AHORRO
     @PostMapping
@@ -134,7 +146,7 @@ public class AhorroController {
             Authentication authentication) {
             
             Long usuarioId= obtenerUsuarioId(authentication);
-            java.util.Optional<GastuApp.Ahorro.Entity.AporteAhorro> cuotaOptional = 
+            Optional<AporteAhorro> cuotaOptional =
             ahorroService.obtenerCuotaDisponible(id, usuarioId);
             
         return cuotaOptional
@@ -145,17 +157,16 @@ public class AhorroController {
     }
 
     //  REGISTRAR APORTE
-    @PostMapping("/{id}/cuotas/{cuotaId}")
+    @PostMapping("/{id}/cuotas")
     public ResponseEntity<AporteAhorroDTO> registrarAporte(
             @PathVariable Long id,
-            @PathVariable Long cuotaId,
             @Valid @RequestBody AporteAhorroDTO dto,
             Authentication authentication) {
 
         Long usuarioId = obtenerUsuarioId(authentication);
 
         return ResponseEntity.ok(
-                ahorroService.registrarAporte(id, cuotaId, dto, usuarioId)
+                ahorroService.registrarAporte(id,null, dto, usuarioId)
         );
     }
 }
