@@ -5,13 +5,18 @@
   <div class="modal fade" id="editarModal" tabindex="-1" aria-labelledby="editarModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
       <div class="modal-content card-presupuesto">
-        <div class="modal-header bg-warning">
-          <h5 class="modal-title" id="editarModalLabel"><i class="bi bi-pencil-square me-2"></i> Editar presupuesto</h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+
+        <!-- SOLO CAMBIADO A AZUL -->
+        <div class="modal-header bg-primary text-white">
+          <h5 class="modal-title" id="editarModalLabel">
+            <i class="bi bi-pencil-square me-2"></i> Editar presupuesto
+          </h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
 
         <form id="formEditarPresupuesto">
           <input type="hidden" id="id" name="id">
+
           <div class="modal-body">
             <div class="mb-3">
               <label for="editConceptoId" class="form-label">Concepto *</label>
@@ -36,12 +41,12 @@
 
             <div class="mb-3">
               <label for="editFechaInicio" class="form-label">Fecha Inicio</label>
-              <input type="date" class="form-control" id="editFechaInicio" name="fechaInicio">
+              <input type="date" class="form-control" id="editFechaInicio" name="fechaInicio" required>
             </div>
 
             <div class="mb-3">
               <label for="editFechaFin" class="form-label">Fecha Fin</label>
-              <input type="date" class="form-control" id="editFechaFin" name="fechaFin">
+              <input type="date" class="form-control" id="editFechaFin" name="fechaFin" required>
             </div>
 
             <div class="form-check form-switch mb-2">
@@ -52,12 +57,18 @@
 
           <div class="modal-footer">
             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-            <button type="submit" class="btn btn-warning"><i class="bi bi-arrow-repeat me-1"></i> Actualizar</button>
+
+            <!-- SOLO CAMBIADO A AZUL -->
+            <button type="submit" class="btn btn-primary">
+              <i class="bi bi-arrow-repeat me-1"></i> Actualizar
+            </button>
           </div>
+
         </form>
       </div>
     </div>
   </div>
 </div>
+
 </body>
 </html>

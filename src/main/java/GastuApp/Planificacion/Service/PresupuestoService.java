@@ -4,10 +4,13 @@ import GastuApp.Planificacion.DTO.PresupuestoDTO;
 import GastuApp.Planificacion.Entities.Presupuesto;
 import GastuApp.Planificacion.Repository.PresupuestoRepository;
 import GastuApp.Conceptos.Service.ConceptoService;
+import GastuApp.Movimientos.Repository.MovimientoRepository;
+
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -16,10 +19,16 @@ public class PresupuestoService {
 
     private final PresupuestoRepository presupuestoRepository;
     private final ConceptoService conceptoService;
+    private final MovimientoRepository movimientoRepository;
 
-    public PresupuestoService(PresupuestoRepository presupuestoRepository, ConceptoService conceptoService) {
+    public PresupuestoService(
+            PresupuestoRepository presupuestoRepository,
+            ConceptoService conceptoService,
+            MovimientoRepository movimientoRepository
+    ) {
         this.presupuestoRepository = presupuestoRepository;
         this.conceptoService = conceptoService;
+        this.movimientoRepository = movimientoRepository;
     }
 
     // ---------------- Mapeadores ----------------
@@ -45,18 +54,16 @@ public class PresupuestoService {
         dto.setFechaCreacion(p.getFechaCreacion());
         dto.setConceptoId(p.getConceptoId());
 
-        // Cargar nombre del concepto
-        if (p.getConceptoId() != null) {
-            try {
-                dto.setConceptoNombre(conceptoService.obtenerPorId(p.getConceptoId()).getNombre());
-            } catch (RuntimeException e) {
-                dto.setConceptoNombre("Concepto no encontrado");
-            }
+        try {
+            dto.setConceptoNombre(conceptoService.obtenerNombrePorId(p.getConceptoId()));
+        } catch (Exception e) {
+            dto.setConceptoNombre("Concepto no encontrado");
         }
+
         return dto;
     }
 
-    // ---------------- CRUD con usuarioId explícito ----------------
+    // ---------------- CRUD ----------------
 
     @Transactional(readOnly = true)
     public List<PresupuestoDTO> listarTodosPorUsuario(Long usuarioId) {
@@ -75,38 +82,35 @@ public class PresupuestoService {
 
     @Transactional
     public PresupuestoDTO crear(PresupuestoDTO dto, Long usuarioId) {
-        // Validaciones
-        validarConcepto(dto.getConceptoId());
-        
-        // Valores por defecto
+
+        // Validar duplicados activos
+        validarConceptoDisponible(dto.getConceptoId(), usuarioId);
+
         if (dto.getActivo() == null) dto.setActivo(true);
         if (dto.getFechaInicio() == null) dto.setFechaInicio(LocalDate.now());
 
-        // Crear entidad
         Presupuesto entity = toEntity(dto);
         entity.setUsuarioId(usuarioId);
 
         Presupuesto guardado = presupuestoRepository.save(entity);
+
         return toDTO(guardado);
     }
 
     @Transactional
     public PresupuestoDTO actualizar(Long id, PresupuestoDTO dto, Long usuarioId) {
-        // Validar que existe y pertenece al usuario
+
         Presupuesto existente = presupuestoRepository.findByIdAndUsuarioId(id, usuarioId)
                 .orElseThrow(() -> new RuntimeException("Presupuesto no encontrado o sin permisos"));
 
-        // FIX: Validar concepto con manejo de nulos
-        if (dto.getConceptoId() == null) {
+        if (dto.getConceptoId() == null)
             throw new RuntimeException("El concepto es requerido");
-        }
-        
-        // Solo validar si el concepto cambió
-        if (existente.getConceptoId() == null || !existente.getConceptoId().equals(dto.getConceptoId())) {
-            validarConcepto(dto.getConceptoId());
+
+        // Si el concepto cambia, validar duplicado
+        if (!existente.getConceptoId().equals(dto.getConceptoId())) {
+            validarConceptoDisponible(dto.getConceptoId(), usuarioId);
         }
 
-        // Actualizar campos
         existente.setLimite(dto.getLimite());
         existente.setFechaInicio(dto.getFechaInicio() != null ? dto.getFechaInicio() : LocalDate.now());
         existente.setFechaFin(dto.getFechaFin());
@@ -121,15 +125,83 @@ public class PresupuestoService {
     public void eliminar(Long id, Long usuarioId) {
         Presupuesto existente = presupuestoRepository.findByIdAndUsuarioId(id, usuarioId)
                 .orElseThrow(() -> new RuntimeException("Presupuesto no encontrado o sin permisos"));
+
         presupuestoRepository.delete(existente);
     }
 
     // --------- Validaciones ---------
 
-    private void validarConcepto(Long conceptoId) {
-        if (conceptoId == null) {
-            throw new RuntimeException("El concepto es requerido");
+    private void validarConceptoDisponible(Long conceptoId, Long usuarioId) {
+
+        List<Presupuesto> activos = presupuestoRepository
+                .findByUsuarioIdAndConceptoIdAndActivoTrue(usuarioId, conceptoId);
+
+        if (!activos.isEmpty()) {
+            throw new IllegalStateException("Ya existe un presupuesto ACTIVO para este concepto.");
         }
-        conceptoService.obtenerPorId(conceptoId); 
+    }
+
+    // ************************************************************
+    // *** CÁLCULO DE GASTOS Y PROGRESO DEL LIMITE ***
+    // ************************************************************
+
+    @Transactional(readOnly = true)
+    public List<PresupuestoDTO> obtenerPresupuestosConProgreso(Long usuarioId) {
+
+        List<Presupuesto> presupuestos =
+                presupuestoRepository.findByUsuarioIdOrderByFechaCreacionDesc(usuarioId);
+
+        return presupuestos.stream()
+                .map(this::mapearProgreso)
+                .collect(Collectors.toList());
+    }
+
+    private PresupuestoDTO mapearProgreso(Presupuesto p) {
+
+        LocalDateTime inicio = p.getFechaInicio().atStartOfDay();
+        LocalDateTime fin = (p.getFechaFin() != null)
+                ? p.getFechaFin().atTime(23, 59, 59)
+                : LocalDate.now().atTime(23, 59, 59);
+
+        var gastado = movimientoRepository.sumarEgresosPorConceptoYRango(
+                p.getUsuarioId(),
+                p.getConceptoId(),
+                inicio,
+                fin
+        );
+
+        PresupuestoDTO dto = toDTO(p);
+        dto.setGastado(gastado.doubleValue());
+        return dto;
+    }
+
+    // -------- Activar Presupuesto --------
+
+    @Transactional
+    public PresupuestoDTO activarPresupuesto(Long id, Long usuarioId) {
+
+        Presupuesto p = presupuestoRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Presupuesto no encontrado"));
+
+        if (!p.getUsuarioId().equals(usuarioId))
+            throw new RuntimeException("No autorizado");
+
+        if (p.getActivo())
+            return toDTO(p);
+
+        List<Presupuesto> activos =
+                presupuestoRepository.findByUsuarioIdAndConceptoIdAndActivoTrue(usuarioId, p.getConceptoId());
+
+        boolean existeOtro = activos.stream()
+                .anyMatch(x -> !x.getId().equals(p.getId()));
+
+        if (existeOtro) {
+            throw new IllegalStateException("Ya existe un presupuesto ACTIVO para este concepto.");
+        }
+
+        p.setActivo(true);
+
+        Presupuesto guardado = presupuestoRepository.save(p);
+        return toDTO(guardado);
     }
 }

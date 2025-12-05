@@ -3,64 +3,39 @@
 <body>
 <div th:fragment="abrirConceptoModal">
 
-  <style>
-    /* Contenedor con scroll interno */
-    #listaConceptos {
-        max-height: 420px;
-        overflow-y: auto;
-        padding-right: 6px;
-    }
-
-    /* Tarjetas */
-    .concept-card {
-        border-radius: 10px;
-        background: #fff;
-        border: 1px solid #e6eefc;
-        transition: 0.2s ease-in-out;
-        cursor: pointer;
-    }
-
-    .concept-card:hover {
-        transform: translateY(-3px);
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-        border-color: #d0dcff;
-    }
-
-    .concept-icon {
-        font-size: 2rem;
-        color: #0d6efd;
-    }
-  </style>
-
   <div class="modal fade" id="abrirConceptoModal" tabindex="-1" aria-labelledby="abrirConceptoLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg modal-dialog-centered">
-      <div class="modal-content">
+      <div class="modal-content border-0 shadow-lg rounded-4">
 
-        <div class="modal-header bg-light">
-          <h5 class="modal-title" id="abrirConceptoLabel">
-            <i class="bi bi-list-ul me-2"></i> Seleccionar concepto
+        <!-- HEADER -->
+        <div class="modal-header bg-primary bg-opacity-10 border-0 rounded-top-4">
+          <h5 class="modal-title fw-semibold" id="abrirConceptoLabel">
+            <i class="bi bi-list-ul me-2 text-primary"></i> Seleccionar concepto
           </h5>
           <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
         </div>
 
         <div class="modal-body">
 
-          <!-- Search -->
-          <div class="mb-3">
-            <input id="buscarConcepto" type="search" class="form-control" placeholder="Buscar concepto...">
+          <!-- BUSCADOR -->
+          <div class="mb-3 position-relative">
+            <input id="buscarConcepto" type="search" class="form-control form-control-lg rounded-pill ps-5" placeholder="Buscar concepto...">
+            <i class="bi bi-search position-absolute top-50 start-0 translate-middle-y ms-3 text-muted"></i>
           </div>
 
-          <!-- LISTA DE TARJETAS -->
-          <div class="row g-3" id="listaConceptos">
+          <!-- LISTA -->
+          <div id="listaConceptos" class="row g-3 overflow-auto" style="max-height:420px;">
 
-            <!-- EJEMPLO (solo para ver estructura; JS los generará) -->
+            <!-- Ejemplo de tarjeta generada por JS -->
             <!--
             <div class="col-12 col-md-6">
-              <div class="p-3 concept-card" data-id="1">
+              <div class="card border-0 shadow-sm rounded-4 p-3 concept-card" data-id="1" role="button">
                 <div class="d-flex align-items-center">
-                  <i class="bi bi-tag-fill concept-icon me-3"></i>
+                  <div class="bg-primary bg-opacity-10 p-3 rounded-3 me-3">
+                    <i class="bi bi-tag-fill text-primary fs-3"></i>
+                  </div>
                   <div>
-                    <h6 class="mb-1">Nombre del concepto</h6>
+                    <h6 class="mb-1 fw-semibold">Nombre del concepto</h6>
                     <span class="text-muted small">Categoría</span>
                   </div>
                 </div>
@@ -72,8 +47,11 @@
 
         </div>
 
-        <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+        <!-- FOOTER -->
+        <div class="modal-footer border-0">
+          <button type="button" class="btn btn-secondary rounded-pill px-4" data-bs-dismiss="modal">
+            Cerrar
+          </button>
         </div>
 
       </div>

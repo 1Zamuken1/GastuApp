@@ -1,74 +1,8 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <head th:replace="~{fragments/head :: head('Planificación - GastuApp', ~{:: link})}">
-    <link rel="stylesheet" th:href="@{/css/presupuesto.css}">
-    <style>
-
-        /* PANEL CONTENEDOR */
-        .panel-box {
-            border: 1px solid #e6eefc;
-            border-radius: 8px;
-            padding: 12px;
-            background: #fff;
-        }
-
-        /* SOLO ESTE SCROLLEA */
-        .scroll-area {
-            max-height: 380px;
-            overflow-y: auto;
-            padding: 8px;
-        }
-
-        /* TARJETAS */
-        .card-presupuesto {
-            border-radius: 10px;
-            box-shadow: 0 1px 6px rgba(0, 0, 0, 0.04);
-            transition: 0.2s ease-in-out;
-        }
-        .card-presupuesto:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-        }
-
-        /* TITULO Y SEARCH */
-        .section-header {
-            display: flex;
-            gap: 8px;
-            align-items: center;
-            justify-content: space-between;
-            margin-bottom: 8px;
-        }
-
-        .search-bar {
-            width: 100%;
-            max-width: 520px;
-        }
-
-        @media (max-width: 576px) {
-            .section-header {
-                flex-direction: column;
-                align-items: stretch;
-            }
-            .search-bar {
-                max-width: 100%;
-            }
-        }
-
-        /* EVITAR SCROLL DE TODA LA PÁGINA */
-        html, body {
-            height: 100%;
-            overflow: hidden;
-        }
-
-        /* MAIN SI PUEDE SCROLLEAR CUANDO EL SIDEBAR EMPUJE */
-        main {
-            overflow-y: auto;
-            height: calc(100vh - 56px);
-        }
-
-    </style>
+    <link rel="stylesheet" th:href="@{/css/planificacion/presupuesto.css}">
 </head>
-
 <body>
 
     <!-- NAVBAR -->
@@ -81,7 +15,7 @@
     <!-- MAIN: SOLO ESTE SCROLLEA GLOBAL -->
     <main class="px-md-4 py-4">
         <div class="container">
-            <h1 class="text-primary mb-4">Presupuestos</h1>
+            <h1 class="text-dark mb-4">Mis presupuestos</h1>
 
             <!-- PRESUPUESTOS -->
             <div class="panel-box mb-4">
@@ -120,6 +54,8 @@
 
     <!-- SCRIPTS -->
     <div th:replace="~{fragments/head :: scripts}"></div>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
     <script th:src="@{/js/planificacion/presupuestos.js}"></script>
 
 </body>

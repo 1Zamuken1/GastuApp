@@ -15,7 +15,7 @@
             <div class="mb-3">
               <label for="conceptoId" class="form-label">Concepto *</label>
               <div class="input-group">
-                <select class="form-select" id="conceptoId" name="conceptoId" required>
+                <select class="form-select" id="conceptoId" name="conceptoId" required disabled>
                   <option value="">Seleccionar concepto...</option>
                   <option th:each="c : ${conceptos}" th:value="${c.id}" th:text="${c.nombre}"></option>
                 </select>
@@ -35,12 +35,12 @@
 
             <div class="mb-3">
               <label for="fechaInicio" class="form-label">Fecha Inicio</label>
-              <input type="date" class="form-control" id="fechaInicio" name="fechaInicio">
+              <input type="date" class="form-control" id="fechaInicio" name="fechaInicio" required>
             </div>
 
             <div class="mb-3">
               <label for="fechaFin" class="form-label">Fecha Fin</label>
-              <input type="date" class="form-control" id="fechaFin" name="fechaFin">
+              <input type="date" class="form-control" id="fechaFin" name="fechaFin" required>
             </div>
 
             <div class="form-check form-switch mb-2">

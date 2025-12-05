@@ -25,47 +25,57 @@ public class PresupuestoRestController {
         this.conceptoService = conceptoService;
     }
 
-    // --------------------------
-    // LISTAR TODOS LOS PRESUPUESTOS
-    // --------------------------
+    // ================================================================
+    // LISTAR TODOS (ESTO ES SIN PROGRESO, SOLO INFO DEL PRESUPUESTO)
+    // ================================================================
     @GetMapping
     public ResponseEntity<List<PresupuestoDTO>> listarTodos(Authentication authentication) {
         Long usuarioId = obtenerUsuarioId(authentication);
         return ResponseEntity.ok(presupuestoService.listarTodosPorUsuario(usuarioId));
     }
 
-    // --------------------------
-    // OBTENER PRESUPUESTO POR ID
-    // --------------------------
+    // ================================================================
+    // 🚀 NUEVO: LISTAR CON PROGRESO (ESTO ES LO QUE USA LA BARRA)
+    // ================================================================
+    @GetMapping("/progreso")
+    public ResponseEntity<List<PresupuestoDTO>> obtenerProgreso(Authentication authentication) {
+        Long usuarioId = obtenerUsuarioId(authentication);
+        return ResponseEntity.ok(presupuestoService.obtenerPresupuestosConProgreso(usuarioId));
+    }
+
+    // ================================================================
+    // OBTENER POR ID
+    // ================================================================
     @GetMapping("/{id}")
     public ResponseEntity<PresupuestoDTO> obtenerPorId(@PathVariable Long id, Authentication authentication) {
         Long usuarioId = obtenerUsuarioId(authentication);
         return ResponseEntity.ok(presupuestoService.obtenerPorIdYUsuario(id, usuarioId));
     }
 
-    // --------------------------
-    // CREAR NUEVO PRESUPUESTO
-    // --------------------------
+    // ================================================================
+    // CREAR
+    // ================================================================
     @PostMapping
-    public ResponseEntity<PresupuestoDTO> crear(@Valid @RequestBody PresupuestoDTO dto, Authentication authentication) {
+    public ResponseEntity<PresupuestoDTO> crear(@Valid @RequestBody PresupuestoDTO dto,
+                                                Authentication authentication) {
         Long usuarioId = obtenerUsuarioId(authentication);
         return ResponseEntity.ok(presupuestoService.crear(dto, usuarioId));
     }
 
-    // --------------------------
-    // ACTUALIZAR PRESUPUESTO
-    // --------------------------
+    // ================================================================
+    // ACTUALIZAR
+    // ================================================================
     @PutMapping("/{id}")
     public ResponseEntity<PresupuestoDTO> actualizar(@PathVariable Long id,
-                                     @Valid @RequestBody PresupuestoDTO dto,
-                                     Authentication authentication) {
+                                                     @Valid @RequestBody PresupuestoDTO dto,
+                                                     Authentication authentication) {
         Long usuarioId = obtenerUsuarioId(authentication);
         return ResponseEntity.ok(presupuestoService.actualizar(id, dto, usuarioId));
     }
 
-    // --------------------------
-    // ELIMINAR PRESUPUESTO
-    // --------------------------
+    // ================================================================
+    // ELIMINAR
+    // ================================================================
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> eliminar(@PathVariable Long id, Authentication authentication) {
         Long usuarioId = obtenerUsuarioId(authentication);
@@ -73,21 +83,30 @@ public class PresupuestoRestController {
         return ResponseEntity.noContent().build();
     }
 
-    // --------------------------
-    // LISTAR CONCEPTOS (para selects de los modales)
-    // --------------------------
+    // ================================================================
+    // LISTAR CONCEPTOS DE EGRESOS
+    // ================================================================
     @GetMapping("/conceptos")
     public ResponseEntity<?> listarConceptos() {
-        return ResponseEntity.ok(conceptoService.obtenerTodos());
+        return ResponseEntity.ok(conceptoService.obtenerSoloEgresos());
     }
 
-    // --------------------------
-    // Método helper para obtener usuario ID
-    // --------------------------
+    // ================================================================
+    // OBTENER ID DEL USUARIO LOGUEADO
+    // ================================================================
     private Long obtenerUsuarioId(Authentication authentication) {
         if (authentication != null && authentication.getPrincipal() instanceof CustomUserDetails) {
             return ((CustomUserDetails) authentication.getPrincipal()).getId();
         }
         throw new RuntimeException("Usuario no autenticado");
     }
+    @PatchMapping("/activar/{id}")
+    public ResponseEntity<PresupuestoDTO> activar(
+            @PathVariable Long id,
+            Authentication authentication) {
+
+        Long usuarioId = obtenerUsuarioId(authentication);
+        return ResponseEntity.ok(presupuestoService.activarPresupuesto(id, usuarioId));
+    }
+
 }

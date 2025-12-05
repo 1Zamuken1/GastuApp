@@ -1,0 +1,80 @@
+/* ============================================
+   PANEL GENERAL
+============================================ */
+.panel-box {
+    border: 1px solid #e6eefc;
+    border-radius: 8px;
+    padding: 12px;
+    background: #fff;
+}
+
+
+/* ============================================
+   ÁREA SCROLLEABLE (TARJETAS)
+   Ajustado para usar todo el espacio disponible
+============================================ */
+.scroll-area {
+    height: calc(100vh - 250px); /* Ajustado para que alcance hasta abajo */
+    overflow-y: auto;
+    padding-right: 4px;
+}
+
+
+/* ============================================
+   TARJETAS
+============================================ */
+.card-presupuesto {
+    border-radius: 10px;
+    box-shadow: 0 1px 6px rgba(0, 0, 0, 0.04);
+    transition: 0.2s ease-in-out;
+}
+
+.card-presupuesto:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+
+/* ============================================
+   TÍTULO + BUSCADOR
+============================================ */
+.section-header {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 8px;
+}
+
+.search-bar {
+    width: 100%;
+    max-width: 520px;
+}
+
+
+/* RESPONSIVE */
+@media (max-width: 576px) {
+    .section-header {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    .search-bar {
+        max-width: 100%;
+    }
+}
+
+
+/* ============================================
+   SCROLL GLOBAL
+   - Evita scroll en el body (mejor UX)
+   - main scrollea si es necesario
+============================================ */
+html, body {
+    height: 100%;
+    overflow: hidden;
+}
+
+main {
+    overflow-y: auto;
+    height: calc(100vh - 56px); /* Altura menos navbar */
+}

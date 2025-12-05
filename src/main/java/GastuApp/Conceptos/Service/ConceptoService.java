@@ -54,6 +54,17 @@ public class ConceptoService {
                 .collect(Collectors.toList());
     }
 
+    // Conceptos de tipo EGRESO unicamnete 
+    @Transactional(readOnly = true)
+    @Cacheable(value = "conceptos", key = "'EGRESO'")
+        public List<ConceptoDTO> obtenerSoloEgresos() {
+            return conceptoRepository.findByTipo(Concepto.TipoConcepto.EGRESO)
+                    .stream()
+                    .map(this::convertirADTO)
+                    .toList();
+    }
+
+
     /**
      * Obtiene un concepto por su ID.
      *
@@ -167,5 +178,12 @@ public class ConceptoService {
                 concepto.getTipo().name(),
                 concepto.getNombre(),
                 concepto.getDescripcion());
+    }
+
+    //obtener el nombre del concepto por el id
+    public String obtenerNombrePorId(Long id) {
+        return conceptoRepository.findById(id)
+                .map(Concepto::getNombre)
+                .orElse("Concepto desconocido");
     }
 }

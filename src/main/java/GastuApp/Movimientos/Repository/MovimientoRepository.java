@@ -8,6 +8,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -95,4 +96,23 @@ public interface MovimientoRepository extends JpaRepository<Movimiento, Long> {
      */
     @Query("SELECT COALESCE(SUM(m.monto), 0) FROM Movimiento m WHERE m.usuarioId = :usuarioId AND m.tipo = :tipo AND YEAR(m.fechaRegistro) = YEAR(CURRENT_DATE) AND MONTH(m.fechaRegistro) = MONTH(CURRENT_DATE)")
     BigDecimal calcularTotalMesActual(@Param("usuarioId") Long usuarioId, @Param("tipo") TipoMovimiento tipo);
+
+    // calcularf suma por concepto y rango de fechas 
+    @Query("""
+    SELECT COALESCE(SUM(m.monto), 0)
+    FROM Movimiento m
+    WHERE m.usuarioId = :usuarioId
+      AND m.tipo = 'EGRESO'
+      AND m.conceptoId = :conceptoId
+      AND m.fechaRegistro BETWEEN :inicio AND :fin
+""")
+BigDecimal sumarEgresosPorConceptoYRango(
+        @Param("usuarioId") Long usuarioId,
+        @Param("conceptoId") Long conceptoId,
+        @Param("inicio") LocalDateTime inicio,
+        @Param("fin") LocalDateTime fin
+);
+
+
+
 }
