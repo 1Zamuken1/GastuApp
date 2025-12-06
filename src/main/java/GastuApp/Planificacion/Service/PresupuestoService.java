@@ -24,8 +24,7 @@ public class PresupuestoService {
     public PresupuestoService(
             PresupuestoRepository presupuestoRepository,
             ConceptoService conceptoService,
-            MovimientoRepository movimientoRepository
-    ) {
+            MovimientoRepository movimientoRepository) {
         this.presupuestoRepository = presupuestoRepository;
         this.conceptoService = conceptoService;
         this.movimientoRepository = movimientoRepository;
@@ -86,8 +85,10 @@ public class PresupuestoService {
         // Validar duplicados activos
         validarConceptoDisponible(dto.getConceptoId(), usuarioId);
 
-        if (dto.getActivo() == null) dto.setActivo(true);
-        if (dto.getFechaInicio() == null) dto.setFechaInicio(LocalDate.now());
+        if (dto.getActivo() == null)
+            dto.setActivo(true);
+        if (dto.getFechaInicio() == null)
+            dto.setFechaInicio(LocalDate.now());
 
         Presupuesto entity = toEntity(dto);
         entity.setUsuarioId(usuarioId);
@@ -126,7 +127,7 @@ public class PresupuestoService {
         Presupuesto existente = presupuestoRepository.findByIdAndUsuarioId(id, usuarioId)
                 .orElseThrow(() -> new RuntimeException("Presupuesto no encontrado o sin permisos"));
 
-        presupuestoRepository.delete(existente);
+        presupuestoRepository.delete(java.util.Objects.requireNonNull(existente));
     }
 
     // --------- Validaciones ---------
@@ -148,8 +149,7 @@ public class PresupuestoService {
     @Transactional(readOnly = true)
     public List<PresupuestoDTO> obtenerPresupuestosConProgreso(Long usuarioId) {
 
-        List<Presupuesto> presupuestos =
-                presupuestoRepository.findByUsuarioIdOrderByFechaCreacionDesc(usuarioId);
+        List<Presupuesto> presupuestos = presupuestoRepository.findByUsuarioIdOrderByFechaCreacionDesc(usuarioId);
 
         return presupuestos.stream()
                 .map(this::mapearProgreso)
@@ -167,8 +167,7 @@ public class PresupuestoService {
                 p.getUsuarioId(),
                 p.getConceptoId(),
                 inicio,
-                fin
-        );
+                fin);
 
         PresupuestoDTO dto = toDTO(p);
         dto.setGastado(gastado.doubleValue());
@@ -180,6 +179,7 @@ public class PresupuestoService {
     @Transactional
     public PresupuestoDTO activarPresupuesto(Long id, Long usuarioId) {
 
+        @SuppressWarnings("null")
         Presupuesto p = presupuestoRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Presupuesto no encontrado"));
 
@@ -189,8 +189,8 @@ public class PresupuestoService {
         if (p.getActivo())
             return toDTO(p);
 
-        List<Presupuesto> activos =
-                presupuestoRepository.findByUsuarioIdAndConceptoIdAndActivoTrue(usuarioId, p.getConceptoId());
+        List<Presupuesto> activos = presupuestoRepository.findByUsuarioIdAndConceptoIdAndActivoTrue(usuarioId,
+                p.getConceptoId());
 
         boolean existeOtro = activos.stream()
                 .anyMatch(x -> !x.getId().equals(p.getId()));

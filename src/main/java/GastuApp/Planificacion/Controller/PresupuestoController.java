@@ -2,14 +2,12 @@ package GastuApp.Planificacion.Controller;
 
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PatchMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestHeader;
+
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.http.ResponseEntity;
+
 import org.springframework.security.core.Authentication;
 import GastuApp.Conceptos.Service.ConceptoService;
-import GastuApp.Planificacion.DTO.PresupuestoDTO;
+
 import GastuApp.Planificacion.Service.PresupuestoService;
 import GastuApp.User.CustomUserDetails;
 import org.springframework.ui.Model;
@@ -17,11 +15,11 @@ import org.springframework.ui.Model;
 @Controller
 @RequestMapping("/Presupuestos")
 public class PresupuestoController {
-    private final PresupuestoService presupuestoService;
+
     private final ConceptoService conceptoService;
 
     public PresupuestoController(PresupuestoService presupuestoService, ConceptoService conceptoService) {
-        this.presupuestoService = presupuestoService;
+
         this.conceptoService = conceptoService;
     }
 
@@ -30,19 +28,17 @@ public class PresupuestoController {
         if (authentication == null || !(authentication.getPrincipal() instanceof CustomUserDetails)) {
             return "redirect:/login";
         }
-        
-        Long usuarioId = ((CustomUserDetails) authentication.getPrincipal()).getId();
-        
+
         model.addAttribute("activePage", "Presupuesto");
-        
+
         try {
             model.addAttribute("conceptos", conceptoService.obtenerSoloEgresos());
         } catch (Exception e) {
             // Si falla, continuar sin conceptos
             model.addAttribute("conceptos", java.util.Collections.emptyList());
         }
-        
-        return "planificacion/indexPresupuesto"; 
+
+        return "planificacion/indexPresupuesto";
     }
 
 }

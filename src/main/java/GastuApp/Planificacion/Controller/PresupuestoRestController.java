@@ -57,7 +57,7 @@ public class PresupuestoRestController {
     // ================================================================
     @PostMapping
     public ResponseEntity<PresupuestoDTO> crear(@Valid @RequestBody PresupuestoDTO dto,
-                                                Authentication authentication) {
+            Authentication authentication) {
         Long usuarioId = obtenerUsuarioId(authentication);
         return ResponseEntity.ok(presupuestoService.crear(dto, usuarioId));
     }
@@ -67,8 +67,8 @@ public class PresupuestoRestController {
     // ================================================================
     @PutMapping("/{id}")
     public ResponseEntity<PresupuestoDTO> actualizar(@PathVariable Long id,
-                                                     @Valid @RequestBody PresupuestoDTO dto,
-                                                     Authentication authentication) {
+            @Valid @RequestBody PresupuestoDTO dto,
+            Authentication authentication) {
         Long usuarioId = obtenerUsuarioId(authentication);
         return ResponseEntity.ok(presupuestoService.actualizar(id, dto, usuarioId));
     }
@@ -100,6 +100,7 @@ public class PresupuestoRestController {
         }
         throw new RuntimeException("Usuario no autenticado");
     }
+
     @PatchMapping("/activar/{id}")
     public ResponseEntity<PresupuestoDTO> activar(
             @PathVariable Long id,

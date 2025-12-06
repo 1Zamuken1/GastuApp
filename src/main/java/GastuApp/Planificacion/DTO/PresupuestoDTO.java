@@ -1,16 +1,11 @@
 package GastuApp.Planificacion.DTO;
 
 import jakarta.validation.constraints.*;
-import lombok.*;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
-@AllArgsConstructor
-@NoArgsConstructor
-@Getter
-@Setter
 public class PresupuestoDTO {
 
     private Long id;
@@ -30,7 +25,7 @@ public class PresupuestoDTO {
 
     private Boolean activo = true;
 
-    private Double gastado;  // <- SE LLENA EN EL SERVICIO
+    private Double gastado; // <- SE LLENA EN EL SERVICIO
 
     private Integer porcentaje; // <- AGREGADO
 
@@ -40,4 +35,101 @@ public class PresupuestoDTO {
     private Long conceptoId;
 
     private String conceptoNombre;
+
+    public PresupuestoDTO() {
+    }
+
+    public PresupuestoDTO(Long id, BigDecimal limite, LocalDate fechaInicio, LocalDate fechaFin, Boolean activo,
+            Double gastado, Integer porcentaje, LocalDateTime fechaCreacion, Long conceptoId, String conceptoNombre) {
+        this.id = id;
+        this.limite = limite;
+        this.fechaInicio = fechaInicio;
+        this.fechaFin = fechaFin;
+        this.activo = activo;
+        this.gastado = gastado;
+        this.porcentaje = porcentaje;
+        this.fechaCreacion = fechaCreacion;
+        this.conceptoId = conceptoId;
+        this.conceptoNombre = conceptoNombre;
+    }
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public BigDecimal getLimite() {
+        return limite;
+    }
+
+    public void setLimite(BigDecimal limite) {
+        this.limite = limite;
+    }
+
+    public LocalDate getFechaInicio() {
+        return fechaInicio;
+    }
+
+    public void setFechaInicio(LocalDate fechaInicio) {
+        this.fechaInicio = fechaInicio;
+    }
+
+    public LocalDate getFechaFin() {
+        return fechaFin;
+    }
+
+    public void setFechaFin(LocalDate fechaFin) {
+        this.fechaFin = fechaFin;
+    }
+
+    public Boolean getActivo() {
+        return activo;
+    }
+
+    public void setActivo(Boolean activo) {
+        this.activo = activo;
+    }
+
+    public Double getGastado() {
+        return gastado;
+    }
+
+    public void setGastado(Double gastado) {
+        this.gastado = gastado;
+    }
+
+    public Integer getPorcentaje() {
+        return porcentaje;
+    }
+
+    public void setPorcentaje(Integer porcentaje) {
+        this.porcentaje = porcentaje;
+    }
+
+    public LocalDateTime getFechaCreacion() {
+        return fechaCreacion;
+    }
+
+    public void setFechaCreacion(LocalDateTime fechaCreacion) {
+        this.fechaCreacion = fechaCreacion;
+    }
+
+    public Long getConceptoId() {
+        return conceptoId;
+    }
+
+    public void setConceptoId(Long conceptoId) {
+        this.conceptoId = conceptoId;
+    }
+
+    public String getConceptoNombre() {
+        return conceptoNombre;
+    }
+
+    public void setConceptoNombre(String conceptoNombre) {
+        this.conceptoNombre = conceptoNombre;
+    }
 }

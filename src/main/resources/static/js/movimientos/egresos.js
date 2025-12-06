@@ -1,6 +1,7 @@
 document.addEventListener("DOMContentLoaded", function () {
   const API_BASE = "/api/movimientos/egresos";
   const API_CONCEPTOS = "/api/conceptos";
+  let currentConcept = null;
   let currentDeleteId = null;
 
   // Elementos del DOM
@@ -39,7 +40,7 @@ document.addEventListener("DOMContentLoaded", function () {
     .getElementById("btnAgregarDesdeDetalle")
     .addEventListener("click", () => {
       modalDetalle.hide();
-      abrirModalCrear();
+      abrirModalCrear(currentConcept);
     });
 
   // Buscadores
@@ -296,6 +297,7 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 
   function abrirDetalleConcepto(concepto) {
+    currentConcept = concepto;
     document.getElementById("modalDetalleTitle").textContent = concepto.nombre;
     document.getElementById(
       "modalDetalleTotal"
@@ -345,16 +347,34 @@ document.addEventListener("DOMContentLoaded", function () {
 
   // --- Funciones de Formulario (Crear/Editar) ---
 
-  window.abrirModalCrear = function () {
+  window.abrirModalCrear = function (conceptoPreseleccionado = null) {
     document.getElementById("modalFormTitle").textContent = "Nuevo Egreso";
     formEgreso.reset();
     document.getElementById("egresoId").value = "";
-    document.getElementById("conceptoId").value = "";
-    document.getElementById("conceptoInput").value = "";
+
+    // Set today's date as default
+    const today = new Date().toISOString().split("T")[0];
+    document.getElementById("fechaRegistroInput").value = today;
 
     const conceptoInputField = document.getElementById("conceptoInput");
-    conceptoInputField.style.cursor = "pointer";
-    conceptoInputField.style.backgroundColor = "white";
+
+    // Handle pre-selected concept
+    if (conceptoPreseleccionado) {
+      document.getElementById("conceptoId").value =
+        conceptoPreseleccionado.id || conceptoPreseleccionado.conceptoId;
+      conceptoInputField.value = conceptoPreseleccionado.nombre;
+
+      // Optional: Indicate it is pre-selected and locked-ish
+      // But still allow change if clicked
+      conceptoInputField.style.cursor = "pointer";
+      conceptoInputField.style.backgroundColor = "white";
+    } else {
+      document.getElementById("conceptoId").value = "";
+      conceptoInputField.value = "";
+      conceptoInputField.style.cursor = "pointer";
+      conceptoInputField.style.backgroundColor = "white";
+    }
+
     conceptoInputField.onclick = () => abrirModalSeleccionConcepto();
 
     modalForm.show();
@@ -362,7 +382,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
   window.abrirModalSeleccionConcepto = function () {
     listaConceptosSeleccion.innerHTML =
-      '<div class="text-center w-100"><div class="spinner-border text-success" role="status"></div></div>';
+      '<div class="text-center w-100"><div class="spinner-border text-danger" role="status"></div></div>';
     buscadorModal.value = "";
     modalSeleccionConcepto.show();
 
@@ -374,16 +394,14 @@ document.addEventListener("DOMContentLoaded", function () {
           const col = document.createElement("div");
           col.className = "col";
           col.innerHTML = `
-                    <div class="card h-100 border-0 shadow-sm hover-card concept-card" style="cursor: pointer;">
-                        <div class="card-body text-center">
-                            <i class="bi bi-wallet2 fs-1 text-danger mb-2"></i>
-                            <h6 class="card-title fw-bold">${c.nombre}</h6>
-                            <p class="card-text small text-muted">${
-                              c.descripcion || ""
-                            }</p>
-                        </div>
-                    </div>
-                `;
+            <div class="card h-100 border-0 shadow-sm hover-card concept-card" style="cursor: pointer;">
+              <div class="card-body text-center">
+                <i class="bi bi-wallet2 fs-1 text-danger mb-2"></i>
+                <h6 class="card-title fw-bold">${c.nombre}</h6>
+                <p class="card-text small text-muted">${c.descripcion || ""}</p>
+              </div>
+            </div>
+          `;
           col.querySelector(".card").addEventListener("click", () => {
             seleccionarConcepto(c);
           });
@@ -400,10 +418,23 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 
   function abrirModalEditar(egreso) {
+    currentConcept = null; // Clear context on edit
     document.getElementById("modalFormTitle").textContent = "Editar Egreso";
     document.getElementById("egresoId").value = egreso.id;
     document.getElementById("montoInput").value = egreso.monto;
     document.getElementById("descripcionInput").value = egreso.descripcion;
+
+    // Populate date field
+    if (egreso.fechaRegistro) {
+      const date = new Date(egreso.fechaRegistro);
+      document.getElementById("fechaRegistroInput").value = date
+        .toISOString()
+        .split("T")[0];
+    } else {
+      document.getElementById("fechaRegistroInput").value = new Date()
+        .toISOString()
+        .split("T")[0];
+    }
 
     const conceptoInputField = document.getElementById("conceptoInput");
     conceptoInputField.style.cursor = "not-allowed";
@@ -429,10 +460,17 @@ document.addEventListener("DOMContentLoaded", function () {
     const url = isEdit ? `${API_BASE}/${id}` : API_BASE;
     const method = isEdit ? "PUT" : "POST";
 
+    // Get date value and convert to ISO timestamp
+    const fechaValue = document.getElementById("fechaRegistroInput").value;
+    const fechaRegistro = fechaValue
+      ? new Date(fechaValue + "T12:00:00").toISOString()
+      : null;
+
     const data = {
       conceptoId: parseInt(document.getElementById("conceptoId").value),
       monto: parseFloat(document.getElementById("montoInput").value),
       descripcion: document.getElementById("descripcionInput").value,
+      fechaRegistro: fechaRegistro,
     };
 
     fetch(url, {

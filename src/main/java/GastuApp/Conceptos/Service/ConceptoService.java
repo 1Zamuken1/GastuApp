@@ -54,16 +54,15 @@ public class ConceptoService {
                 .collect(Collectors.toList());
     }
 
-    // Conceptos de tipo EGRESO unicamnete 
+    // Conceptos de tipo EGRESO unicamnete
     @Transactional(readOnly = true)
     @Cacheable(value = "conceptos", key = "'EGRESO'")
-        public List<ConceptoDTO> obtenerSoloEgresos() {
-            return conceptoRepository.findByTipo(Concepto.TipoConcepto.EGRESO)
-                    .stream()
-                    .map(this::convertirADTO)
-                    .toList();
+    public List<ConceptoDTO> obtenerSoloEgresos() {
+        return conceptoRepository.findByTipo(Concepto.TipoConcepto.EGRESO)
+                .stream()
+                .map(this::convertirADTO)
+                .toList();
     }
-
 
     /**
      * Obtiene un concepto por su ID.
@@ -87,7 +86,9 @@ public class ConceptoService {
      */
     @Transactional(readOnly = true)
     public List<ConceptoDTO> obtenerPorIds(List<Long> ids) {
-        return conceptoRepository.findAllById(ids).stream()
+        @SuppressWarnings("null")
+        List<Concepto> conceptos = conceptoRepository.findAllById(ids);
+        return conceptos.stream()
                 .map(this::convertirADTO)
                 .collect(Collectors.toList());
     }
@@ -180,7 +181,8 @@ public class ConceptoService {
                 concepto.getDescripcion());
     }
 
-    //obtener el nombre del concepto por el id
+    // obtener el nombre del concepto por el id
+    @SuppressWarnings("null")
     public String obtenerNombrePorId(Long id) {
         return conceptoRepository.findById(id)
                 .map(Concepto::getNombre)

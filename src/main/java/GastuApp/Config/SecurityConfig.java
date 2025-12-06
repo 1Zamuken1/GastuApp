@@ -49,12 +49,23 @@ public class SecurityConfig {
                                                 .defaultSuccessUrl("/dashboard", true)
                                                 .failureUrl("/login?error=true")
                                                 .permitAll())
+                                // Remember-me para sesiones persistentes (30 días)
+                                .rememberMe(remember -> remember
+                                                .key("gastuapp-remember-me-secret-2024")
+                                                .tokenValiditySeconds(60 * 60 * 24 * 30) // 30 días
+                                                .rememberMeParameter("remember-me")
+                                                .userDetailsService(userDetailsService)
+                                                .alwaysRemember(true)) // Siempre recordar sin necesidad de checkbox
                                 .logout(logout -> logout
                                                 .logoutUrl("/logout")
                                                 .logoutSuccessUrl("/login?logout")
+                                                .deleteCookies("JSESSIONID", "remember-me")
+                                                .invalidateHttpSession(true)
+                                                .clearAuthentication(true)
                                                 .permitAll())
                                 .sessionManagement(session -> session
-                                                .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED))
+                                                .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED)
+                                                .maximumSessions(-1))
                                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
 
                 return http.build();

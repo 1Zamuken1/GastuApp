@@ -46,6 +46,7 @@ public class PreferenciasUsuarioService {
         // Map DTO to Entity
         mapDTOToEntity(dto, preferencias);
 
+        @SuppressWarnings("null")
         PreferenciasAlertas guardadas = preferenciasRepository.save(preferencias);
         return convertirADTO(guardadas);
     }

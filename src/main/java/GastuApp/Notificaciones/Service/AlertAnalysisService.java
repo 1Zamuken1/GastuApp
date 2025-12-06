@@ -305,6 +305,7 @@ public class AlertAnalysisService {
                             .divide(totalEgresos, 2, RoundingMode.HALF_UP);
 
                     if (porcentaje.compareTo(BigDecimal.valueOf(prefs.getAlertConcentracionGastosPorcentaje())) >= 0) {
+                        @SuppressWarnings("null")
                         ConceptoDTO concepto = conceptoService.obtenerPorId(conceptoId);
                         notificacionService.crearNotificacion(
                                 usuarioId,
@@ -341,7 +342,7 @@ public class AlertAnalysisService {
 
                 for (Object[] stat : stats) {
                     Long conceptoId = (Long) stat[0];
-                    aparicionesPorConcepto.merge(conceptoId, 1, Integer::sum);
+                    aparicionesPorConcepto.merge(conceptoId, 1, (a, b) -> a + b);
                 }
             }
 
@@ -362,6 +363,7 @@ public class AlertAnalysisService {
                         .collect(Collectors.toList());
 
                 if (recientes.isEmpty()) {
+                    @SuppressWarnings("null")
                     ConceptoDTO concepto = conceptoService.obtenerPorId(conceptoId);
                     notificacionService.crearNotificacion(
                             usuarioId,
@@ -465,8 +467,6 @@ public class AlertAnalysisService {
     private void checkBalanceCritico(Long usuarioId, Movimiento egreso, PreferenciasFinancierasDTO prefs) {
         try {
             BigDecimal totalIngresos = movimientoRepository.calcularTotalIngresos(usuarioId);
-            BigDecimal totalEgresos = movimientoRepository.calcularTotalEgresos(usuarioId);
-            BigDecimal balance = totalIngresos.subtract(totalEgresos);
 
             // Proyectar balance al final del mes
             LocalDateTime now = LocalDateTime.now();

@@ -1,0 +1,86 @@
+/* Dashboard Styles */
+
+/* Summary Cards */
+.dashboard-balance-card {
+  min-height: 140px;
+}
+
+.dashboard-stats-card .row {
+  min-height: 100px;
+}
+
+/* Chart Cards */
+.chart-card {
+  transition: box-shadow 0.2s ease;
+}
+
+.chart-card:hover {
+  box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.1) !important;
+}
+
+.chart-card .card-header {
+  border-bottom: none;
+}
+
+/* Placeholder Cards */
+.placeholder-card {
+  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+}
+
+.placeholder-card .card-body {
+  min-height: 200px;
+}
+
+/* Month Navigation */
+.month-nav .btn-group {
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.month-nav .btn {
+  padding: 0.5rem 1rem;
+  font-weight: 500;
+}
+
+/* Budget Progress Colors */
+.budget-safe {
+  color: #198754;
+}
+
+.budget-warning {
+  color: #ffc107;
+}
+
+.budget-danger {
+  color: #dc3545;
+}
+
+/* ApexCharts Customizations */
+.apexcharts-tooltip {
+  border-radius: 8px !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
+}
+
+.apexcharts-legend-text {
+  font-weight: 500 !important;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .dashboard-balance-card h2 {
+    font-size: 2rem;
+  }
+
+  .dashboard-stats-card h3 {
+    font-size: 1.25rem;
+  }
+
+  .chart-card .card-body {
+    padding: 0.75rem;
+  }
+}
+
+/* Custom Theme Colors */
+.bg-midnight {
+  background-color: #0f172a !important;
+}

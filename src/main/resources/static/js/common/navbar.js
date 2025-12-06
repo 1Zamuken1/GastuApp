@@ -19,6 +19,14 @@ function initNavbar() {
   const profileBtn = document.getElementById("profileBtn");
   const profileModal = document.getElementById("profileModal");
 
+  // Mover modales al body para evitar problemas de z-index/overflow
+  if (notificationsModal && notificationsModal.parentNode !== document.body) {
+    document.body.appendChild(notificationsModal);
+  }
+  if (profileModal && profileModal.parentNode !== document.body) {
+    document.body.appendChild(profileModal);
+  }
+
   // ============================================
   // FUNCIONES DE API
   // ============================================
