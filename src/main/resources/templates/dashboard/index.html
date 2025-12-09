@@ -6,6 +6,11 @@
       href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css"
     />
     <link rel="stylesheet" th:href="@{/css/dashboard/dashboard.css}" />
+    <!-- Driver.js Tour Styles -->
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/driver.js@1.0.1/dist/driver.css"
+    />
   </head>
   <body>
     <div th:replace="fragments/navbar :: navbar"></div>
@@ -219,6 +224,7 @@
 
             <div class="col-md-6">
               <div
+                id="projectionsCard"
                 class="card h-100 shadow-sm border-0 border-top border-4 placeholder-card"
                 style="border-color: #20c997 !important"
               >
@@ -241,6 +247,15 @@
               </div>
             </div>
           </div>
+
+          <!-- Floating Help Button for Tour -->
+          <button
+            id="tour-help-btn"
+            class="tour-help-btn"
+            title="Iniciar tour de ayuda"
+          >
+            <i class="bi bi-question-lg"></i>
+          </button>
         </main>
       </div>
     </div>
@@ -250,8 +265,14 @@
     <!-- ApexCharts -->
     <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
 
+    <!-- Driver.js Tour Library -->
+    <script src="https://cdn.jsdelivr.net/npm/driver.js@1.0.1/dist/driver.js.iife.js"></script>
+
     <!-- Dashboard Charts -->
     <script th:src="@{/js/dashboard/dashboard.js}"></script>
+
+    <!-- Dashboard Tour -->
+    <script th:src="@{/js/dashboard/dashboard-tour.js}"></script>
 
     <script th:inline="javascript">
       /*<![CDATA[*/

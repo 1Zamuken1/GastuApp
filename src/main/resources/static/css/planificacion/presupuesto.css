@@ -2,79 +2,153 @@
    PANEL GENERAL
 ============================================ */
 .panel-box {
-    border: 1px solid #e6eefc;
-    border-radius: 8px;
-    padding: 12px;
-    background: #fff;
+  border: 1px solid #e6eefc;
+  border-radius: 8px;
+  padding: 12px;
+  background: #fff;
 }
-
 
 /* ============================================
    ÁREA SCROLLEABLE (TARJETAS)
    Ajustado para usar todo el espacio disponible
 ============================================ */
 .scroll-area {
-    height: calc(100vh - 250px); /* Ajustado para que alcance hasta abajo */
-    overflow-y: auto;
-    padding-right: 4px;
+  height: calc(100vh - 250px); /* Ajustado para que alcance hasta abajo */
+  overflow-y: auto;
+  padding-right: 4px;
 }
-
 
 /* ============================================
    TARJETAS
 ============================================ */
 .card-presupuesto {
-    border-radius: 10px;
-    box-shadow: 0 1px 6px rgba(0, 0, 0, 0.04);
-    transition: 0.2s ease-in-out;
+  border-radius: 10px;
+  box-shadow: 0 1px 6px rgba(0, 0, 0, 0.04);
+  transition: 0.2s ease-in-out;
 }
 
 .card-presupuesto:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  transform: translateY(-3px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
 }
-
 
 /* ============================================
    TÍTULO + BUSCADOR
 ============================================ */
 .section-header {
-    display: flex;
-    gap: 8px;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 8px;
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
 }
 
 .search-bar {
-    width: 100%;
-    max-width: 520px;
+  width: 100%;
+  max-width: 520px;
 }
-
 
 /* RESPONSIVE */
 @media (max-width: 576px) {
-    .section-header {
-        flex-direction: column;
-        align-items: stretch;
-    }
-    .search-bar {
-        max-width: 100%;
-    }
+  .section-header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .search-bar {
+    max-width: 100%;
+  }
 }
-
 
 /* ============================================
    SCROLL GLOBAL
    - Evita scroll en el body (mejor UX)
    - main scrollea si es necesario
 ============================================ */
-html, body {
-    height: 100%;
-    overflow: hidden;
+html,
+body {
+  height: 100%;
+  overflow: hidden;
 }
 
 main {
-    overflow-y: auto;
-    height: calc(100vh - 56px); /* Altura menos navbar */
+  overflow-y: auto;
+  height: calc(100vh - 56px); /* Altura menos navbar */
+}
+
+/* Tour Help Button */
+.tour-help-btn {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #0d6efd 0%, #0a58ca 100%);
+  color: white;
+  border: none;
+  box-shadow: 0 4px 12px rgba(13, 110, 253, 0.4);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  transition: all 0.3s ease;
+  z-index: 1040;
+}
+
+.tour-help-btn:hover {
+  transform: scale(1.1);
+  box-shadow: 0 6px 20px rgba(13, 110, 253, 0.5);
+}
+
+.tour-help-btn:active {
+  transform: scale(0.95);
+}
+
+/* Driver.js Theme Customizations */
+.driver-popover {
+  background-color: #ffffff;
+  border-radius: 12px !important;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2) !important;
+}
+
+.driver-popover-title {
+  font-size: 1.1rem !important;
+  font-weight: 600 !important;
+  color: #0f172a !important;
+}
+
+.driver-popover-description {
+  color: #475569 !important;
+  line-height: 1.5 !important;
+}
+
+.driver-popover-navigation-btns button {
+  border-radius: 8px !important;
+  padding: 0.5rem 1rem !important;
+  font-weight: 500 !important;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+.driver-popover-next-btn {
+  background-color: #0d6efd !important;
+  color: white !important;
+  border: none !important;
+  text-shadow: none !important;
+}
+
+.driver-popover-next-btn:hover {
+  background-color: #0a58ca !important;
+}
+
+.driver-popover-prev-btn {
+  background-color: #e2e8f0 !important;
+  color: #475569 !important;
+  border: none !important;
+}
+
+.driver-popover-prev-btn:hover {
+  background-color: #cbd5e1 !important;
 }

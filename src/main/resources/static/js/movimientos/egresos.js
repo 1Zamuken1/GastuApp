@@ -237,6 +237,19 @@ document.addEventListener("DOMContentLoaded", function () {
     conceptos.forEach((c) => {
       const porcentaje = totalMes > 0 ? (c.totalAcumulado / totalMes) * 100 : 0;
 
+      // Calculate last registration date for this concept
+      let ultimaFechaTexto = "-";
+      if (c.movimientos && c.movimientos.length > 0) {
+        const sorted = [...c.movimientos].sort(
+          (a, b) => new Date(b.fechaRegistro) - new Date(a.fechaRegistro)
+        );
+        const lastDate = new Date(sorted[0].fechaRegistro);
+        ultimaFechaTexto = lastDate.toLocaleDateString("es-ES", {
+          day: "2-digit",
+          month: "short",
+        });
+      }
+
       const card = document.createElement("div");
       card.className = "col-md-4 col-lg-3";
       card.innerHTML = `
@@ -264,6 +277,7 @@ document.addEventListener("DOMContentLoaded", function () {
                         )}</h3>
                         <div class="d-flex justify-content-between small text-muted mb-2">
                             <span>${porcentaje.toFixed(0)}% del total</span>
+                            <span><i class="bi bi-calendar3 me-1"></i>${ultimaFechaTexto}</span>
                         </div>
                         
                         <div class="progress" style="height: 8px;">
