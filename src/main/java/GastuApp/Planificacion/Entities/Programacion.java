@@ -1,22 +1,18 @@
 package GastuApp.Planificacion.Entities;
 
-import java.io.Serializable;
+import jakarta.persistence.*;
+import lombok.*;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
-
 @Entity
 @Table(name = "programacion")
-public class Programacion implements Serializable {
+@Getter
+@Setter
+@AllArgsConstructor
+@NoArgsConstructor
+public class Programacion {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -27,22 +23,25 @@ public class Programacion implements Serializable {
     private BigDecimal montoProgramado;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "tipo", nullable = false)
-    private TipoConcepto tipo;   
+    @Column(nullable = false)
+    private TipoProgramacion tipo; // INGRESO O EGRESO
 
-    @Column(name = "descripcion", length = 100)
+    @Column(length = 100)
     private String descripcion;
 
-    @Column(name = "fecha_fin")
-    private LocalDate fechaFin;
+    @Column(name = "fecha_inicio", nullable = false)
+    private LocalDate fechaInicio;
 
-    @Column(name = "frecuencia", length = 30)
+    @Column(name = "proxima_ejecucion")
+    private LocalDate proximaEjecucion;
+
+    @Column(name = "frecuencia", length = 30, nullable = false)
     private String frecuencia;
 
     @Column(name = "activo", columnDefinition = "TINYINT(1) DEFAULT 1")
-    private Byte activo;
+    private boolean activo = true;
 
-    @Column(name = "fecha_creacion", insertable = false, updatable = false)
+    @Column(name = "fecha_creacion", updatable = false)
     private LocalDateTime fechaCreacion;
 
     @Column(name = "concepto_id", nullable = false)
@@ -51,8 +50,13 @@ public class Programacion implements Serializable {
     @Column(name = "usuario_id", nullable = false)
     private Long usuarioId;
 
-    public enum TipoConcepto {
-    INGRESO,
-    EGRESO
-}
+    @PrePersist
+    protected void onCreate() {
+        this.fechaCreacion = LocalDateTime.now();
+    }
+
+    public enum TipoProgramacion {
+        INGRESO,
+        EGRESO
+    }
 }

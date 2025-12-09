@@ -1,0 +1,134 @@
+<div th:fragment="modalEditar">
+    <div class="modal fade" id="modalEditar" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+
+                <!-- HEADER -->
+                <div class="modal-header bg-warning">
+                    <h5 class="modal-title text-dark">
+                        <i class="bi bi-pencil-square me-2"></i> Editar Programación
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                </div>
+
+                <!-- BODY -->
+                <div class="modal-body">
+                    <form id="formEditarProgramacion" autocomplete="off">
+
+                        <!-- Ocultos -->
+                        <input type="hidden" id="editarId" name="id">
+                        <input type="hidden" id="conceptoIdEditar" name="conceptoId">
+                        <input type="hidden" id="tipoEditar" name="tipo">
+
+                        <!-- Concepto -->
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">
+                                <i class="bi bi-tag me-1"></i> Concepto <span class="text-danger">*</span>
+                            </label>
+
+                            <div class="input-group">
+                                <input type="text"
+                                       class="form-control"
+                                       id="conceptoNombreEditar"
+                                       placeholder="Selecciona un concepto..."
+                                       readonly required>
+
+                                <button type="button"
+                                        class="btn btn-outline-secondary"
+                                        id="btnSeleccionarConceptoEditar">
+                                    <i class="bi bi-search me-1"></i> Seleccionar
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Monto -->
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">
+                                <i class="bi bi-currency-dollar me-1"></i> Monto <span class="text-danger">*</span>
+                            </label>
+
+                            <input type="number"
+                                   class="form-control"
+                                   id="editarMonto"
+                                   name="montoProgramado"
+                                   placeholder="0.00"
+                                   step="0.01"
+                                   min="0"
+                                   required>
+                        </div>
+
+                        <!-- Frecuencia -->
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">
+                                <i class="bi bi-arrow-repeat me-1"></i> Frecuencia <span class="text-danger">*</span>
+                            </label>
+
+                            <select class="form-select" id="editarFrecuencia" name="frecuencia" required>
+                                <option value="">Selecciona una frecuencia...</option>
+                                <option value="DIARIA">Diaria</option>
+                                <option value="SEMANAL">Semanal</option>
+                                <option value="QUINCENAL">Quincenal</option>
+                                <option value="MENSUAL">Mensual</option>
+                                <option value="BIMENSUAL">Bimensual</option>
+                                <option value="TRIMESTRAL">Trimestral</option>
+                                <option value="SEMESTRAL">Semestral</option>
+                                <option value="ANUAL">Anual</option>
+                            </select>
+                        </div>
+
+                        <!-- Fecha Inicio -->
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">
+                                <i class="bi bi-calendar-event me-1"></i> Fecha de Inicio <span class="text-danger">*</span>
+                            </label>
+
+                            <input type="date"
+                                   class="form-control"
+                                   id="editarFechaInicio"
+                                   name="fechaInicio"
+                                   required>
+                        </div>
+
+                        <!-- Próxima Ejecución -->
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">
+                                <i class="bi bi-calendar-check me-1"></i> Próxima Ejecución <span class="text-danger">*</span>
+                            </label>
+
+                            <input type="date"
+                                   class="form-control"
+                                   id="editarProximaEjecucion"
+                                   name="proximaEjecucion"
+                                   required>
+                        </div>
+
+                        <!-- Descripción -->
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">
+                                <i class="bi bi-card-text me-1"></i> Descripción
+                            </label>
+
+                            <textarea class="form-control"
+                                      id="editarDescripcion"
+                                      name="descripcion"
+                                      rows="3"
+                                      placeholder="Describe esta programación (opcional)..."></textarea>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- FOOTER -->
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        <i class="bi bi-x-lg me-1"></i> Cancelar
+                    </button>
+
+                    <button type="button" class="btn btn-warning" id="btnGuardarEditar">
+                        <i class="bi bi-check-lg me-1"></i> Guardar Cambios
+                    </button>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
