@@ -220,14 +220,33 @@ function initNavbar() {
       descripcion || ""
     }`.toUpperCase();
 
-    if (textToSearch.includes("INGRE") || textToSearch.includes("INCOME")) {
+    // 1. AHORROS (Yellow/Warning)
+    if (
+      textToSearch.includes("AHORRO") ||
+      textToSearch.includes("SAVING") ||
+      textToSearch.includes("META")
+    ) {
+      return {
+        color: "warning",
+        textClass: "text-warning",
+        bgClass: "bg-warning-subtle",
+        icon: "bi-piggy-bank",
+      };
+    }
+    // 2. INGRESOS (Green/Success)
+    else if (
+      textToSearch.includes("INGRESO") ||
+      textToSearch.includes("INCOME")
+    ) {
       return {
         color: "success",
         textClass: "text-success",
         bgClass: "bg-success-subtle",
         icon: "bi-graph-up-arrow",
       };
-    } else if (
+    }
+    // 3. EGRESOS/GASTOS (Red/Danger)
+    else if (
       textToSearch.includes("EGRE") ||
       textToSearch.includes("GASTO") ||
       textToSearch.includes("EXPENSE")
@@ -238,24 +257,14 @@ function initNavbar() {
         bgClass: "bg-danger-subtle",
         icon: "bi-graph-down-arrow",
       };
-    } else if (
-      textToSearch.includes("ALERT") ||
-      textToSearch.includes("ADVERTENCIA") ||
-      textToSearch.includes("WARNING")
-    ) {
+    }
+    // 4. Default
+    else {
       return {
-        color: "warning",
-        textClass: "text-warning",
-        bgClass: "bg-warning-subtle",
-        icon: "bi-exclamation-triangle-fill",
-      };
-    } else {
-      // Default nice light blue
-      return {
-        color: "info",
-        textClass: "text-info",
-        bgClass: "bg-info-subtle",
-        icon: "bi-bell-fill",
+        color: "primary",
+        textClass: "text-primary",
+        bgClass: "bg-primary-subtle",
+        icon: "bi-bell",
       };
     }
   }
@@ -457,6 +466,130 @@ function initNavbar() {
   // Cargar conteo inicial
   fetchUnreadCount();
 
+  // Verificar notificaciones de ahorro (Lógica de negocio frontend)
+  checkSavingsNotifications();
+
   // Actualizar cada 3 segundos para actualizaciones en tiempo real
   setInterval(fetchUnreadCount, 3000);
+}
+
+// ============================================
+// LOGICA DE NOTIFICACIONES DE AHORRO
+// ============================================
+
+async function checkSavingsNotifications() {
+  try {
+    // 1. Obtener ahorros y notificaciones existentes en paralelo
+    const [ahorrosRes, notificacionesRes] = await Promise.all([
+      fetch("/api/ahorros", { credentials: "include" }),
+      fetch("/api/notificaciones", { credentials: "include" }),
+    ]);
+
+    if (!ahorrosRes.ok || !notificacionesRes.ok) return;
+
+    const ahorros = await ahorrosRes.json();
+    const notificaciones = await notificacionesRes.json();
+
+    const hoy = new Date();
+    hoy.setHours(0, 0, 0, 0);
+
+    // Helper para verificar si ya existe notificación reciente (últimos 3 días) para este ahorro y tipo
+    const yaNotificadoRecientemente = (ahorroId, tituloParcial) => {
+      return notificaciones.some((n) => {
+        const isSameRef = n.referenciaId === ahorroId && n.tipo === "AHORRO";
+        if (!isSameRef) return false;
+
+        // Verificar fecha (si es muy vieja, permitir nueva notificación)
+        const fechaNotif = new Date(n.fechaCreacion);
+        const diffDias = (hoy - fechaNotif) / (1000 * 60 * 60 * 24);
+
+        return diffDias < 3 && n.titulo.includes(tituloParcial);
+      });
+    };
+
+    const crearNotificacion = async (ahorro, titulo, descripcion) => {
+      try {
+        await fetch("/api/notificaciones", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          credentials: "include",
+          body: JSON.stringify({
+            titulo: titulo,
+            descripcion: descripcion,
+            tipo: "AHORRO",
+            referenciaId: ahorro.id || ahorro.ahorroId,
+          }),
+        });
+      } catch (e) {
+        console.error("Error creando notificación automática:", e);
+      }
+    };
+    for (const ahorro of ahorros) {
+      const ahorroId = ahorro.id || ahorro.ahorroId;
+      const nombreArr = ahorro.nombreConcepto || ahorro.nombre || "Ahorro";
+
+      // REGLA 3: ABANDONO
+      if (ahorro.estado === "ABANDONADO") {
+        if (!yaNotificadoRecientemente(ahorroId, "Meta Abandonada")) {
+          await crearNotificacion(
+            ahorro,
+            "Meta Abandonada",
+            `Tu meta de ahorro "${nombreArr}" ha sido marcada como abandonada por falta de aportes.`
+          );
+        }
+        continue; // Si está abandonado, no enviar otros recordatorios
+      }
+
+      if (ahorro.estado === "COMPLETADO") continue;
+
+      // Obtener cuotas para evaluar Reglas 1 y 2
+      try {
+        const cuotasRes = await fetch(`/api/ahorros/cuotas/${ahorroId}`, {
+          credentials: "include",
+        });
+        if (!cuotasRes.ok) continue;
+        const cuotas = await cuotasRes.json();
+
+        // Buscar la primera cuota pendiente
+        const pendiente = cuotas.find(
+          (c) => (c.estadoAp || c.estado) === "PENDIENTE"
+        );
+
+        if (pendiente) {
+          const fechaLimite = new Date(pendiente.fechaLimite);
+          fechaLimite.setHours(0, 0, 0, 0); // Normalizar
+
+          // REGLA 2: PAGO VENCIDO (Fecha límite ya pasó)
+          if (fechaLimite < hoy) {
+            if (!yaNotificadoRecientemente(ahorroId, "Aporte Vencido")) {
+              await crearNotificacion(
+                ahorro,
+                "Aporte Vencido",
+                `El aporte para tu meta "${nombreArr}" venció el ${fechaLimite.toLocaleDateString()}. ¡Ponte al día!`
+              );
+            }
+          }
+          // REGLA 1: RECORDATORIO (Hoy es el día o falta poco)
+          else if (
+            fechaLimite.getTime() === hoy.getTime() ||
+            (fechaLimite - hoy) / (1000 * 60 * 60 * 24) <= 2
+          ) {
+            if (
+              !yaNotificadoRecientemente(ahorroId, "Recordatorio de Aporte")
+            ) {
+              await crearNotificacion(
+                ahorro,
+                "Recordatorio de Aporte",
+                `Es momento de realizar tu aporte a "${nombreArr}". Vence el ${fechaLimite.toLocaleDateString()}.`
+              );
+            }
+          }
+        }
+      } catch (e) {
+        console.warn(`Error procesando cuotas para ahorro ${ahorroId}`, e);
+      }
+    }
+  } catch (error) {
+    console.error("Error en chequeo de notificaciones de ahorro:", error);
+  }
 }
