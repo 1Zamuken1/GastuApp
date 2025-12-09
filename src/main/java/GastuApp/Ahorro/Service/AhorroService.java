@@ -76,6 +76,7 @@ public class AhorroService {
         dto.setEstado(a.getEstado());
         dto.setCantCuotas(a.getCantCuotas());
 
+        @SuppressWarnings("null")
         ConceptoDTO c = conceptoService.obtenerPorId(a.getConceptoId());
 
         if (c != null) {
@@ -106,14 +107,15 @@ public class AhorroService {
                 .stream()
                 .map(a -> {
                     try {
-                    return this.toDTO(a);
-                } catch (DataIntegrityViolationException e) {
-                    System.err.println("Error de Integridad al cargar Ahorro ID " + a.getId() + ": " + e.getMessage());
-                    return null;
-                }
-            })
-            .filter(dto -> dto != null) 
-            .collect(Collectors.toList());
+                        return this.toDTO(a);
+                    } catch (DataIntegrityViolationException e) {
+                        System.err.println(
+                                "Error de Integridad al cargar Ahorro ID " + a.getId() + ": " + e.getMessage());
+                        return null;
+                    }
+                })
+                .filter(dto -> dto != null)
+                .collect(Collectors.toList());
     }
 
     // ver un ahorro por id
@@ -130,15 +132,16 @@ public class AhorroService {
         return ahorroMetaRepository.buscarPorConceptoParcial(usuarioId, texto)
                 .stream()
                 .map(a -> {
-            try {
-                return this.toDTO(a);
-            } catch (DataIntegrityViolationException e) {
-                System.err.println("Error de Integridad al cargar Ahorro ID " + a.getId() + " por concepto: " + e.getMessage());
-                return null; 
-            }
-        })
-        .filter(dto -> dto != null) 
-        .collect(Collectors.toList());
+                    try {
+                        return this.toDTO(a);
+                    } catch (DataIntegrityViolationException e) {
+                        System.err.println("Error de Integridad al cargar Ahorro ID " + a.getId() + " por concepto: "
+                                + e.getMessage());
+                        return null;
+                    }
+                })
+                .filter(dto -> dto != null)
+                .collect(Collectors.toList());
     }
 
     // filtrar por estado
@@ -147,15 +150,16 @@ public class AhorroService {
         return ahorroMetaRepository.findByUsuarioIdAndEstadoOrderByFechaCreacionDesc(usuarioId, estado)
                 .stream()
                 .map(a -> {
-            try {
-                return this.toDTO(a);
-            } catch (DataIntegrityViolationException e) {
-                System.err.println("Error de Integridad al cargar Ahorro ID " + a.getId() + " por estado: " + e.getMessage());
-                return null; 
-            }
-        })
-        .filter(dto -> dto != null)
-        .collect(Collectors.toList());
+                    try {
+                        return this.toDTO(a);
+                    } catch (DataIntegrityViolationException e) {
+                        System.err.println("Error de Integridad al cargar Ahorro ID " + a.getId() + " por estado: "
+                                + e.getMessage());
+                        return null;
+                    }
+                })
+                .filter(dto -> dto != null)
+                .collect(Collectors.toList());
     }
 
     // METODO PARA VALIDAR EL CONCEPTO
@@ -511,12 +515,11 @@ public class AhorroService {
     private void pasarCuotasAPerdias(AhorroMeta meta) {
         LocalDate hoy = LocalDate.now();
         List<AporteAhorro> todas = aporteAhorroRepository.findByMetaIdOrderByFechaLimiteAsc(meta.getId());
-        boolean changed = false;
+
         for (AporteAhorro a : todas) {
             if (a.getEstado() == AporteAhorro.EstadoAp.PENDIENTE && a.getFechaLimite().isBefore(hoy)) {
                 a.setEstado(AporteAhorro.EstadoAp.PERDIDO);
                 aporteAhorroRepository.save(a);
-                changed = true;
             }
         }
     }

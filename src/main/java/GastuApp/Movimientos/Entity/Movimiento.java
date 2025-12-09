@@ -47,7 +47,7 @@ public class Movimiento {
      * Fecha y hora en que se registro el movimiento.
      * Se establece automaticamente al momento de la creacion.
      */
-    @Column(name = "fecha_registro", nullable = false, updatable = false)
+    @Column(name = "fecha_registro", nullable = false)
     private LocalDateTime fechaRegistro;
 
     /**
@@ -70,7 +70,9 @@ public class Movimiento {
      */
     @PrePersist
     protected void onCreate() {
-        this.fechaRegistro = LocalDateTime.now();
+        if (this.fechaRegistro == null) {
+            this.fechaRegistro = LocalDateTime.now();
+        }
     }
 
     /**
@@ -85,8 +87,8 @@ public class Movimiento {
     public Movimiento() {
     }
 
-    public Movimiento(Long id, TipoMovimiento tipo, BigDecimal monto, String descripcion, 
-                      LocalDateTime fechaRegistro, Long usuarioId, Long conceptoId) {
+    public Movimiento(Long id, TipoMovimiento tipo, BigDecimal monto, String descripcion,
+            LocalDateTime fechaRegistro, Long usuarioId, Long conceptoId) {
         this.id = id;
         this.tipo = tipo;
         this.monto = monto;

@@ -486,14 +486,33 @@ document.addEventListener("DOMContentLoaded", function () {
       descripcion || ""
     }`.toUpperCase();
 
-    if (textToSearch.includes("INGRE") || textToSearch.includes("INCOME")) {
+    // 1. AHORROS (Yellow/Warning) - Prioridad alta para diferenciar
+    if (
+      textToSearch.includes("AHORRO") ||
+      textToSearch.includes("SAVING") ||
+      textToSearch.includes("META")
+    ) {
+      return {
+        borderClass: "border-warning",
+        badgeClass: "bg-warning text-dark",
+        textClass: "text-warning",
+        icon: "bi-piggy-bank",
+      };
+    }
+    // 2. INGRESOS (Green/Success)
+    else if (
+      textToSearch.includes("INGRESO") ||
+      textToSearch.includes("INCOME")
+    ) {
       return {
         borderClass: "border-success",
         badgeClass: "bg-success",
         textClass: "text-success",
         icon: "bi-graph-up-arrow",
       };
-    } else if (
+    }
+    // 3. EGRESOS/GASTOS (Red/Danger)
+    else if (
       textToSearch.includes("EGRE") ||
       textToSearch.includes("GASTO") ||
       textToSearch.includes("EXPENSE")
@@ -504,7 +523,9 @@ document.addEventListener("DOMContentLoaded", function () {
         textClass: "text-danger",
         icon: "bi-graph-down-arrow",
       };
-    } else {
+    }
+    // 4. Default
+    else {
       return {
         borderClass: "border-primary",
         badgeClass: "bg-primary",

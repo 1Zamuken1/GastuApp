@@ -2,19 +2,17 @@ package GastuApp.Movimientos.Service;
 
 import GastuApp.Conceptos.DTO.ConceptoDTO;
 import GastuApp.Movimientos.DTO.EgresoDTO;
-import GastuApp.Movimientos.DTO.PreferenciasFinancierasDTO;
+
 import GastuApp.Movimientos.Entity.Movimiento;
 import GastuApp.Movimientos.Entity.Movimiento.TipoMovimiento;
-import GastuApp.Notificaciones.Entity.Notificacion.TipoNotificacion;
+
 import GastuApp.Conceptos.Service.ConceptoService;
-import GastuApp.Notificaciones.Service.NotificacionService;
+
 import GastuApp.Notificaciones.Service.AlertAnalysisService;
 import GastuApp.Movimientos.Repository.MovimientoRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -26,19 +24,15 @@ import java.util.stream.Collectors;
 public class EgresoService {
 
     private final MovimientoRepository movimientoRepository;
-    private final NotificacionService notificacionService;
-    private final PreferenciasUsuarioService preferenciasService;
+
     private final ConceptoService conceptoService;
     private final AlertAnalysisService alertAnalysisService;
 
     public EgresoService(MovimientoRepository movimientoRepository,
-            NotificacionService notificacionService,
-            PreferenciasUsuarioService preferenciasService,
             ConceptoService conceptoService,
             AlertAnalysisService alertAnalysisService) {
         this.movimientoRepository = movimientoRepository;
-        this.notificacionService = notificacionService;
-        this.preferenciasService = preferenciasService;
+
         this.conceptoService = conceptoService;
         this.alertAnalysisService = alertAnalysisService;
     }
@@ -88,7 +82,6 @@ public class EgresoService {
      *
      * @param dto       DTO con los datos del egreso
      * @param usuarioId ID del usuario que crea el egreso
-     * @param token     Token JWT (Ignorado, mantenido por compatibilidad temporal)
      * @return DTO del egreso creado
      * @throws RuntimeException si el concepto no existe o no es válido
      */
@@ -104,6 +97,13 @@ public class EgresoService {
         egreso.setDescripcion(dto.getDescripcion());
         egreso.setUsuarioId(usuarioId);
         egreso.setConceptoId(dto.getConceptoId());
+
+        // Set user-provided date or default to now
+        if (dto.getFechaRegistro() != null) {
+            egreso.setFechaRegistro(dto.getFechaRegistro());
+        } else {
+            egreso.setFechaRegistro(java.time.LocalDateTime.now());
+        }
 
         // Guardar
         Movimiento egresoGuardado = movimientoRepository.save(egreso);
@@ -121,7 +121,6 @@ public class EgresoService {
      * @param id        ID del egreso a actualizar
      * @param dto       DTO con los nuevos datos
      * @param usuarioId ID del usuario que actualiza
-     * @param token     Token JWT (Ignorado, mantenido por compatibilidad temporal)
      * @return DTO del egreso actualizado
      * @throws RuntimeException si el egreso no existe, no pertenece al usuario o
      *                          el concepto no es válido
@@ -145,6 +144,11 @@ public class EgresoService {
         egreso.setMonto(dto.getMonto());
         egreso.setDescripcion(dto.getDescripcion());
         egreso.setConceptoId(dto.getConceptoId());
+
+        // Update date if provided
+        if (dto.getFechaRegistro() != null) {
+            egreso.setFechaRegistro(dto.getFechaRegistro());
+        }
 
         // Guardar cambios
         Movimiento egresoActualizado = movimientoRepository.save(egreso);

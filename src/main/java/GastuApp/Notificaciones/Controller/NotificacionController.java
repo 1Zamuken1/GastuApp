@@ -63,6 +63,25 @@ public class NotificacionController {
     }
 
     /**
+     * Crea una notificación manualmente (usado desde frontend o microservicios que
+     * no
+     * pueden acceder directamente).
+     *
+     * @param dto            Datos de la notificación
+     * @param authentication Información del usuario autenticado
+     * @return DTO de la notificación creada
+     */
+    @PostMapping
+    public ResponseEntity<NotificacionDTO> crearNotificacion(
+            @RequestBody @jakarta.validation.Valid GastuApp.Notificaciones.DTO.CrearNotificacionManualDTO dto,
+            Authentication authentication) {
+        Long usuarioId = obtenerUsuarioId(authentication);
+        NotificacionDTO notificacion = notificacionService.crearNotificacion(usuarioId, dto.getTipo(),
+                dto.getReferenciaId(), dto.getTitulo(), dto.getDescripcion());
+        return ResponseEntity.ok(notificacion);
+    }
+
+    /**
      * Marca una notificación como leída.
      *
      * @param id             ID de la notificación

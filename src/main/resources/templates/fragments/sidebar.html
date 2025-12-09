@@ -1,22 +1,26 @@
-<nav th:fragment="sidebar" id="sidebarMenu" class="sidebar bg-dark">
+<nav
+  th:fragment="sidebar"
+  id="sidebarMenu"
+  class="sidebar bg-sidebar-theme border-end border-secondary"
+>
   <div class="sidebar-sticky">
     <!-- Navigation -->
     <ul class="nav flex-column px-2">
       <!-- Toggle button inside nav, styled like other items -->
-      <li class="nav-item d-none d-md-block">
+      <li class="nav-item d-none d-md-block text-center mb-2">
         <button
           id="sidebarToggle"
-          class="nav-link text-white d-flex align-items-center w-100 border-0 bg-transparent"
+          class="nav-link text-white shadow-none w-100 border-0 bg-transparent py-2"
+          title="Colapsar menú"
         >
-          <i class="bi bi-list sidebar-icon"></i>
-          <span class="sidebar-text ms-2">Colapsar menú</span>
+          <i class="bi bi-list fs-4"></i>
         </button>
       </li>
 
       <li class="nav-item">
         <a
-          class="nav-link text-white d-flex align-items-center"
-          th:classappend="${activePage == 'dashboard'} ? 'active bg-primary'"
+          class="nav-link text-white-50 d-flex align-items-center rounded mb-1"
+          th:classappend="${activePage == 'dashboard'} ? 'active bg-primary text-white shadow-sm'"
           href="/dashboard"
           title="Dashboard"
         >
@@ -26,8 +30,8 @@
       </li>
       <li class="nav-item">
         <a
-          class="nav-link text-white d-flex align-items-center"
-          th:classappend="${activePage == 'ingresos'} ? 'active bg-success'"
+          class="nav-link text-white-50 d-flex align-items-center rounded mb-1"
+          th:classappend="${activePage == 'ingresos'} ? 'active bg-success text-white shadow-sm'"
           href="/movimientos/ingresos"
           title="Ingresos"
         >
@@ -37,8 +41,8 @@
       </li>
       <li class="nav-item">
         <a
-          class="nav-link text-white d-flex align-items-center"
-          th:classappend="${activePage == 'egresos'} ? 'active bg-danger'"
+          class="nav-link text-white-50 d-flex align-items-center rounded mb-1"
+          th:classappend="${activePage == 'egresos'} ? 'active bg-danger text-white shadow-sm'"
           href="/movimientos/egresos"
           title="Egresos"
         >
@@ -48,8 +52,8 @@
       </li>
       <li class="nav-item">
         <a
-          class="nav-link text-white d-flex align-items-center"
-          th:classappend="${activePage == 'ahorros'} ? 'active bg-warning text-dark'"
+          class="nav-link text-white-50 d-flex align-items-center rounded mb-1"
+          th:classappend="${activePage == 'ahorros'} ? 'active bg-warning text-dark shadow-sm'"
           href="/ahorros"
           title="Ahorros"
         >
@@ -59,11 +63,11 @@
       </li>
       <li class="nav-item">
         <a
-          class="nav-link text-white d-flex align-items-center"
-          th:classappend="${activePage == 'Presupuesto'} ? 'active bg-warning text-dark'"
+          class="nav-link text-white-50 d-flex align-items-center rounded mb-1"
+          th:classappend="${activePage == 'Presupuesto'} ? 'active bg-light text-dark fw-bold border'"
           href="/Presupuestos"
-          title="Presupeustos"
-      >
+          title="Presupuestos"
+        >
           <i class="bi bi-calendar-check sidebar-icon"></i>
           <span class="sidebar-text ms-2">Presupuestos</span>
       </a>
@@ -95,8 +99,8 @@
     <ul class="nav flex-column px-2 mb-2">
       <li class="nav-item">
         <a
-          class="nav-link text-white d-flex align-items-center"
-          th:classappend="${activePage == 'perfil'} ? 'active bg-info'"
+          class="nav-link text-white-50 d-flex align-items-center rounded mb-1"
+          th:classappend="${activePage == 'perfil'} ? 'active bg-info text-dark shadow-sm'"
           href="/perfil"
           title="Mi Perfil"
         >
@@ -107,6 +111,5 @@
     </ul>
   </div>
 </nav>
-
 <!-- Backdrop for mobile -->
 <div id="sidebarBackdrop" class="sidebar-backdrop"></div>

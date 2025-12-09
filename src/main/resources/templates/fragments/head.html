@@ -41,7 +41,6 @@
 
     <!-- Sidebar CSS -->
     <link rel="stylesheet" th:href="@{/css/common/sidebar.css}" />
-     
 
     <!-- Prevent Sidebar FOUC -->
     <script>
@@ -67,6 +66,14 @@
       /* Prevent transitions on load */
       .preload * {
         transition: none !important;
+      }
+
+      /* Global Theme Colors */
+      .bg-midnight {
+        background-color: #0f172a !important; /* Navbar */
+      }
+      .bg-sidebar-theme {
+        background-color: #1e293b !important; /* Sidebar (Slate 800) */
       }
     </style>
 
@@ -96,7 +103,7 @@
           document.body.classList.remove("preload");
         });
       </script>
-      <link rel="stylesheet" th:href="@{/css/presupuesto.css}">
+      <link rel="stylesheet" th:href="@{/css/planificacion/presupuesto.css}" />
     </div>
   </body>
 </html>
