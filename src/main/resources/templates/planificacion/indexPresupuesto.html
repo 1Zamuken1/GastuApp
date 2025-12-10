@@ -1,56 +1,80 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
-<head th:replace="~{fragments/head :: head('Planificación - GastuApp', ~{:: link})}">
-    <link rel="stylesheet" th:href="@{/css/planificacion/presupuesto.css}">
-</head>
-<body>
-
+  <head
+    th:replace="~{fragments/head :: head('Planificación - GastuApp', ~{:: link})}"
+  >
+    <link rel="stylesheet" th:href="@{/css/planificacion/presupuesto.css}" />
+    <!-- Driver.js Tour Styles -->
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/driver.js@1.0.1/dist/driver.css"
+    />
+  </head>
+  <body>
     <!-- NAVBAR -->
     <nav th:replace="~{fragments/navbar :: navbar}"></nav>
 
     <!-- SIDEBAR -->
-    <nav th:replace="~{fragments/sidebar :: sidebar(activePage='Presupeusto')}" 
-         class="d-md-block bg-light sidebar collapse"></nav>
+    <nav
+      th:replace="~{fragments/sidebar :: sidebar(activePage='Presupuesto')}"
+      class="d-md-block bg-light sidebar collapse"
+    ></nav>
 
     <!-- MAIN: SOLO ESTE SCROLLEA GLOBAL -->
     <main class="px-md-4 py-4">
-        <div class="container">
-            <h1 class="text-dark mb-4">Mis presupuestos</h1>
+      <div class="container">
+        <h1 class="text-dark mb-4">Mis presupuestos</h1>
 
-            <!-- PRESUPUESTOS -->
-            <div class="panel-box mb-4">
+        <!-- PRESUPUESTOS -->
+        <div class="panel-box mb-4">
+          <div class="section-header">
+            <div class="d-flex align-items-center gap-2 flex-wrap">
+              <div class="input-group search-bar">
+                <input
+                  id="buscarPresupuestos"
+                  type="search"
+                  class="form-control"
+                  placeholder="Buscar..."
+                />
+                <button
+                  id="limpiarBusquedaPres"
+                  class="btn btn-outline-secondary"
+                  type="button"
+                >
+                  <i class="bi bi-x-lg"></i>
+                </button>
+              </div>
 
-                <div class="section-header">
-
-                    <div class="d-flex align-items-center gap-2 flex-wrap">
-                        <div class="input-group search-bar">
-                            <input id="buscarPresupuestos" type="search" class="form-control" placeholder="Buscar...">
-                            <button id="limpiarBusquedaPres" class="btn btn-outline-secondary" type="button">
-                                <i class="bi bi-x-lg"></i>
-                            </button>
-                        </div>
-
-                        <button class="btn btn-primary" id="btnCrearPresupuesto">
-                            <i class="bi bi-plus-lg me-1"></i> Nuevo presupuesto
-                        </button>
-                    </div>
-
-                </div>
-
-                <div class="scroll-area">
-                    <div class="row g-3" id="cardsPresupuestos">
-                        <!-- JS Insertar tarjetas -->
-                    </div>
-                </div>
+              <button class="btn btn-primary" id="btnCrearPresupuesto">
+                <i class="bi bi-plus-lg me-1"></i> Nuevo presupuesto
+              </button>
             </div>
+          </div>
 
+          <div class="scroll-area">
+            <div class="row g-3" id="cardsPresupuestos">
+              <!-- JS Insertar tarjetas -->
+            </div>
+          </div>
         </div>
+      </div>
     </main>
+
+    <!-- Floating Help Button for Tour -->
+    <button
+      id="tour-help-btn"
+      class="tour-help-btn"
+      title="Iniciar tour de ayuda"
+    >
+      <i class="bi bi-question-lg"></i>
+    </button>
 
     <!-- MODALES -->
     <div th:replace="~{planificacion/presupuestos/crear :: crearModal}"></div>
     <div th:replace="~{planificacion/presupuestos/editar :: editarModal}"></div>
-    <div th:replace="~{planificacion/modales/abrirConcepto :: abrirConceptoModal}"></div>
+    <div
+      th:replace="~{planificacion/modales/abrirConcepto :: abrirConceptoModal}"
+    ></div>
 
     <!-- SCRIPTS -->
     <div th:replace="~{fragments/head :: scripts}"></div>
@@ -58,5 +82,9 @@
 
     <script th:src="@{/js/planificacion/presupuestos.js}"></script>
 
-</body>
+    <!-- Driver.js Tour Library -->
+    <script src="https://cdn.jsdelivr.net/npm/driver.js@1.0.1/dist/driver.js.iife.js"></script>
+    <!-- Presupuesto Tour -->
+    <script th:src="@{/js/planificacion/presupuesto-tour.js}"></script>
+  </body>
 </html>

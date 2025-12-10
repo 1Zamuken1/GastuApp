@@ -1,0 +1,82 @@
+/* Tour Help Button */
+.tour-help-btn {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #0d6efd 0%, #0a58ca 100%);
+  color: white;
+  border: none;
+  box-shadow: 0 4px 12px rgba(13, 110, 253, 0.4);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  transition: all 0.3s ease;
+  z-index: 1040;
+}
+
+.tour-help-btn:hover {
+  transform: scale(1.1);
+  box-shadow: 0 6px 20px rgba(13, 110, 253, 0.5);
+}
+
+.tour-help-btn:active {
+  transform: scale(0.95);
+}
+
+/* Driver.js Theme Customizations for Profile (Neutral/Blue) */
+.driver-popover {
+  background-color: #ffffff;
+  border-radius: 12px !important;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2) !important;
+  max-width: 400px !important; /* Slightly wider for explanations */
+}
+
+.driver-popover-title {
+  font-size: 1.1rem !important;
+  font-weight: 600 !important;
+  color: #1e293b !important; /* Slate 800 */
+}
+
+.driver-popover-description {
+  color: #475569 !important;
+  line-height: 1.6 !important;
+  font-size: 0.95rem !important;
+}
+
+.driver-popover-navigation-btns button {
+  border-radius: 8px !important;
+  padding: 0.5rem 1rem !important;
+  font-weight: 500 !important;
+}
+
+.driver-popover-next-btn {
+  background-color: #0d6efd !important;
+  color: white !important;
+  border: none !important;
+  text-shadow: none !important;
+}
+
+.driver-popover-next-btn:hover {
+  background-color: #0a58ca !important;
+}
+
+.driver-popover-prev-btn {
+  background-color: #f1f5f9 !important;
+  color: #475569 !important;
+  border: none !important;
+}
+
+.driver-popover-prev-btn:hover {
+  background-color: #e2e8f0 !important;
+}
+
+/* Specific highlight for tabs in tour */
+/* Removed background color override to preserve original tab styles as requested */
+.driver-active-element {
+  /* background-color: rgba(13, 110, 253, 0.05) !important; */
+}
