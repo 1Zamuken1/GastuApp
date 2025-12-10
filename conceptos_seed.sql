@@ -44,11 +44,16 @@ INSERT INTO concepto (tipo, nombre, descripcion) VALUES
 -- INSERT INTO concepto (tipo, nombre, descripcion) VALUES
 --('AHORRO', 'Vacaciones', 'Ahorro para viajes y vacaciones'),
 --('AHORRO', 'Emergencias', 'Fondo de emergencia'),
---('AHORRO', 'Educación', 'Ahorro para estudios'),
+--('AHORRO', 'Compra casa', 'Ahorro para estudios'),
 --('AHORRO', 'Vivienda', 'Ahorro para compra de casa o apartamento'),
 --('AHORRO', 'Vehículo', 'Ahorro para compra de vehículo'),
 --('AHORRO', 'Inversión', 'Ahorro para inversiones'),
 --('AHORRO', 'Jubilación', 'Ahorro para retiro'),
 --('AHORRO', 'Tecnología', 'Ahorro para compra de tecnología'),
 --('AHORRO', 'Salud', 'Ahorro para gastos médicos'),
+--('AHORRO', 'Comprar carro', 'Otros ahorros');
+--('AHORRO', 'Comprar ropa', 'Otros ahorros');
+--('AHORRO', 'Comprar cosas casa', 'Otros ahorros');
+--('AHORRO', 'Comprar cosas carro', 'Otros ahorros');
+--('AHORRO', 'Comprar cosas moto', 'Otros ahorros');
 --('AHORRO', 'Otro', 'Otros ahorros');
