@@ -185,3 +185,9 @@ html.sidebar-collapsed .sidebar .nav-link.active {
     display: block;
   }
 }
+
+/* Custom Active Colors */
+.bg-custom-purple {
+  background-color: #6f42c1 !important; /* Bootstrap Purple */
+  color: white !important;
+}

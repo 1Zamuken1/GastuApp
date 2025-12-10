@@ -19,7 +19,7 @@
 
       <li class="nav-item">
         <a
-          class="nav-link text-white-50 d-flex align-items-center rounded mb-1"
+          class="nav-link text-white d-flex align-items-center rounded mb-1"
           th:classappend="${activePage == 'dashboard'} ? 'active bg-primary text-white shadow-sm'"
           href="/dashboard"
           title="Dashboard"
@@ -30,7 +30,7 @@
       </li>
       <li class="nav-item">
         <a
-          class="nav-link text-white-50 d-flex align-items-center rounded mb-1"
+          class="nav-link text-white d-flex align-items-center rounded mb-1"
           th:classappend="${activePage == 'ingresos'} ? 'active bg-success text-white shadow-sm'"
           href="/movimientos/ingresos"
           title="Ingresos"
@@ -41,7 +41,7 @@
       </li>
       <li class="nav-item">
         <a
-          class="nav-link text-white-50 d-flex align-items-center rounded mb-1"
+          class="nav-link text-white d-flex align-items-center rounded mb-1"
           th:classappend="${activePage == 'egresos'} ? 'active bg-danger text-white shadow-sm'"
           href="/movimientos/egresos"
           title="Egresos"
@@ -52,7 +52,7 @@
       </li>
       <li class="nav-item">
         <a
-          class="nav-link text-white-50 d-flex align-items-center rounded mb-1"
+          class="nav-link text-white d-flex align-items-center rounded mb-1"
           th:classappend="${activePage == 'ahorros'} ? 'active bg-warning text-dark shadow-sm'"
           href="/ahorros"
           title="Ahorros"
@@ -63,35 +63,32 @@
       </li>
       <li class="nav-item">
         <a
-          class="nav-link text-white-50 d-flex align-items-center rounded mb-1"
-          th:classappend="${activePage == 'Presupuesto'} ? 'active bg-light text-dark fw-bold border'"
+          class="nav-link text-white d-flex align-items-center rounded mb-1"
+          th:classappend="${activePage == 'Presupuesto'} ? 'active bg-primary text-white shadow-sm'"
           href="/Presupuestos"
           title="Presupuestos"
         >
           <i class="bi bi-calendar-check sidebar-icon"></i>
           <span class="sidebar-text ms-2">Presupuestos</span>
-      </a>
-      <a
-    class="nav-link text-white d-flex align-items-center"
-    th:classappend="${activePage == 'programaciones'} ? 'active bg-warning text-dark'"
-    href="/programaciones"
-    title="Programaciones"
->
-    <i class="bi bi-calendar-check sidebar-icon"></i>
-    <span class="sidebar-text ms-2">Programaciones</span>
-</a>
-
-      
-
-
-  </li>
-
+        </a>
+      </li>
+      <li class="nav-item">
+        <a
+          class="nav-link text-white d-flex align-items-center rounded mb-1"
+          th:classappend="${activePage == 'programaciones'} ? 'active bg-custom-purple text-white shadow-sm'"
+          href="/programaciones"
+          title="Programaciones"
+        >
+          <i class="bi bi-calendar-check sidebar-icon"></i>
+          <span class="sidebar-text ms-2">Programaciones</span>
+        </a>
+      </li>
     </ul>
 
     <hr class="my-3 border-secondary mx-2" />
 
     <h6
-      class="sidebar-heading px-3 mb-2 text-muted text-uppercase small d-flex align-items-center"
+      class="sidebar-heading px-3 mb-2 text-white-50 text-uppercase small d-flex align-items-center"
     >
       <i class="bi bi-person-fill sidebar-icon"></i>
       <span class="sidebar-text ms-2">Mi Cuenta</span>
@@ -99,7 +96,7 @@
     <ul class="nav flex-column px-2 mb-2">
       <li class="nav-item">
         <a
-          class="nav-link text-white-50 d-flex align-items-center rounded mb-1"
+          class="nav-link text-white d-flex align-items-center rounded mb-1"
           th:classappend="${activePage == 'perfil'} ? 'active bg-info text-dark shadow-sm'"
           href="/perfil"
           title="Mi Perfil"
