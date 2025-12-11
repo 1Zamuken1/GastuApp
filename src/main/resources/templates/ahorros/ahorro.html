@@ -6,15 +6,11 @@
 </head>
 
 <body>
-    <!-- Navbar -->
     <nav th:replace="fragments/navbar :: navbar"></nav>
 
-    <!-- Sidebar -->
     <nav th:replace="fragments/sidebar :: sidebar" class="d-md-block bg-light sidebar collapse"></nav>
 
-    <!-- Main Content -->
     <main class="px-md-4 py-4">
-        <!-- Header -->
         <div
             class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
             <h1 class="h2">Mis Ahorros</h1>
@@ -22,311 +18,268 @@
 
         <!-- Dashboard Cards -->
         <div class="row mb-4">
-            <!-- Total Card -->
-            <div class="col-md-6 mb-3 mb-md-0">
-                <div class="card bg-warning-custom text-white h-100 shadow-sm">
-                    <div class="card-body d-flex flex-column justify-content-center align-items-center text-center">
-                        <h6 class="card-subtitle mb-2 text-white-50">
-                            Total Ahorrado
-                        </h6>
-                        <h2 class="display-4 fw-bold mb-0" id="totalAhorrado">
-                            $0.00
-                        </h2>
+            <div class="col-md-3 mb-3">
+                <div class="card border-0 shadow-sm bg-light">
+                    <div class="card-body">
+                        <h6 class="card-title text-muted">Total Ahorrado</h6>
+                        <h3 class="text-warning-custom fw-bold" id="totalAhorrado">$0</h3>
                     </div>
                 </div>
             </div>
-
-            <!-- Stats Card -->
-            <div class="col-md-6">
-                <div class="card h-100 shadow-sm border-0 border-top border-4 border-warning-custom">
+            <div class="col-md-3 mb-3">
+                <div class="card border-0 shadow-sm bg-light">
                     <div class="card-body">
-                        <div class="row text-center h-100 align-items-center">
-                            <div class="col-4 border-end">
-                                <h6 class="text-muted small mb-2">
-                                    <i class="bi bi-list-check me-1"></i>Metas
-                                </h6>
-                                <h3 class="fw-bold mb-0" id="statMetas">0</h3>
-                            </div>
-                            <div class="col-4 border-end">
-                                <h6 class="text-muted small mb-2">
-                                    <i class="bi bi-check-circle me-1"></i>Completadas
-                                </h6>
-                                <h3 class="fw-bold mb-0" id="statCompletadas">0</h3>
-                            </div>
-                            <div class="col-4">
-                                <h6 class="text-muted small mb-2">
-                                    <i class="bi bi-clock-history me-1"></i>Próxima
-                                </h6>
-                                <h4 class="fw-bold mb-0 text-warning-custom" id="statProximaMeta">
-                                    -
-                                </h4>
-                            </div>
-                        </div>
+                        <h6 class="card-title text-muted">Metas</h6>
+                        <h3 class="fw-bold" id="statMetas">0</h3>
                     </div>
+                </div>
+            </div>
+            <div class="col-md-3 mb-3">
+                <div class="card border-0 shadow-sm bg-light">
+                    <div class="card-body">
+                        <h6 class="card-title text-muted">Completadas</h6>
+                        <h3 class="text-success fw-bold" id="statCompletadas">0</h3>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 mb-3">
+                <div class="card border-0 shadow-sm bg-light">
+                    <div class="card-body">
+                        <h6 class="card-title text-muted">Próxima Meta</h6>
+                        <h5 class="text-info fw-bold" id="statProximaMeta">N/A</h5>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Actions Toolbar -->
+        <div class="row mb-4 align-items-center justify-content-between">
+            <div class="col-md-5">
+                <div class="d-flex gap-2">
+                    <div class="search-container flex-grow-1">
+                        <input type="text" id="buscador" class="form-control search-input" placeholder="Buscar meta...">
+                    </div>
+                    <select id="estadoFilter" class="form-select w-auto">
+                        <option value="">Todos</option>
+                        <option value="SININICIAR">Sin Iniciar</option>
+                        <option value="ACTIVO">Activo</option>
+                        <option value="COMPLETADO">Completado</option>
+                        <option value="ABANDONADO">Abandonado</option>
+                    </select>
+                </div>
+            </div>
+            <div class="col-md-7 d-flex justify-content-end align-items-center flex-wrap gap-2 mt-3 mt-md-0">
+                <div id="exportButtons" class="d-flex gap-2">
+                    <button type="button" class="btn btn-outline-danger btn-sm shadow-sm"
+                        onclick="exportarReporte('pdf')" title="Exportar a PDF">
+                        <i class="bi bi-file-pdf me-1"></i> PDF
+                    </button>
+                    <button type="button" class="btn btn-outline-success btn-sm shadow-sm"
+                        onclick="exportarReporte('excel')" title="Exportar a Excel">
+                        <i class="bi bi-file-excel me-1"></i> Excel
+                    </button>
+                    <button type="button" class="btn btn-outline-primary btn-sm shadow-sm"
+                        onclick="exportarReporte('csv')" title="Exportar a CSV">
+                        <i class="bi bi-file-text me-1"></i> CSV
                     </button>
                 </div>
-            </div>
-
-            <h4 class="fw-bold mb-3">Mis Metas de Ahorro</h4>
-
-            <!-- Skeleton Loader -->
-            <div id="skeletonLoader" class="row">
-                <div class="col-md-4 mb-4">
-                    <div class="card shadow-sm border-0 h-100">
-                        <div class="card-body">
-                            <div class="skeleton skeleton-title mb-3"></div>
-                            <div class="skeleton skeleton-text mb-2"></div>
-                            <div class="skeleton skeleton-text mb-2"></div>
-                            <div class="skeleton skeleton-text w-50"></div>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-4 mb-4">
-                    <div class="card shadow-sm border-0 h-100">
-                        <div class="card-body">
-                            <div class="skeleton skeleton-title mb-3"></div>
-                            <div class="skeleton skeleton-text mb-2"></div>
-                            <div class="skeleton skeleton-text mb-2"></div>
-                            <div class="skeleton skeleton-text w-50"></div>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-4 mb-4">
-                    <div class="card shadow-sm border-0 h-100">
-                        <div class="card-body">
-                            <div class="skeleton skeleton-title mb-3"></div>
-                            <div class="skeleton skeleton-text mb-2"></div>
-                            <div class="skeleton skeleton-text mb-2"></div>
-                            <div class="skeleton skeleton-text w-50"></div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Loading Spinner (Hidden, kept for fallback) -->
-            <div id="loadingSpinner" class="text-center d-none">
-                <div class="spinner-border text-warning" role="status">
-                    <span class="visually-hidden">Cargando...</span>
-                </div>
+                <button class="btn btn-warning text-white shadow ms-2" onclick="abrirModalCrear()">
+                    <i class="bi bi-plus-circle me-1"></i> Nueva Meta
+                </button>
             </div>
         </div>
-        </div>
 
-        <!-- Modal Detalle Ahorro (Ver Cuotas) -->
+        <!-- Grid -->
+        <div id="ahorrosGrid" class="row row-cols-1 row-cols-md-3 row-cols-lg-4 g-4 mb-4"></div>
+
+        <!-- Modal: Detalle -->
         <div class="modal fade" id="modalDetalle" tabindex="-1">
             <div class="modal-dialog modal-lg">
                 <div class="modal-content">
-                    <div class="modal-header bg-warning-custom text-white">
-                        <h5 class="modal-title" id="modalDetalleTitle">Detalle de Ahorro</h5>
-                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="modalDetalleTitle">Detalle de Meta</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                     </div>
                     <div class="modal-body">
-                        <div class="d-flex justify-content-between align-items-center mb-3">
-                            <h6 class="text-muted mb-0">Progreso</h6>
-                            <span class="fs-5 fw-bold text-warning-custom" id="modalDetalleProgreso"></span>
-                        </div>
-                        <div class="progress mb-4" style="height: 20px;">
-                            <div id="modalProgressBar" class="progress-bar bg-warning" role="progressbar"
-                                style="width: 0%">
+                        <!-- Especificaciones del ahorro -->
+                        <div class="card mb-3 border-0 bg-light">
+                            <div class="card-body">
+                                <h6 class="card-title">Especificaciones</h6>
+                                <div class="row">
+                                    <div class="col-md-6 mb-2">
+                                        <small class="text-muted">Concepto:</small>
+                                        <p class="fw-bold" id="detalleConcepto">-</p>
+                                    </div>
+                                    <div class="col-md-6 mb-2">
+                                        <small class="text-muted">Descripción:</small>
+                                        <p class="fw-bold" id="detalleDescripcion">-</p>
+                                    </div>
+                                    <div class="col-md-6 mb-2">
+                                        <small class="text-muted">Monto Meta:</small>
+                                        <p class="fw-bold" id="detalleMontoMeta">-</p>
+                                    </div>
+                                    <div class="col-md-6 mb-2">
+                                        <small class="text-muted">Total Acumulado:</small>
+                                        <p class="fw-bold text-warning-custom" id="detalleTotalAcumulado">-</p>
+                                    </div>
+                                    <div class="col-md-6 mb-2">
+                                        <small class="text-muted">Frecuencia:</small>
+                                        <p class="fw-bold" id="detalleFrecuencia">-</p>
+                                    </div>
+                                    <div class="col-md-6 mb-2">
+                                        <small class="text-muted">Fecha Meta:</small>
+                                        <p class="fw-bold" id="detalleFechaMeta">-</p>
+                                    </div>
+                                    <div class="col-md-6 mb-2">
+                                        <small class="text-muted">Cantidad de Cuotas:</small>
+                                        <p class="fw-bold" id="detalleCantidadCuotas">-</p>
+                                    </div>
+                                    <div class="col-md-6 mb-2">
+                                        <small class="text-muted">Estado:</small>
+                                        <p class="fw-bold"><span class="badge" id="detalleEstado">-</span></p>
+                                    </div>
+                                </div>
                             </div>
                         </div>
 
-                        <h6 class="fw-bold">Historial de Aportes / Cuotas</h6>
-                        <div class="table-responsive">
-                            <table class="table table-hover">
-                                <thead class="table-light">
-                                    <tr>
-                                        <th>Fecha</th>
-                                        <th>Descripción</th>
-                                        <th class="text-end">Monto</th>
-                                        <th class="text-center">Estado</th>
-                                        <th class="text-end">Acciones</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="tablaCuotasBody"></tbody>
-                            </table>
-                        </div>
+                        <!-- Resumen de cuotas -->
+                        <div id="resumenCuotas" class="alert alert-info mb-3">-</div>
+
+                        <!-- Tabla de cuotas -->
+                        <h6 class="mb-3">Cuotas Detalladas</h6>
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Cuota</th>
+                                    <th>Asignado</th>
+                                    <th>Aportado</th>
+                                    <th>Fecha Límite</th>
+                                    <th>Estado</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tablaCuotasBody"></tbody>
+                        </table>
                     </div>
                     <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-                            Cerrar
-                        </button>
-                        <button type="button" class="btn btn-danger text-white" id="btnEliminarAhorro">
-                            Eliminar
-                        </button>
-                        <button type="button" class="btn btn-primary text-white" id="btnEditarAhorro">
-                            Editar
-                        </button>
-                        <button type="button" class="btn btn-warning text-white" id="btnRegistrarAporte"
-                            style="background-color: #f0ad4e;">
-                            Registrar Aporte
-                        </button>
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- Modal Crear/Editar Ahorro -->
+        <!-- Modal: Form Ahorro -->
         <div class="modal fade" id="modalFormAhorro" tabindex="-1">
             <div class="modal-dialog">
                 <div class="modal-content">
-                    <div class="modal-header bg-warning-custom text-white">
-                        <h5 class="modal-title" id="modalFormTitle">Nueva Meta de Ahorro</h5>
-                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="formAhorroTitle">Nueva Meta de Ahorro</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                     </div>
-                    <form id="formAhorro">
-                        <div class="modal-body">
+                    <div class="modal-body">
+                        <form id="formAhorro">
                             <input type="hidden" id="ahorroId" />
 
-                            <!-- Concepto -->
                             <div class="mb-3">
-                                <label for="conceptoInput" class="form-label">Concepto</label>
-                                <input type="text" class="form-control" id="conceptoInput"
-                                    placeholder="Selecciona un concepto" readonly required
-                                    style="background-color: white; cursor: pointer"
-                                    onclick="abrirModalSeleccionConcepto()" />
-                                <input type="hidden" id="conceptoId" />
+                                <label class="form-label">Concepto</label>
+                                <div class="input-group search-container shadow-sm rounded">
+                                    <span class="input-group-text bg-white border-end-0 ps-3">
+                                        <i class="bi bi-search text-muted"></i>
+                                    </span>
+                                    <input type="text" id="conceptoInput" class="form-control search-input"
+                                        placeholder="Seleccionar concepto..." readonly
+                                        style="cursor:pointer;background-color:#fff8e1;" />
+                                    <input type="hidden" id="conceptoId" name="conceptoId" />
+                                </div>
                             </div>
 
-                            <!-- Monto Objetivo -->
                             <div class="mb-3">
-                                <label for="montoObjetivoInput" class="form-label">Monto Objetivo</label>
-                                <input type="number" class="form-control" id="montoObjetivoInput" step="0.01" min="0.01"
-                                    required />
+                                <label for="montoMeta" class="form-label">Monto Meta</label>
+                                <div class="input-group">
+                                    <span class="input-group-text">$</span>
+                                    <input type="number" step="0.01" id="montoMeta" class="form-control" required />
+                                </div>
                             </div>
 
                             <div class="row">
                                 <div class="col-md-6 mb-3">
-                                    <label for="frecuenciaInput" class="form-label">Frecuencia</label>
-                                    <select class="form-select" id="frecuenciaInput" required>
-                                        <option value="MENSUAL" selected>Mensual</option>
-                                        <option value="QUINCENAL">Quincenal</option>
-                                        <option value="SEMANAL">Semanal</option>
+                                    <label for="frecuencia" class="form-label">Frecuencia</label>
+                                    <select id="frecuencia" class="form-select" required>
+                                        <option value="">Seleccione frecuencia</option>
                                         <option value="DIARIA">Diaria</option>
+                                        <option value="SEMANAL">Semanal</option>
+                                        <option value="QUINCENAL">Quincenal</option>
+                                        <option value="MENSUAL">Mensual</option>
                                         <option value="TRIMESTRAL">Trimestral</option>
                                         <option value="SEMESTRAL">Semestral</option>
                                         <option value="ANUAL">Anual</option>
                                     </select>
                                 </div>
                                 <div class="col-md-6 mb-3">
-                                    <label for="cuotasInput" class="form-label">Cantidad Cuotas</label>
-                                    <input type="number" class="form-control" id="cuotasInput" min="1"
+                                    <label for="cantidadCuotas" class="form-label">Cantidad de Cuotas</label>
+                                    <input type="number" id="cantidadCuotas" class="form-control" min="1"
                                         placeholder="Opcional" />
                                 </div>
                             </div>
 
-                            <!-- Fecha Limite -->
                             <div class="mb-3">
-                                <label for="fechaLimiteInput" class="form-label">Fecha Meta</label>
-                                <input type="date" class="form-control" id="fechaLimiteInput" />
+                                <label for="fechaMeta" class="form-label">Fecha Meta</label>
+                                <input type="date" id="fechaMeta" class="form-control" />
                                 <div class="form-text">Ingresa la Fecha Meta O la Cantidad de Cuotas. El sistema
-                                    calculará
-                                    el otro.</div>
+                                    calculará el otro.</div>
                             </div>
 
                             <div class="mb-3">
-                                <label for="descripcionInput" class="form-label">Descripción (Opcional)</label>
-                                <textarea class="form-control" id="descripcionInput" rows="2"></textarea>
+                                <label for="descripcion" class="form-label">Descripción (Opcional)</label>
+                                <textarea id="descripcion" class="form-control" rows="3" maxlength="100"></textarea>
                             </div>
-                        </div>
-                        <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-                                Cancelar
-                            </button>
-                            <button type="submit" class="btn btn-warning text-white"
-                                style="background-color: #f0ad4e;">Guardar</button>
-                        </div>
-                    </form>
+                        </form>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                        <button type="button" class="btn btn-warning text-white" id="btnGuardarAhorro"
+                            onclick="document.getElementById('formAhorro').dispatchEvent(new Event('submit'))">Guardar</button>
+                    </div>
                 </div>
             </div>
         </div>
 
-        <!-- Modal Selección Concepto -->
+        <!-- Modal Seleccionar Concepto -->
         <div class="modal fade" id="modalSeleccionConcepto" tabindex="-1">
-            <div class="modal-dialog modal-lg modal-dialog-scrollable">
+            <div class="modal-dialog modal-lg">
                 <div class="modal-content">
-                    <div class="modal-header bg-warning-custom text-white">
+                    <div class="modal-header bg-warning text-dark">
                         <h5 class="modal-title">Seleccionar Concepto</h5>
-                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                     </div>
-                    <div class="modal-body bg-light">
+                    <div class="modal-body">
                         <div class="mb-3">
-                            <div class="input-group">
-                                <span class="input-group-text bg-white text-muted border-end-0"><i
-                                        class="bi bi-search"></i></span>
-                                <input type="text" id="buscadorModal" class="form-control border-start-0 ps-0"
+                            <div class="input-group search-container shadow-sm rounded">
+                                <span class="input-group-text bg-white border-end-0 ps-3">
+                                    <i class="bi bi-search text-muted"></i>
+                                </span>
+                                <input type="text" id="buscadorModal" class="form-control search-input"
                                     placeholder="Buscar concepto..." />
                             </div>
                         </div>
-                        <div id="listaConceptosSeleccion" class="row row-cols-1 row-cols-md-3 g-3">
-                            <!-- Conceptos se cargarán aquí dinámicamente -->
-                        </div>
+                        <div id="listaConceptosSeleccion" class="row g-3"></div>
                     </div>
                 </div>
             </div>
         </div>
-
-        <!-- Modal Registrar Aporte -->
-        <div class="modal fade" id="modalFormAporte" tabindex="-1">
-            <div class="modal-dialog">
-                <div class="modal-content">
-                    <div class="modal-header bg-success text-white"> <!-- Green for deposit -->
-                        <h5 class="modal-title">Registrar Aporte</h5>
-                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-                    </div>
-                    <form id="formAporte">
-                        <div class="modal-body">
-                            <input type="hidden" id="aporteAhorroId" /> <!-- ID del AhorroMeta -->
-                            <input type="hidden" id="aporteCuotaId" /> <!-- ID de la cuota si aplica -->
-
-                            <div class="mb-3">
-                                <label class="form-label">Meta</label>
-                                <input type="text" class="form-control" id="aporteMetaNombre" readonly disabled />
-                            </div>
-
-                            <div class="mb-3">
-                                <label for="aporteMontoInput" class="form-label">Monto a Aportar</label>
-                                <input type="number" class="form-control" id="aporteMontoInput" step="0.01" min="0.01"
-                                    required />
-                            </div>
-
-                            <div class="mb-3">
-                                <label for="aporteDescripcionInput" class="form-label">Nota (Opcional)</label>
-                                <input type="text" class="form-control" id="aporteDescripcionInput" />
-                            </div>
-                        </div>
-                        <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-                                Cancelar
-                            </button>
-                            <button type="submit" class="btn btn-success">Registrar</button>
-                        </div>
-                    </form>
-                </div>
-            </div>
-        </div>
-
         <!-- Modal Eliminar -->
         <div class="modal fade" id="modalEliminar" tabindex="-1">
             <div class="modal-dialog">
                 <div class="modal-content">
-                    <div class="modal-header bg-danger text-white">
+                    <div class="modal-header">
                         <h5 class="modal-title">Confirmar Eliminación</h5>
-                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                     </div>
                     <div class="modal-body">
-                        <p>
-                            ¿Estás seguro de que deseas eliminar esta meta de ahorro? Esta acción no
-                            se puede deshacer.
-                        </p>
+                        <p>¿Estás seguro de que deseas eliminar esta meta de ahorro?</p>
                     </div>
                     <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-                            Cancelar
-                        </button>
-                        <button type="button" class="btn btn-danger" id="btnConfirmarEliminar">
-                            Eliminar
-                        </button>
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                        <button type="button" class="btn btn-danger" id="btnConfirmarEliminar">Eliminar</button>
                     </div>
                 </div>
             </div>
@@ -334,8 +287,12 @@
 
     </main>
 
-    <!-- Scripts -->
     <div th:replace="fragments/head :: scripts"></div>
+    <!-- Export Libraries -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
     <script th:src="@{/js/ahorros/ahorro.js}"></script>
 </body>
 

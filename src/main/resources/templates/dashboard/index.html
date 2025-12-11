@@ -1,6 +1,17 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
-  <head th:replace="fragments/head :: head('Dashboard - GastuApp', ~{})"></head>
+  <head th:replace="fragments/head :: head('Dashboard - GastuApp', ~{::link})">
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css"
+    />
+    <link rel="stylesheet" th:href="@{/css/dashboard/dashboard.css}" />
+    <!-- Driver.js Tour Styles -->
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/driver.js@1.0.1/dist/driver.css"
+    />
+  </head>
   <body>
     <div th:replace="fragments/navbar :: navbar"></div>
 
@@ -11,61 +22,274 @@
         ></div>
 
         <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+          <!-- Header with Navigation -->
           <div
             class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom"
           >
             <h1 class="h2">Dashboard</h1>
-            <div class="btn-toolbar mb-2 mb-md-0">
-              <div class="btn-group me-2">
-                <button type="button" class="btn btn-sm btn-outline-secondary">
-                  Compartir
-                </button>
-                <button type="button" class="btn btn-sm btn-outline-secondary">
-                  Exportar
-                </button>
+
+            <div class="btn-toolbar mb-2 mb-md-0 month-nav">
+              <div class="btn-group shadow-sm" role="group">
+                <a
+                  th:href="@{/dashboard(mes=${dashboard.mesNumero == 1 ? 12 : dashboard.mesNumero - 1}, anio=${dashboard.mesNumero == 1 ? dashboard.anioActual - 1 : dashboard.anioActual})}"
+                  class="btn btn-outline-primary d-flex align-items-center gap-1"
+                  style="border-radius: 8px 0 0 8px"
+                >
+                  <i class="bi bi-chevron-left"></i> Anterior
+                </a>
+                <div
+                  class="btn btn-primary text-white fw-bold d-flex align-items-center gap-2"
+                  style="cursor: default; border-radius: 0"
+                >
+                  <i class="bi bi-calendar3"></i>
+                  <span
+                    th:text="${dashboard.mesActual + ' ' + dashboard.anioActual}"
+                    >Mes Actual</span
+                  >
+                </div>
+                <a
+                  th:href="@{/dashboard(mes=${dashboard.mesNumero == 12 ? 1 : dashboard.mesNumero + 1}, anio=${dashboard.mesNumero == 12 ? dashboard.anioActual + 1 : dashboard.anioActual})}"
+                  class="btn btn-outline-primary d-flex align-items-center gap-1"
+                  style="border-radius: 0 8px 8px 0"
+                >
+                  Siguiente <i class="bi bi-chevron-right"></i>
+                </a>
               </div>
             </div>
           </div>
 
-          <!-- Contenido vacío por ahora -->
-          <div class="alert alert-info" role="alert">
-            <h4 class="alert-heading">¡Bienvenido a GastuApp!</h4>
-            <p>
-              Aquí verás un resumen de tus finanzas. Estamos construyendo las
-              vistas de ingresos y egresos.
-            </p>
-            <hr />
-            <p class="mb-0">Usa el menú lateral para navegar.</p>
+          <!-- Row 1: Summary Cards -->
+          <div class="row mb-4">
+            <div class="col-md-4 mb-3 mb-md-0">
+              <div
+                th:class="${dashboard.balance >= 0 ? 'card bg-success text-white h-100 shadow-sm dashboard-balance-card' : 'card bg-danger text-white h-100 shadow-sm dashboard-balance-card'}"
+              >
+                <div
+                  class="card-body d-flex flex-column justify-content-center align-items-center text-center"
+                >
+                  <h6 class="card-subtitle mb-2 text-white-50">
+                    Balance del Mes
+                  </h6>
+                  <h2
+                    class="display-4 fw-bold mb-0"
+                    th:text="${'$' + #numbers.formatDecimal(dashboard.balance, 1, 'POINT', 2, 'COMMA')}"
+                  >
+                    $0.00
+                  </h2>
+                </div>
+              </div>
+            </div>
+
+            <div class="col-md-8">
+              <div
+                class="card h-100 shadow-sm border-0 border-top border-4 border-primary dashboard-stats-card"
+              >
+                <div class="card-body">
+                  <div class="row text-center h-100 align-items-center">
+                    <div class="col-4 border-end">
+                      <h6 class="text-muted small mb-2">
+                        <i class="bi bi-arrow-up-circle me-1 text-success"></i
+                        >Ingresos
+                      </h6>
+                      <h3
+                        class="fw-bold mb-0 text-success"
+                        th:text="${'$' + #numbers.formatDecimal(dashboard.totalIngresos, 1, 'POINT', 2, 'COMMA')}"
+                      >
+                        $0.00
+                      </h3>
+                    </div>
+                    <div class="col-4 border-end">
+                      <h6 class="text-muted small mb-2">
+                        <i class="bi bi-arrow-down-circle me-1 text-danger"></i
+                        >Egresos
+                      </h6>
+                      <h3
+                        class="fw-bold mb-0 text-danger"
+                        th:text="${'$' + #numbers.formatDecimal(dashboard.totalEgresos, 1, 'POINT', 2, 'COMMA')}"
+                      >
+                        $0.00
+                      </h3>
+                    </div>
+                    <div class="col-4">
+                      <h6 class="text-muted small mb-2">
+                        <i class="bi bi-piggy-bank me-1 text-warning"></i
+                        >Ahorros
+                      </h6>
+                      <h3
+                        class="fw-bold mb-0 text-warning"
+                        th:text="${'$' + #numbers.formatDecimal(dashboard.totalAhorros, 1, 'POINT', 2, 'COMMA')}"
+                      >
+                        $0.00
+                      </h3>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
 
-          <div class="row">
-            <div class="col-md-6 mb-4">
-              <div class="card h-100">
+          <div class="row mb-4">
+            <!-- 1. Tendencia (Wider) -->
+            <div class="col-md-12 col-lg-8 mb-4">
+              <div
+                class="card h-100 shadow-sm border-0 border-top border-4 border-primary chart-card"
+              >
+                <div class="card-header bg-white py-3">
+                  <h5 class="mb-0 fw-bold">
+                    <i class="bi bi-graph-up text-primary me-2"></i>Tendencia
+                  </h5>
+                </div>
                 <div class="card-body">
-                  <h5 class="card-title">Resumen de Ingresos</h5>
-                  <p class="card-text text-muted">Próximamente...</p>
-                  <a href="/movimientos/ingresos" class="btn btn-primary"
-                    >Ver Ingresos</a
-                  >
+                  <div id="mainTrendChart" style="height: 280px"></div>
                 </div>
               </div>
             </div>
-            <div class="col-md-6 mb-4">
-              <div class="card h-100">
+
+            <!-- 2. Categorías (Narrower) -->
+            <div class="col-md-6 col-lg-4 mb-4">
+              <div
+                class="card h-100 shadow-sm border-0 border-top border-4 border-danger chart-card"
+              >
+                <div class="card-header bg-white py-3">
+                  <h5 class="mb-0 fw-bold">
+                    <i class="bi bi-pie-chart text-danger me-2"></i>Categorías
+                  </h5>
+                </div>
                 <div class="card-body">
-                  <h5 class="card-title">Resumen de Egresos</h5>
-                  <p class="card-text text-muted">Próximamente...</p>
-                  <a href="/movimientos/egresos" class="btn btn-danger"
-                    >Ver Egresos</a
-                  >
+                  <div id="expenseDonutChart" style="height: 280px"></div>
+                </div>
+              </div>
+            </div>
+
+            <!-- 3. Balance -->
+            <div class="col-md-6 col-lg-6 mb-4">
+              <div
+                class="card h-100 shadow-sm border-0 border-top border-4 border-success chart-card"
+              >
+                <div class="card-header bg-white py-3">
+                  <h5 class="mb-0 fw-bold">
+                    <i class="bi bi-bar-chart text-success me-2"></i>Balance
+                  </h5>
+                </div>
+                <div class="card-body">
+                  <div id="balanceTrendChart" style="height: 280px"></div>
+                </div>
+              </div>
+            </div>
+
+            <!-- 4. Ahorros -->
+            <div class="col-md-6 col-lg-6 mb-4">
+              <div
+                class="card h-100 shadow-sm border-0 border-top border-4 border-warning chart-card"
+              >
+                <div class="card-header bg-white py-3">
+                  <h5 class="mb-0 fw-bold">
+                    <i class="bi bi-piggy-bank text-warning me-2"></i>Metas
+                  </h5>
+                </div>
+                <div class="card-body">
+                  <div id="savingsChart" style="height: 280px"></div>
+                </div>
+              </div>
+            </div>
+
+            <!-- 5. Presupuestos -->
+            <div class="col-md-6 col-lg-6 mb-4">
+              <div
+                class="card h-100 shadow-sm border-0 border-top border-4 chart-card"
+                style="border-color: #6f42c1 !important"
+              >
+                <div class="card-header bg-white py-3">
+                  <h5 class="mb-0 fw-bold">
+                    <i class="bi bi-wallet2" style="color: #6f42c1"></i>
+                    <span class="ms-2">Presupuestos</span>
+                  </h5>
+                </div>
+                <div class="card-body">
+                  <div id="budgetChart" style="height: 280px"></div>
+                </div>
+              </div>
+            </div>
+
+            <!-- 6. Proyecciones -->
+            <div class="col-md-6 col-lg-6 mb-4">
+              <div
+                id="projectionsCard"
+                class="card h-100 shadow-sm border-0 border-top border-4 chart-card"
+                style="border-color: #20c997 !important"
+              >
+                <div class="card-header bg-white py-3">
+                  <h5 class="mb-0 fw-bold">
+                    <i class="bi bi-graph-up-arrow" style="color: #20c997"></i>
+                    <span class="ms-2">Proyección</span>
+                  </h5>
+                </div>
+                <div class="card-body">
+                  <div id="projectionsChart" style="height: 280px"></div>
                 </div>
               </div>
             </div>
           </div>
+
+          <!-- Floating Help Button for Tour -->
+          <button
+            id="tour-help-btn"
+            class="tour-help-btn"
+            title="Iniciar tour de ayuda"
+          >
+            <i class="bi bi-question-lg"></i>
+          </button>
         </main>
       </div>
     </div>
 
     <div th:replace="~{fragments/head :: scripts}"></div>
+
+    <!-- ApexCharts -->
+    <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+
+    <!-- Driver.js Tour Library -->
+    <script src="https://cdn.jsdelivr.net/npm/driver.js@1.0.1/dist/driver.js.iife.js"></script>
+
+    <!-- Dashboard Charts -->
+    <script th:src="@{/js/dashboard/dashboard.js}"></script>
+
+    <!-- Dashboard Tour -->
+    <script th:src="@{/js/dashboard/dashboard-tour.js}"></script>
+
+    <script th:inline="javascript">
+      /*<![CDATA[*/
+      document.addEventListener("DOMContentLoaded", function () {
+        // Prepare data from Thymeleaf
+        const dashboardData = {
+          labels: /*[[${dashboard.chartLabels}]]*/ [],
+          dataIngresos: /*[[${dashboard.chartIngresos}]]*/ [],
+          dataEgresos: /*[[${dashboard.chartEgresos}]]*/ [],
+          dataAhorros: /*[[${dashboard.chartAhorros}]]*/ [],
+          dataBalance: /*[[${dashboard.chartBalance}]]*/ [],
+          expenseNames: /*[[${dashboard.expenseConceptNames}]]*/ [],
+          expenseAmounts: /*[[${dashboard.expenseConceptAmounts}]]*/ [],
+          ingresosBreakdown: /*[[${dashboard.ingresosConceptBreakdown}]]*/ [],
+          egresosBreakdown: /*[[${dashboard.egresosConceptBreakdown}]]*/ [],
+          ahorrosBreakdown: /*[[${dashboard.ahorrosConceptBreakdown}]]*/ [],
+          savingsGoalNames: /*[[${dashboard.savingsGoalNames}]]*/ [],
+          savingsGoalTargets: /*[[${dashboard.savingsGoalTargets}]]*/ [],
+          savingsGoalAccumulated:
+            /*[[${dashboard.savingsGoalAccumulated}]]*/ [],
+          budgetNames: /*[[${dashboard.budgetNames}]]*/ [],
+          budgetLimits: /*[[${dashboard.budgetLimits}]]*/ [],
+          budgetSpent: /*[[${dashboard.budgetSpent}]]*/ [],
+          // Projection Data
+          projectionRealData: /*[[${dashboard.projectionRealData}]]*/ [],
+          projectionForecastData:
+            /*[[${dashboard.projectionForecastData}]]*/ [],
+          projectionLimit: /*[[${dashboard.projectionLimit}]]*/ 0,
+        };
+
+        // Initialize all charts
+        initDashboardCharts(dashboardData);
+      });
+      /*]]>*/
+    </script>
   </body>
 </html>

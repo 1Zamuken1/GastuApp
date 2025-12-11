@@ -115,3 +115,81 @@
   margin-bottom: 15px;
   width: 60%;
 }
+
+/* Tour Help Button */
+.tour-help-btn {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #198754 0%, #157347 100%);
+  color: white;
+  border: none;
+  box-shadow: 0 4px 12px rgba(25, 135, 84, 0.4);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  transition: all 0.3s ease;
+  z-index: 1040;
+}
+
+.tour-help-btn:hover {
+  transform: scale(1.1);
+  box-shadow: 0 6px 20px rgba(25, 135, 84, 0.5);
+}
+
+.tour-help-btn:active {
+  transform: scale(0.95);
+}
+
+/* Driver.js Theme Customizations */
+.driver-popover {
+  background-color: #ffffff;
+  border-radius: 12px !important;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2) !important;
+}
+
+.driver-popover-title {
+  font-size: 1.1rem !important;
+  font-weight: 600 !important;
+  color: #0f172a !important;
+}
+
+.driver-popover-description {
+  color: #475569 !important;
+  line-height: 1.5 !important;
+}
+
+.driver-popover-navigation-btns button {
+  border-radius: 8px !important;
+  padding: 0.5rem 1rem !important;
+  font-weight: 500 !important;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+.driver-popover-next-btn {
+  background-color: #198754 !important;
+  color: white !important;
+  border: none !important;
+  text-shadow: none !important;
+}
+
+.driver-popover-next-btn:hover {
+  background-color: #157347 !important;
+}
+
+.driver-popover-prev-btn {
+  background-color: #e2e8f0 !important;
+  color: #475569 !important;
+  border: none !important;
+}
+
+.driver-popover-prev-btn:hover {
+  background-color: #cbd5e1 !important;
+}

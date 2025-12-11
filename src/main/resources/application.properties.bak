@@ -1,0 +1,67 @@
+# ============================================
+# CONFIGURACION DEL SERVIDOR
+# ============================================
+server.port=8080
+spring.application.name=movimientos-service
+
+# ============================================
+# CONFIGURACION DE BASE DE DATOS
+# ============================================
+spring.datasource.url=jdbc:mysql://localhost:3306/gastu?useSSL=false&serverTimezone=UTC
+spring.datasource.username=root
+spring.datasource.password=
+spring.datasource.driver-class-name=com.mysql.cj.jdbc.Driver
+spring.jpa.database-platform=org.hibernate.dialect.MySQL8Dialect
+
+# No crear/modificar tablas automaticamente, solo usar las existentes
+spring.jpa.hibernate.ddl-auto=update
+
+# Mostrar consultas SQL en consola (util para debug)
+spring.jpa.show-sql=true
+spring.jpa.properties.hibernate.format_sql=true
+
+# ============================================
+# CONFIGURACION JWT
+# ============================================
+jwt.secret=N2x9A!dP3sZqr71Qvb$TgF0mH@cK5eLX8p#JwR2uSdY!QfM6hVnCzU4rB0kTs
+jwt.expiration-ms=86400000
+
+# ============================================
+# CONFIGURACION DE MICROSERVICIOS
+# ============================================
+# URL del microservicio de usuarios para validar conceptos
+usuarios.service.url=http://localhost:8080
+<<<<<<< HEAD
+# Show full stacktrace on error pages (useful for debugging in development)
+server.error.include-stacktrace=always
+
+# Disable Thymeleaf template cache during development to see template changes immediately
+spring.thymeleaf.cache=false
+
+# Do not expose whitelabel for easier debugging (optional)
+# server.error.whitelabel.enabled=false
+=======
+
+# ============================================
+# CONFIGURACION DE SESION
+# ============================================
+# Timeout de sesión: 7 días (604800 segundos)
+server.servlet.session.timeout=604800
+# Cookie de sesión persistente
+server.servlet.session.cookie.max-age=604800
+server.servlet.session.cookie.http-only=true
+
+# ============================================
+# CONFIGURACION DE GROQ API
+# ============================================
+groq.api.url=https://api.groq.com/openai/v1/chat/completions
+groq.api.key=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
+groq.model=llama-3.3-70b-versatile
+
+# ============================================
+# CONFIGURACION DE LOGGING
+# ============================================
+logging.level.GastuApp=DEBUG
+logging.level.org.springframework.web=DEBUG
+logging.level.org.hibernate.SQL=DEBUG
+>>>>>>> 2cdfe509c9809531da197c7f62f5cf7034d00d86

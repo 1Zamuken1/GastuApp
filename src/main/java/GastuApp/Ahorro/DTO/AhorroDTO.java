@@ -110,6 +110,14 @@ public class AhorroDTO {
         this.fechaMeta=fechaMeta;
     }
 
+    public LocalDate getFechaMeta(){
+        return fechaMeta;
+    }
+
+    public void setFechaMeta(LocalDate fechaMeta){
+        this.fechaMeta=fechaMeta;
+    }
+
     public Estado getEstado(){
         return estado;
     }
@@ -124,6 +132,14 @@ public class AhorroDTO {
 
     public void setCantCuotas( Integer cantidadCuotas){
         this.cantidadCuotas= cantidadCuotas;
+    }
+
+    public Integer getCantidadCuotas(){
+        return cantidadCuotas;
+    }
+
+    public void setCantidadCuotas(Integer cantidadCuotas){
+        this.cantidadCuotas = cantidadCuotas;
     }
     
 }

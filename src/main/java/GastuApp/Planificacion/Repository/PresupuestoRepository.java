@@ -25,4 +25,10 @@ public interface PresupuestoRepository extends JpaRepository<Presupuesto, Long> 
         nativeQuery = true
     )
     List<Presupuesto> searchByUsuarioIdAndValue(@Param("usuarioId") Long usuarioId, @Param("value") String value);
+
+    // obtener los presupuestos con conceptos y el estado activo 
+      @Query("SELECT p FROM Presupuesto p WHERE p.usuarioId = :usuarioId AND p.conceptoId = :conceptoId AND p.activo = true")
+List<Presupuesto> findByUsuarioIdAndConceptoIdAndActivoTrue(Long usuarioId, Long conceptoId);
+
+
 }

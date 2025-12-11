@@ -4,6 +4,8 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 
 import GastuApp.Ahorro.Entity.AhorroMeta.Frecuencia;
+import jakarta.validation.constraints.Future;
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
@@ -13,13 +15,16 @@ public class EditarAhorroDTO {
     private String descripcion;
 
     @NotNull(message = "El monto meta es obligatorio")
+    @Min(value=1, message = "El monto meta debe ser mayor a 0")
     private BigDecimal montoMeta;
 
     @NotNull(message = "la frecuencia es obligatoria")
     private Frecuencia frecuencia;
 
+    @Future(message = "La fecha meta debe ser posterior a la fecha actual")
     private LocalDate fechaMeta;
 
+    @Min(value = 1, message = "El número de cuotas debe ser mayor que 0")
     private Integer cantidadCuotas;
 
     public EditarAhorroDTO() {

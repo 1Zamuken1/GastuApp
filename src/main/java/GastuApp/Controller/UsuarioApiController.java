@@ -29,6 +29,7 @@ public class UsuarioApiController {
     @GetMapping
     public ResponseEntity<Map<String, Object>> obtenerPerfil(Authentication authentication) {
         Long usuarioId = obtenerUsuarioId(authentication);
+        @SuppressWarnings("null")
         Usuario usuario = usuarioRepository.findById(usuarioId)
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
 
@@ -48,8 +49,9 @@ public class UsuarioApiController {
     public ResponseEntity<Map<String, Object>> actualizarPerfil(
             @RequestBody Map<String, String> datos,
             Authentication authentication) {
-        
+
         Long usuarioId = obtenerUsuarioId(authentication);
+        @SuppressWarnings("null")
         Usuario usuario = usuarioRepository.findById(usuarioId)
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
 
@@ -63,7 +65,7 @@ public class UsuarioApiController {
         }
 
         // Email is readonly for now, but we could add validation if needed
-        
+
         usuarioRepository.save(usuario);
 
         Map<String, Object> perfil = new HashMap<>();
@@ -82,8 +84,9 @@ public class UsuarioApiController {
     public ResponseEntity<Map<String, String>> cambiarPassword(
             @RequestBody Map<String, String> datos,
             Authentication authentication) {
-        
+
         Long usuarioId = obtenerUsuarioId(authentication);
+        @SuppressWarnings("null")
         Usuario usuario = usuarioRepository.findById(usuarioId)
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
 
@@ -97,7 +100,8 @@ public class UsuarioApiController {
 
         // Validate new password
         if (passwordNueva == null || passwordNueva.length() < 6) {
-            return ResponseEntity.badRequest().body(Map.of("error", "La nueva contraseña debe tener al menos 6 caracteres"));
+            return ResponseEntity.badRequest()
+                    .body(Map.of("error", "La nueva contraseña debe tener al menos 6 caracteres"));
         }
 
         // Update password

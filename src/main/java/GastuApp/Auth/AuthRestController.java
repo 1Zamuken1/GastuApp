@@ -29,6 +29,8 @@ public class AuthRestController {
         this.passwordEncoder = passwordEncoder;
     }
 
+    
+
     /**
      * Endpoint de login que devuelve un token JWT en formato JSON.
      * 
@@ -95,6 +97,7 @@ public class AuthRestController {
             return ResponseEntity.status(400).body(error);
         }
     }
+    
 
     /**
      * DTO para la petición de login.

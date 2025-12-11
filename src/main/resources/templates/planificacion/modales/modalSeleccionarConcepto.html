@@ -1,0 +1,90 @@
+<div th:fragment="modalConcepto">
+    <div class="modal fade" id="modalConceptos" tabindex="-1" aria-labelledby="tituloConceptos" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content">
+
+                <!-- HEADER -->
+                <div class="modal-header bg-dark text-white">
+                    <h5 class="modal-title" id="tituloConceptos">
+                        <i class="bi bi-tags me-2"></i> Seleccionar Concepto
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+
+                <!-- BODY -->
+                <div class="modal-body p-4" style="max-height: 60vh; overflow-y: auto;">
+
+                    <!-- TABS -->
+                    <ul class="nav nav-pills mb-4 justify-content-center" id="tabsConceptos" role="tablist">
+                        
+                        <!-- Ingresos -->
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link active"
+                                    id="tab-ingresos"
+                                    data-bs-toggle="pill"
+                                    data-bs-target="#conceptos-ingresos"
+                                    type="button"
+                                    role="tab">
+                                <i class="bi bi-arrow-up-circle me-1"></i> Ingresos
+                            </button>
+                        </li>
+
+                        <!-- Egresos -->
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link"
+                                    id="tab-egresos"
+                                    data-bs-toggle="pill"
+                                    data-bs-target="#conceptos-egresos"
+                                    type="button"
+                                    role="tab">
+                                <i class="bi bi-arrow-down-circle me-1"></i> Egresos
+                            </button>
+                        </li>
+
+                    </ul>
+
+                    <!-- TAB CONTENT -->
+                    <div class="tab-content" id="tabsConceptosContent">
+
+                        <!-- Ingresos -->
+                        <div class="tab-pane fade show active"
+                             id="conceptos-ingresos"
+                             role="tabpanel"
+                             aria-labelledby="tab-ingresos">
+
+                            <div class="row g-3" id="contenedorConceptosIngresos"></div>
+
+                            <div id="emptyIngresos" class="text-center text-muted py-4 d-none">
+                                <i class="bi bi-inbox fs-1"></i>
+                                <p class="mt-2">No hay conceptos de ingreso disponibles</p>
+                            </div>
+                        </div>
+
+                        <!-- Egresos -->
+                        <div class="tab-pane fade"
+                             id="conceptos-egresos"
+                             role="tabpanel"
+                             aria-labelledby="tab-egresos">
+
+                            <div class="row g-3" id="contenedorConceptosEgresos"></div>
+
+                            <div id="emptyEgresos" class="text-center text-muted py-4 d-none">
+                                <i class="bi bi-inbox fs-1"></i>
+                                <p class="mt-2">No hay conceptos de egreso disponibles</p>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
+                <!-- FOOTER -->
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        <i class="bi bi-x-lg me-1"></i> Cerrar
+                    </button>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
