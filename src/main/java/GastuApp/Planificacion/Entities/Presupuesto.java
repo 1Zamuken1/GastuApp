@@ -57,4 +57,13 @@ public class Presupuesto implements Serializable {
             this.activo = true;
         }
     }
+
+    // Explicit getter/setter for usuarioId in case Lombok processing is not active
+    public Long getUsuarioId() {
+        return this.usuarioId;
+    }
+
+    public void setUsuarioId(Long usuarioId) {
+        this.usuarioId = usuarioId;
+    }
 }

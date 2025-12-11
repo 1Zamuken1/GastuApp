@@ -9,6 +9,14 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.Authentication;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+
+import java.io.IOException;
+import java.util.Collection;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 
 @Configuration
@@ -40,15 +48,32 @@ public class SecurityConfig {
                                                 .requestMatchers(new AntPathRequestMatcher("/images/**")).permitAll()
                                                 .requestMatchers(new AntPathRequestMatcher("/webjars/**")).permitAll()
                                                 // Rutas de API requieren autenticación JWT
+                                                .requestMatchers(new AntPathRequestMatcher("/api/admin/**")).hasRole("ADMINISTRADOR")
                                                 .requestMatchers(new AntPathRequestMatcher("/api/**")).authenticated()
+                                                // Rutas de administración web sólo para rol administrador
+                                                .requestMatchers(new AntPathRequestMatcher("/admin/**")).hasRole("ADMINISTRADOR")
                                                 // Rutas web requieren autenticación de sesión
                                                 .anyRequest().authenticated())
                                 .formLogin(form -> form
-                                                .loginPage("/login")
-                                                .loginProcessingUrl("/login")
-                                                .defaultSuccessUrl("/dashboard", true)
-                                                .failureUrl("/login?error=true")
-                                                .permitAll())
+                                                                                                .loginPage("/login")
+                                                                                                .loginProcessingUrl("/login")
+                                                                                                .usernameParameter("correo")
+                                                                                                .failureUrl("/login?error=true")
+                                                                                                .successHandler(new AuthenticationSuccessHandler() {
+                                                                                                        @Override
+                                                                                                        public void onAuthenticationSuccess(HttpServletRequest request,
+                                                                                                                                                 HttpServletResponse response,
+                                                                                                                                                 Authentication authentication) throws IOException {
+                                                                                                                Collection<? extends GrantedAuthority> authorities = authentication.getAuthorities();
+                                                                                                                // Default target is /dashboard for non-admin users (apprentice and instructor)
+                                                                                                                String target = "/dashboard";
+                                                                                                                if (authorities.stream().anyMatch(a -> a.getAuthority().equalsIgnoreCase("ROLE_ADMINISTRADOR"))) {
+                                                                                                                        target = "/admin/home";
+                                                                                                                }
+                                                                                                                response.sendRedirect(target);
+                                                                                                        }
+                                                                                                })
+                                                                                                .permitAll())
                                 .logout(logout -> logout
                                                 .logoutUrl("/logout")
                                                 .logoutSuccessUrl("/login?logout")

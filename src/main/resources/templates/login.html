@@ -38,13 +38,13 @@
               <!-- Formulario de login -->
               <form th:action="@{/login}" method="post">
                 <div class="mb-3">
-                  <label for="username" class="form-label">Usuario</label>
+                  <label for="correo" class="form-label">Correo Electrónico</label>
                   <input
-                    type="text"
+                    type="email"
                     class="form-control"
-                    id="username"
-                    name="username"
-                    placeholder="Ingresa tu usuario"
+                    id="correo"
+                    name="correo"
+                    placeholder="nombre@ejemplo.com"
                     required
                     autofocus
                   />

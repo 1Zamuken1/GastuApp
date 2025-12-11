@@ -12,6 +12,6 @@ public class HomeController {
     @GetMapping("/register")
     public String register() { return "register"; }
 
-    @GetMapping({"/admin/home", "/instructor/home", "/aprendiz/home", "/home"})
+    @GetMapping({"/instructor/home", "/aprendiz/home", "/home"})
     public String home() { return "home"; }
 }

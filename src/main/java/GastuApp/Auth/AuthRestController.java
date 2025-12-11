@@ -37,8 +37,8 @@ public class AuthRestController {
      */
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody LoginRequest request) {
-        // Buscar usuario por username
-        Usuario usuario = usuarioService.buscarPorUsername(request.getUsername())
+        // Buscar usuario por email
+        Usuario usuario = usuarioService.buscarPorEmail(request.getEmail())
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
 
         // Validar password
@@ -48,8 +48,8 @@ public class AuthRestController {
             return ResponseEntity.status(401).body(error);
         }
 
-        // Generar token JWT
-        String token = jwtUtil.generarToken(usuario.getUsername());
+        // Generar token JWT (usando email como identificador)
+        String token = jwtUtil.generarToken(usuario.getEmail());
 
         // Preparar respuesta
         Map<String, Object> response = new HashMap<>();
@@ -71,22 +71,22 @@ public class AuthRestController {
     public ResponseEntity<?> register(@RequestBody RegisterRequest request) {
         try {
             // Registrar usuario
-            Usuario usuario = usuarioService.registrar(
+                Usuario usuario = usuarioService.registrar(
                     request.getUsername(),
                     request.getEmail(),
                     request.getPassword(),
                     request.getTelefono() != null ? request.getTelefono() : "");
 
-            // Generar token JWT
-            String token = jwtUtil.generarToken(usuario.getUsername());
+                // Generar token JWT (usando email)
+                String token = jwtUtil.generarToken(usuario.getEmail());
 
-            // Preparar respuesta
-            Map<String, Object> response = new HashMap<>();
-            response.put("token", token);
-            response.put("username", usuario.getUsername());
-            response.put("userId", usuario.getId());
-            response.put("email", usuario.getEmail());
-            response.put("message", "Usuario registrado exitosamente");
+                // Preparar respuesta
+                Map<String, Object> response = new HashMap<>();
+                response.put("token", token);
+                response.put("username", usuario.getUsername());
+                response.put("userId", usuario.getId());
+                response.put("email", usuario.getEmail());
+                response.put("message", "Usuario registrado exitosamente");
 
             return ResponseEntity.ok(response);
         } catch (RuntimeException e) {
@@ -100,18 +100,18 @@ public class AuthRestController {
      * DTO para la petición de login.
      */
     public static class LoginRequest {
-        private String username;
+        private String email;
         private String password;
 
         public LoginRequest() {
         }
 
-        public String getUsername() {
-            return username;
+        public String getEmail() {
+            return email;
         }
 
-        public void setUsername(String username) {
-            this.username = username;
+        public void setEmail(String email) {
+            this.email = email;
         }
 
         public String getPassword() {

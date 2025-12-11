@@ -22,6 +22,9 @@ public class Usuario {
     @Column(name = "telefono")
     private String telefono;
 
+    @Column(name = "activo")
+    private Boolean activo = true;
+
         @ManyToOne(fetch = FetchType.EAGER)
         @JoinColumn(name = "rol_id")
         private Rol rol;
@@ -39,4 +42,6 @@ public class Usuario {
     public void setPassword(String password) { this.password = password; }
     public Rol getRol() { return rol; }
     public void setRol(Rol rol) { this.rol = rol; }
+    public Boolean getActivo() { return activo; }
+    public void setActivo(Boolean activo) { this.activo = activo; }
 }

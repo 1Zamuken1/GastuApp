@@ -103,6 +103,11 @@
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
+      function isValidEmail(email) {
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        return emailRegex.test(email);
+      }
+
       document
         .getElementById("registerForm")
         .addEventListener("submit", async function (e) {
@@ -113,11 +118,43 @@
           errorDiv.classList.add("d-none");
           successDiv.classList.add("d-none");
 
+          const nombre = document.getElementById("nombre").value.trim();
+          const correo = document.getElementById("correo").value.trim();
+          const telefono = document.getElementById("telefono").value.trim();
+          const password = document.getElementById("password").value;
+
+          // Validaciones cliente
+          if (!nombre) {
+            errorDiv.textContent = "Por favor ingresa tu nombre completo.";
+            errorDiv.classList.remove("d-none");
+            return;
+          }
+          if (!correo) {
+            errorDiv.textContent = "Por favor ingresa un correo válido.";
+            errorDiv.classList.remove("d-none");
+            return;
+          }
+          if (!isValidEmail(correo)) {
+            errorDiv.textContent = "Por favor ingresa un correo con formato válido (ejemplo: usuario@dominio.com).";
+            errorDiv.classList.remove("d-none");
+            return;
+          }
+          if (!password) {
+            errorDiv.textContent = "Por favor ingresa una contraseña.";
+            errorDiv.classList.remove("d-none");
+            return;
+          }
+          if (password.length < 6) {
+            errorDiv.textContent = "La contraseña debe tener al menos 6 caracteres.";
+            errorDiv.classList.remove("d-none");
+            return;
+          }
+
           const formData = {
-            username: document.getElementById("nombre").value,
-            email: document.getElementById("correo").value,
-            telefono: document.getElementById("telefono").value,
-            password: document.getElementById("password").value,
+            username: nombre,
+            email: correo,
+            telefono: telefono,
+            password: password,
           };
 
           try {

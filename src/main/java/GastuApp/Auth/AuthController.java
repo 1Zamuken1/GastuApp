@@ -33,11 +33,11 @@ public class AuthController {
 
     // login desde form
     @PostMapping("/login")
-    public String login(@RequestParam String username,
+    public String login(@RequestParam(name = "correo") String correo,
                         @RequestParam String password,
                         HttpServletResponse response) {
 
-        Usuario u = usuarioService.buscarPorUsername(username).orElse(null);
+        Usuario u = usuarioService.buscarPorEmail(correo).orElse(null);
         if (u == null) return "redirect:/login?error";
 
         // validar password
@@ -45,7 +45,7 @@ public class AuthController {
                 new org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder();
         if (!encoder.matches(password, u.getPassword())) return "redirect:/login?error";
 
-        String token = jwtUtil.generarToken(u.getUsername());
+        String token = jwtUtil.generarToken(u.getEmail());
         Cookie cookie = new Cookie("token", token);
         cookie.setHttpOnly(true);
         cookie.setPath("/");
@@ -55,8 +55,8 @@ public class AuthController {
         // redirigir según rol
         String rolNombre = u.getRol() != null ? u.getRol().getNombre() : "aprendiz";
         if ("administrador".equalsIgnoreCase(rolNombre)) return "redirect:/admin/home";
-        if ("instructor".equalsIgnoreCase(rolNombre)) return "redirect:/instructor/home";
-        return "redirect:/aprendiz/home";
+        if ("instructor".equalsIgnoreCase(rolNombre)) return "redirect:/dashboard";
+        return "redirect:/dashboard";
     }
 
     @PostMapping("/logout")
