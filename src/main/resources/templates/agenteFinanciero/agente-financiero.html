@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+  <head
+    th:replace="~{fragments/head :: head('Asistente IA - GastuApp', ~{:: link})}"
+  >
+    <link rel="stylesheet" th:href="@{/css/agente-financiero.css}" />
+  </head>
+  <body>
+    <!-- NAVBAR -->
+    <nav th:replace="~{fragments/navbar :: navbar}"></nav>
+
+    <!-- SIDEBAR -->
+    <nav
+      th:replace="~{fragments/sidebar :: sidebar(activePage='Asistente IA')}"
+      class="d-md-block bg-light sidebar collapse"
+    ></nav>
+
+    <!-- MAIN -->
+    <main class="px-md-4 py-4">
+      <div class="container-fluid">
+        <div class="row justify-content-center">
+          <div class="col-12 col-lg-10 col-xl-8">
+            <!-- Header -->
+            <div class="card border-0 shadow-sm mb-3">
+              <div class="card-body bg-primary text-white rounded">
+                <h1 class="h4 mb-1">
+                  <i class="bi bi-robot me-2"></i>Asistente Financiero IA
+                </h1>
+                <p class="mb-0 small opacity-75">
+                  Tu compañero inteligente para gestión de gastos personales
+                </p>
+              </div>
+            </div>
+
+            <!-- Estadísticas -->
+            <div class="card border-0 shadow-sm mb-3">
+              <div class="card-body">
+                <div class="row text-center">
+                  <div class="col-6">
+                    <h3 class="text-primary mb-0" id="consultasHoy">0</h3>
+                    <small class="text-muted">Consultas hoy</small>
+                  </div>
+                  <div class="col-6">
+                    <h3 class="text-primary mb-0" id="totalConsultas">0</h3>
+                    <small class="text-muted">Total consultas</small>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Sugerencias -->
+            <div class="card border-0 shadow-sm mb-3">
+              <div class="card-body">
+                <div class="d-flex gap-2 flex-wrap justify-content-center">
+                  <button
+                    class="btn btn-outline-primary btn-sm suggestion-btn"
+                    data-pregunta="¿Cuánto he gastado este mes?"
+                  >
+                    💰 Gastos del mes
+                  </button>
+                  <button
+                    class="btn btn-outline-primary btn-sm suggestion-btn"
+                    data-pregunta="¿Cómo puedo ahorrar más?"
+                  >
+                    💡 Consejos de ahorro
+                  </button>
+                  <button
+                    class="btn btn-outline-primary btn-sm suggestion-btn"
+                    data-pregunta="Analiza mis gastos por categoría"
+                  >
+                    📊 Análisis por categoría
+                  </button>
+                  <button
+                    class="btn btn-outline-primary btn-sm suggestion-btn"
+                    data-pregunta="¿Estoy cumpliendo mis presupuestos?"
+                  >
+                    🎯 Estado de presupuestos
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Chat Container -->
+            <div class="card border-0 shadow-sm mb-3" style="height: 50vh">
+              <div
+                class="card-body p-3 overflow-auto"
+                id="chatContainer"
+                style="background-color: #f8f9fa"
+              >
+                <!-- Mensaje inicial -->
+                <div class="d-flex align-items-start mb-3">
+                  <div
+                    class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center me-2"
+                    style="width: 40px; height: 40px; min-width: 40px"
+                  >
+                    <i class="bi bi-robot"></i>
+                  </div>
+                  <div
+                    class="bg-white rounded p-3 shadow-sm"
+                    style="max-width: 70%"
+                  >
+                    <p class="mb-1">
+                      ¡Hola! 👋 Soy tu asistente financiero inteligente. Puedo
+                      ayudarte a entender mejor tus finanzas, analizar tus
+                      gastos y darte consejos personalizados. ¿En qué puedo
+                      ayudarte hoy?
+                    </p>
+                    <small class="text-muted" id="tiempoInicial"></small>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Loading -->
+            <div class="text-center mb-3 d-none" id="loading">
+              <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Cargando...</span>
+              </div>
+              <p class="text-muted small mt-2">Analizando tu consulta...</p>
+            </div>
+
+            <!-- Input Area -->
+            <div class="card border-0 shadow-sm">
+              <div class="card-body">
+                <div class="mb-2">
+                  <div class="form-check">
+                    <input
+                      class="form-check-input"
+                      type="checkbox"
+                      id="incluirContexto"
+                      checked
+                    />
+                    <label class="form-check-label small" for="incluirContexto">
+                      Incluir mis datos financieros
+                    </label>
+                  </div>
+                </div>
+                <div class="input-group">
+                  <input
+                    type="text"
+                    class="form-control"
+                    id="preguntaInput"
+                    placeholder="Escribe tu pregunta aquí..."
+                  />
+                  <button
+                    class="btn btn-primary"
+                    type="button"
+                    id="enviarBtn"
+                  >
+                    <i class="bi bi-send-fill"></i> Enviar
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <!-- SCRIPTS GLOBALES -->
+    <div th:replace="~{fragments/head :: scripts}"></div>
+
+    <!-- TERCEROS -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    
+    <!-- CONFIGURACIÓN: Pasar usuarioId desde backend -->
+    <script th:inline="javascript">
+      /*<![CDATA[*/
+      window.USUARIO_ID = /*[[${usuarioId}]]*/ null;
+      window.API_URL = /*[[@{/api/agente-financiero}]]*/ '/api/agente-financiero';
+      /*]]>*/
+    </script>
+    
+    <!-- JS PRINCIPAL -->
+    <script th:src="@{/js/agente-financiero.js}"></script>
+  </body>
+</html>

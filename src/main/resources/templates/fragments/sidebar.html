@@ -1,4 +1,4 @@
-<nav
+ <nav
   th:fragment="sidebar"
   id="sidebarMenu"
   class="sidebar bg-sidebar-theme border-end border-secondary"
@@ -72,16 +72,25 @@
           <span class="sidebar-text ms-2">Presupuestos</span>
       </a>
       <a
+          class="nav-link text-white d-flex align-items-center"
+          th:classappend="${activePage == 'programaciones'} ? 'active bg-warning text-dark'"
+          href="/programaciones"
+          title="Programaciones"
+      >
+          <i class="bi bi-calendar-check sidebar-icon"></i>
+          <span class="sidebar-text ms-2">Programaciones</span>
+      </a>
+
+      <a
     class="nav-link text-white d-flex align-items-center"
-    th:classappend="${activePage == 'programaciones'} ? 'active bg-warning text-dark'"
-    href="/programaciones"
-    title="Programaciones"
+    th:classappend="${activePage == 'agenteFinanciero'} ? 'active bg-warning text-dark'"
+    href="/agente-financiero"
+    title="Agente Financiero"
 >
-    <i class="bi bi-calendar-check sidebar-icon"></i>
-    <span class="sidebar-text ms-2">Programaciones</span>
+    <i class="bi bi-robot sidebar-icon"></i>
+    <span class="sidebar-text ms-2">Agente Financiero</span>
 </a>
 
-      
 
 
   </li>

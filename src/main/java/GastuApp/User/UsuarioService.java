@@ -45,4 +45,26 @@ public class UsuarioService {
     public Optional<Usuario> buscarPorUsername(String username) {
         return usuarioRepo.findByUsername(username);
     }
+    public Usuario findByCorreo(String correo) {
+        return usuarioRepo.findByEmail(correo)
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+    }
+
+     // NUEVO: Método unificado para buscar por username O email
+    public Usuario buscarPorUsernameOEmail(String loginIdentifier) {
+        // Primero intentar por username
+        Optional<Usuario> porUsername = usuarioRepo.findByUsername(loginIdentifier);
+        if (porUsername.isPresent()) {
+            return porUsername.get();
+        }
+        
+        // Si no existe, buscar por email
+        Optional<Usuario> porEmail = usuarioRepo.findByEmail(loginIdentifier);
+        if (porEmail.isPresent()) {
+            return porEmail.get();
+        }
+        
+        // Si no se encuentra por ninguno, lanzar excepción
+        throw new RuntimeException("Usuario no encontrado con identificador: " + loginIdentifier);
+    }
 }
