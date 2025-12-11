@@ -5,6 +5,7 @@
 
 // Format currency helper
 function formatCurrency(val) {
+  if (val === null || val === undefined) return "$ 0,00";
   return (
     "$ " +
     val.toLocaleString("es-ES", {
@@ -21,6 +22,7 @@ function initDashboardCharts(data) {
   initExpenseDonutChart(data);
   initSavingsGoalsChart(data);
   initBudgetChart(data);
+  initTrendChart(data);
 }
 
 // ====== 1. MAIN TREND CHART ======
@@ -43,7 +45,7 @@ function initMainTrendChart(data) {
     ],
     chart: {
       type: "line",
-      height: 320,
+      height: 280,
       toolbar: {
         show: true,
         tools: {
@@ -248,7 +250,7 @@ function initExpenseDonutChart(data) {
 
   var options = {
     series: expenseAmounts.length > 0 ? expenseAmounts : [1],
-    chart: { type: "donut", height: 320 },
+    chart: { type: "donut", height: 280 },
     labels: expenseNames.length > 0 ? expenseNames : ["Sin datos"],
     colors: ["#dc3545", "#fd7e14", "#ffc107", "#198754", "#0dcaf0", "#6c757d"],
     legend: { position: "bottom", fontSize: "12px" },
@@ -346,7 +348,7 @@ function initBudgetChart(data) {
     // Show no data message
     var options = {
       series: [],
-      chart: { type: "bar", height: 220 },
+      chart: { type: "bar", height: 280 },
       noData: {
         text: "No hay presupuestos activos",
         align: "center",
@@ -381,7 +383,7 @@ function initBudgetChart(data) {
     ],
     chart: {
       type: "bar",
-      height: 220,
+      height: 280,
       toolbar: { show: false },
       animations: { enabled: true, easing: "easeinout", speed: 600 },
     },
@@ -467,5 +469,94 @@ function initBudgetChart(data) {
   };
 
   var chart = new ApexCharts(document.querySelector("#budgetChart"), options);
+  chart.render();
+}
+
+// ====== 6. PROJECTIONS CHART (TREND) ======
+function initTrendChart(data) {
+  const {
+    labels,
+    projectionRealData,
+    projectionForecastData,
+    projectionLimit,
+  } = data;
+
+  var options = {
+    series: [
+      {
+        name: "Gasto Real",
+        data: projectionRealData,
+        type: "area",
+      },
+      {
+        name: "Proyección",
+        data: projectionForecastData,
+        type: "line",
+      },
+    ],
+    chart: {
+      type: "line",
+      height: 280,
+      fontFamily: "inherit",
+      toolbar: { show: false },
+      animations: { enabled: true, easing: "easeinout", speed: 600 },
+    },
+    colors: ["#6f42c1", "#a59ad1"], // Purple theme
+    stroke: {
+      width: [2, 2],
+      curve: "smooth",
+      dashArray: [0, 5], // Solid, Dashed
+    },
+    fill: {
+      type: ["gradient", "solid"],
+      gradient: {
+        shade: "light",
+        type: "vertical",
+        opacityFrom: 0.4,
+        opacityTo: 0.1,
+        stops: [0, 100],
+      },
+    },
+    dataLabels: { enabled: false },
+    xaxis: {
+      categories: labels,
+      labels: { style: { fontSize: "10px" } },
+      tooltip: { enabled: false },
+    },
+    yaxis: {
+      labels: {
+        formatter: (val) => Math.round(val).toLocaleString("es-ES"),
+        style: { fontSize: "10px" },
+      },
+    },
+    annotations: {
+      yaxis: [
+        {
+          y: projectionLimit,
+          borderColor: "#dc3545",
+          strokeDashArray: 0,
+          label: {
+            borderColor: "#dc3545",
+            style: { color: "#fff", background: "#dc3545", fontSize: "10px" },
+            text: "Ingresos: " + formatCurrency(projectionLimit),
+            position: "right",
+            offsetX: -10,
+          },
+        },
+      ],
+    },
+    tooltip: {
+      shared: true,
+      intersect: false,
+      y: { formatter: formatCurrency },
+    },
+    grid: { borderColor: "#e7e7e7", strokeDashArray: 4 },
+    legend: { position: "top", fontSize: "12px" },
+  };
+
+  var chart = new ApexCharts(
+    document.querySelector("#projectionsChart"),
+    options
+  );
   chart.render();
 }

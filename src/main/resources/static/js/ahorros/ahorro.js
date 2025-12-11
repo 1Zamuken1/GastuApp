@@ -36,8 +36,25 @@ document.addEventListener("DOMContentLoaded", function () {
   );
 
   const listaConceptosSeleccion = document.getElementById("listaConceptosSeleccion");
+  const conceptoInput = document.getElementById("conceptoInput");
+  const buscadorModal = document.getElementById("buscadorModal");
   const buscadorPrincipal = document.getElementById("buscador");
   const estadoFilter = document.getElementById("estadoFilter");
+
+  // Fecha mínima (hoy) para inputs de fecha
+  function getTodayDateString() {
+    const d = new Date();
+    const yyyy = d.getFullYear();
+    const mm = String(d.getMonth() + 1).padStart(2, "0");
+    const dd = String(d.getDate()).padStart(2, "0");
+    return `${yyyy}-${mm}-${dd}`;
+  }
+
+  // Aplicar min en el input fechaMeta si existe
+  const fechaMetaInput = document.getElementById("fechaMeta");
+  if (fechaMetaInput) {
+    fechaMetaInput.min = getTodayDateString();
+  }
 
   // Cargar datos iniciales
   cargarAhorros();
@@ -49,6 +66,19 @@ document.addEventListener("DOMContentLoaded", function () {
     .addEventListener("click", confirmarEliminarAction);
   buscadorPrincipal.addEventListener("input", (e) => filtrarAhorros(e.target.value));
   estadoFilter.addEventListener("change", () => cargarAhorros());
+
+  if (conceptoInput) {
+    conceptoInput.addEventListener('click', function () {
+      // No abrir modal si el campo está deshabilitado (modo editar)
+      const hidden = document.getElementById('conceptoId');
+      if (hidden && hidden.disabled) return;
+      // abrir modal de selección
+      if (listaConceptosSeleccion) listaConceptosSeleccion.innerHTML = '<div class="text-center w-100"><div class="spinner-border text-warning" role="status"></div></div>';
+      if (buscadorModal) buscadorModal.value = '';
+      modalSeleccionConcepto.show();
+      cargarConceptos();
+    });
+  }
 
   function filtrarAhorros(texto) {
     const termino = texto.toLowerCase();
@@ -333,6 +363,12 @@ document.addEventListener("DOMContentLoaded", function () {
     document.getElementById("formAhorroTitle").innerText = "Nuevo Ahorro";
     document.getElementById("btnGuardarAhorro").innerText = "Crear";
     resetForm();
+    // permitir seleccionar concepto en creación
+    const hidden = document.getElementById('conceptoId');
+    if (hidden) hidden.disabled = false;
+    if (conceptoInput) conceptoInput.style.cursor = 'pointer';
+    // asegurar min actualizado
+    if (fechaMetaInput) fechaMetaInput.min = getTodayDateString();
     cargarConceptos();
     modalForm.show();
   };
@@ -354,11 +390,18 @@ document.addEventListener("DOMContentLoaded", function () {
         const n = normalizeAhorro(ahorro);
         document.getElementById("ahorroId").value = n.ahorroId || n.id || "";
         document.getElementById("conceptoId").value = n.conceptoId || "";
-        document.getElementById("conceptoId").disabled = true;
+        // No permitir cambiar el concepto en modo editar
+        const hidden = document.getElementById('conceptoId');
+        if (hidden) hidden.disabled = true;
+        if (conceptoInput) {
+          conceptoInput.style.cursor = 'not-allowed';
+        }
         document.getElementById("montoMeta").value = n.montoMeta || "";
         document.getElementById("frecuencia").value = n.frecuencia || "";
         document.getElementById("cantidadCuotas").value = n.cantidadCuotas || "";
         document.getElementById("fechaMeta").value = n.fechaMeta || "";
+        // al editar también asegurar que la fecha mínima sea hoy
+        if (fechaMetaInput) fechaMetaInput.min = getTodayDateString();
         document.getElementById("descripcion").value = n.descripcion || "";
 
         cargarConceptos(n.conceptoId);
@@ -374,20 +417,99 @@ document.addEventListener("DOMContentLoaded", function () {
     fetch(`${API_CONCEPTOS}/tipo/AHORRO`, { credentials: "include" })
       .then((r) => r.json())
       .then((conceptos) => {
-        const select = document.getElementById("conceptoId");
-        select.innerHTML = '<option value="">Selecciona un concepto...</option>';
-        conceptos.forEach((c) => {
-          const option = document.createElement("option");
-          option.value = c.id;
-          option.innerText = c.nombre;
-          if (selectedId && c.id === selectedId) option.selected = true;
-          select.appendChild(option);
-        });
-      });
+        const campoHidden = document.getElementById("conceptoId");
+        const campoInput = document.getElementById("conceptoInput");
+
+        // Si existe un <select> (compatibilidad), poblar opciones
+        if (campoHidden && campoHidden.tagName === 'SELECT') {
+          campoHidden.innerHTML = '<option value="">Selecciona un concepto...</option>';
+          conceptos.forEach((c) => {
+            const option = document.createElement("option");
+            option.value = c.id;
+            option.innerText = c.nombre;
+            if (selectedId && c.id === selectedId) option.selected = true;
+            campoHidden.appendChild(option);
+          });
+        } else {
+          // Si tenemos un input (estilo egresos), y se pasó selectedId, setear el valor
+          if (campoInput && selectedId) {
+            const found = conceptos.find((c) => c.id === selectedId);
+            if (found) {
+              campoHidden && (campoHidden.value = found.id);
+              campoInput.value = found.nombre || '';
+            }
+          }
+        }
+
+        // Si estamos dentro del modal de selección, renderizar tarjetas
+        if (listaConceptosSeleccion) {
+          listaConceptosSeleccion.innerHTML = "";
+          if (!conceptos || conceptos.length === 0) {
+            listaConceptosSeleccion.innerHTML = '<div class="col-12 text-center text-muted">No hay conceptos</div>';
+            return;
+          }
+
+          conceptos.forEach((c) => {
+            const col = document.createElement("div");
+            col.className = "col-md-4";
+            col.setAttribute('data-nombre', (c.nombre || '').toLowerCase());
+            col.innerHTML = `
+              <div class="card h-100 border-0 shadow-sm" style="cursor:pointer;">
+                <div class="card-body select-concepto d-flex align-items-center" data-id="${c.id}" data-nombre="${(c.nombre||'')}">
+                  <div class="rounded bg-warning text-dark d-flex align-items-center justify-content-center me-3" style="width:50px;height:50px;">
+                    <i class="bi bi-piggy-bank fs-4"></i>
+                  </div>
+                  <div>
+                    <h6 class="mb-1">${c.nombre}</h6>
+                    <small class="text-muted">${c.descripcion || ''}</small>
+                  </div>
+                </div>
+              </div>
+            `;
+            listaConceptosSeleccion.appendChild(col);
+          });
+
+          // Delegación de click para seleccionar concepto
+          listaConceptosSeleccion.querySelectorAll('.select-concepto').forEach(el => {
+            el.onclick = () => {
+              const id = el.getAttribute('data-id');
+              const nombre = el.getAttribute('data-nombre');
+              if (campoHidden) campoHidden.value = id;
+              if (campoInput) campoInput.value = nombre || '';
+              modalSeleccionConcepto.hide();
+              modalForm.show();
+            };
+          });
+
+          // Buscador del modal (filtro simple)
+          const busc = document.getElementById('buscadorModal');
+          if (busc) {
+            busc.oninput = (e) => {
+              const term = e.target.value.toLowerCase();
+              listaConceptosSeleccion.querySelectorAll('[data-nombre]').forEach(col => {
+                const name = col.getAttribute('data-nombre') || '';
+                col.style.display = name.toLowerCase().includes(term) ? '' : 'none';
+              });
+            };
+          }
+        }
+      })
+      .catch((err) => console.error('Error cargando conceptos:', err));
   }
 
   function handleFormSubmit(e) {
     e.preventDefault();
+    // Validación: fechaMeta no puede ser anterior a hoy
+    const fechaMetaVal = document.getElementById("fechaMeta").value;
+    if (fechaMetaVal) {
+      const todayStr = getTodayDateString();
+      if (fechaMetaVal < todayStr) {
+        alert("La Fecha Meta no puede ser anterior a la fecha actual.");
+        const f = document.getElementById("fechaMeta");
+        if (f) f.focus();
+        return;
+      }
+    }
 
     const dto = {
       conceptoId: document.getElementById("conceptoId").value,
@@ -432,7 +554,13 @@ document.addEventListener("DOMContentLoaded", function () {
 
   function resetForm() {
     formAhorro.reset();
-    document.getElementById("conceptoId").disabled = false;
+    const hidden = document.getElementById('conceptoId');
+    if (hidden) hidden.disabled = false;
+    const input = document.getElementById('conceptoInput');
+    if (input) {
+      input.style.cursor = 'pointer';
+      input.value = '';
+    }
     document.getElementById("ahorroId").value = "";
   }
 

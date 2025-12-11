@@ -114,6 +114,16 @@ public class DashboardService {
         // Get number of days in the selected month
         int daysInMonth = inicioMes.toLocalDate().lengthOfMonth();
 
+        // Projection Variables
+        List<BigDecimal> projectionReal = new ArrayList<>();
+        List<BigDecimal> projectionForecast = new ArrayList<>();
+        BigDecimal cumulativeReal = BigDecimal.ZERO;
+        BigDecimal anchorReal = BigDecimal.ZERO;
+        BigDecimal avgDaily = BigDecimal.ZERO;
+
+        int currentDay = now.getDayOfMonth();
+        boolean isCurrentMonth = (mesActual == now.getMonthValue() && anioActual == now.getYear());
+
         for (int day = 1; day <= daysInMonth; day++) {
             // Label: just the day number
             labels.add(String.valueOf(day));
@@ -151,6 +161,35 @@ public class DashboardService {
             } else {
                 ahorrosBreakdown.add(Collections.emptyList());
             }
+
+            // --- PROJECTION LOGIC ---
+            if (isCurrentMonth) {
+                if (day <= currentDay) {
+                    cumulativeReal = cumulativeReal.add(egr);
+                    projectionReal.add(cumulativeReal);
+
+                    if (day == currentDay) {
+                        projectionForecast.add(cumulativeReal); // Connect lines
+                        anchorReal = cumulativeReal;
+                        if (day > 0) {
+                            avgDaily = cumulativeReal.divide(BigDecimal.valueOf(day), 2,
+                                    java.math.RoundingMode.HALF_UP);
+                        }
+                    } else {
+                        projectionForecast.add(null);
+                    }
+                } else {
+                    projectionReal.add(null);
+                    // Forecast: Anchor + (Avg * (Day - Today))
+                    BigDecimal projected = anchorReal.add(avgDaily.multiply(BigDecimal.valueOf(day - currentDay)));
+                    projectionForecast.add(projected);
+                }
+            } else {
+                // Past/Future months: Show just Real Cumulative
+                cumulativeReal = cumulativeReal.add(egr);
+                projectionReal.add(cumulativeReal);
+                projectionForecast.add(null);
+            }
         }
 
         dto.setChartLabels(labels);
@@ -161,6 +200,11 @@ public class DashboardService {
         dto.setIngresosConceptBreakdown(ingresosBreakdown);
         dto.setEgresosConceptBreakdown(egresosBreakdown);
         dto.setAhorrosConceptBreakdown(ahorrosBreakdown);
+
+        // Disable projections for future/past for now (except real cumulative for past)
+        dto.setProjectionRealData(projectionReal);
+        dto.setProjectionForecastData(projectionForecast);
+        dto.setProjectionLimit(dto.getTotalIngresos());
 
         // 3. Expense Distribution (Top 5 concepts + Others for current month)
         List<Object[]> expenseStats = movimientoRepository.obtenerEstadisticasPorConceptoEnRango(

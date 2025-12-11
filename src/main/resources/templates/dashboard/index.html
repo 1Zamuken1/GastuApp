@@ -128,56 +128,47 @@
             </div>
           </div>
 
-          <!-- Row 2: Trend Chart + Expense Distribution -->
           <div class="row mb-4">
-            <div class="col-md-7 mb-3 mb-md-0">
+            <!-- 1. Tendencia (Wider) -->
+            <div class="col-md-12 col-lg-8 mb-4">
               <div
                 class="card h-100 shadow-sm border-0 border-top border-4 border-primary chart-card"
               >
                 <div class="card-header bg-white py-3">
                   <h5 class="mb-0 fw-bold">
                     <i class="bi bi-graph-up text-primary me-2"></i>Tendencia
-                    del Mes
                   </h5>
                 </div>
                 <div class="card-body">
-                  <div id="mainTrendChart" style="height: 320px"></div>
+                  <div id="mainTrendChart" style="height: 280px"></div>
                 </div>
               </div>
             </div>
 
-            <div class="col-md-5">
+            <!-- 2. Categorías (Narrower) -->
+            <div class="col-md-6 col-lg-4 mb-4">
               <div
                 class="card h-100 shadow-sm border-0 border-top border-4 border-danger chart-card"
               >
                 <div class="card-header bg-white py-3">
                   <h5 class="mb-0 fw-bold">
-                    <i class="bi bi-pie-chart text-danger me-2"></i>Gastos por
-                    Categoría
+                    <i class="bi bi-pie-chart text-danger me-2"></i>Categorías
                   </h5>
                 </div>
                 <div class="card-body">
-                  <div id="expenseDonutChart" style="height: 320px"></div>
+                  <div id="expenseDonutChart" style="height: 280px"></div>
                 </div>
               </div>
             </div>
-          </div>
 
-          <!-- Row 3: Balance Chart + Savings Chart -->
-          <div class="row mb-4">
-            <div class="col-md-6 mb-3 mb-md-0">
+            <!-- 3. Balance -->
+            <div class="col-md-6 col-lg-6 mb-4">
               <div
                 class="card h-100 shadow-sm border-0 border-top border-4 border-success chart-card"
               >
                 <div class="card-header bg-white py-3">
                   <h5 class="mb-0 fw-bold">
                     <i class="bi bi-bar-chart text-success me-2"></i>Balance
-                    Disponible
-                    <small
-                      class="text-muted fw-normal ms-2"
-                      style="font-size: 0.7em"
-                      >(Ingresos - Egresos - Ahorros)</small
-                    >
                   </h5>
                 </div>
                 <div class="card-body">
@@ -186,14 +177,14 @@
               </div>
             </div>
 
-            <div class="col-md-6">
+            <!-- 4. Ahorros -->
+            <div class="col-md-6 col-lg-6 mb-4">
               <div
                 class="card h-100 shadow-sm border-0 border-top border-4 border-warning chart-card"
               >
                 <div class="card-header bg-white py-3">
                   <h5 class="mb-0 fw-bold">
-                    <i class="bi bi-piggy-bank text-warning me-2"></i>Metas de
-                    Ahorro
+                    <i class="bi bi-piggy-bank text-warning me-2"></i>Metas
                   </h5>
                 </div>
                 <div class="card-body">
@@ -201,11 +192,9 @@
                 </div>
               </div>
             </div>
-          </div>
 
-          <!-- Row 4: Presupuestos + Proyecciones -->
-          <div class="row mb-4">
-            <div class="col-md-6 mb-3 mb-md-0">
+            <!-- 5. Presupuestos -->
+            <div class="col-md-6 col-lg-6 mb-4">
               <div
                 class="card h-100 shadow-sm border-0 border-top border-4 chart-card"
                 style="border-color: #6f42c1 !important"
@@ -217,32 +206,26 @@
                   </h5>
                 </div>
                 <div class="card-body">
-                  <div id="budgetChart" style="height: 220px"></div>
+                  <div id="budgetChart" style="height: 280px"></div>
                 </div>
               </div>
             </div>
 
-            <div class="col-md-6">
+            <!-- 6. Proyecciones -->
+            <div class="col-md-6 col-lg-6 mb-4">
               <div
                 id="projectionsCard"
-                class="card h-100 shadow-sm border-0 border-top border-4 placeholder-card"
+                class="card h-100 shadow-sm border-0 border-top border-4 chart-card"
                 style="border-color: #20c997 !important"
               >
                 <div class="card-header bg-white py-3">
                   <h5 class="mb-0 fw-bold">
                     <i class="bi bi-graph-up-arrow" style="color: #20c997"></i>
-                    <span class="ms-2">Proyecciones</span>
-                    <span class="badge bg-secondary ms-2">Próximamente</span>
+                    <span class="ms-2">Proyección</span>
                   </h5>
                 </div>
-                <div
-                  class="card-body d-flex flex-column align-items-center justify-content-center"
-                  style="height: 220px"
-                >
-                  <i
-                    class="bi bi-graph-up-arrow display-1 text-muted opacity-25"
-                  ></i>
-                  <p class="text-muted mt-3 mb-0">Proyecciones financieras</p>
+                <div class="card-body">
+                  <div id="projectionsChart" style="height: 280px"></div>
                 </div>
               </div>
             </div>
@@ -296,6 +279,11 @@
           budgetNames: /*[[${dashboard.budgetNames}]]*/ [],
           budgetLimits: /*[[${dashboard.budgetLimits}]]*/ [],
           budgetSpent: /*[[${dashboard.budgetSpent}]]*/ [],
+          // Projection Data
+          projectionRealData: /*[[${dashboard.projectionRealData}]]*/ [],
+          projectionForecastData:
+            /*[[${dashboard.projectionForecastData}]]*/ [],
+          projectionLimit: /*[[${dashboard.projectionLimit}]]*/ 0,
         };
 
         // Initialize all charts

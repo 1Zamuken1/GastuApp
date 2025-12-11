@@ -43,6 +43,11 @@ public class DashboardDTO {
     private List<BigDecimal> budgetLimits;
     private List<BigDecimal> budgetSpent;
 
+    // Projection Chart Data (Daily breakdown)
+    private List<BigDecimal> projectionRealData; // Real cumulative spend up to today
+    private List<BigDecimal> projectionForecastData; // Projected spend from today to end of month
+    private BigDecimal projectionLimit; // Income limit reference
+
     public DashboardDTO() {
     }
 
@@ -228,5 +233,29 @@ public class DashboardDTO {
 
     public void setBudgetSpent(List<BigDecimal> budgetSpent) {
         this.budgetSpent = budgetSpent;
+    }
+
+    public List<BigDecimal> getProjectionRealData() {
+        return projectionRealData;
+    }
+
+    public void setProjectionRealData(List<BigDecimal> projectionRealData) {
+        this.projectionRealData = projectionRealData;
+    }
+
+    public List<BigDecimal> getProjectionForecastData() {
+        return projectionForecastData;
+    }
+
+    public void setProjectionForecastData(List<BigDecimal> projectionForecastData) {
+        this.projectionForecastData = projectionForecastData;
+    }
+
+    public BigDecimal getProjectionLimit() {
+        return projectionLimit;
+    }
+
+    public void setProjectionLimit(BigDecimal projectionLimit) {
+        this.projectionLimit = projectionLimit;
     }
 }

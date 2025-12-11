@@ -3,6 +3,12 @@
   <head th:replace="fragments/head :: head('Mi Perfil - GastuApp', ~{::link})">
     <!-- Custom CSS for Profile -->
     <link rel="stylesheet" th:href="@{/css/perfil/perfil.css}" />
+    <!-- Driver.js Tour Styles -->
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/driver.js@1.0.1/dist/driver.css"
+    />
+    <link rel="stylesheet" th:href="@{/css/perfil/perfil-tour.css}" />
   </head>
   <body>
     <!-- Navbar -->
@@ -1093,6 +1099,15 @@
       </div>
     </main>
 
+    <!-- Floating Help Button for Tour -->
+    <button
+      id="tour-help-btn"
+      class="tour-help-btn"
+      title="Iniciar tour de ayuda"
+    >
+      <i class="bi bi-question-lg"></i>
+    </button>
+
     <!-- Modal Cambiar Contraseña -->
     <div class="modal fade" id="modalCambiarPassword" tabindex="-1">
       <div class="modal-dialog">
@@ -1160,5 +1175,9 @@
 
     <!-- Profile Page Script -->
     <script th:src="@{/js/perfil/perfil.js}"></script>
+
+    <!-- Driver.js & Tour Script -->
+    <script src="https://cdn.jsdelivr.net/npm/driver.js@1.0.1/dist/driver.js.iife.js"></script>
+    <script th:src="@{/js/perfil/perfil-tour.js}"></script>
   </body>
 </html>

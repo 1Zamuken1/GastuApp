@@ -96,7 +96,7 @@ function getTourSteps() {
       popover: {
         title: "Proyecciones",
         description:
-          "Próximamente: aquí podrás ver proyecciones financieras basadas en tus patrones de ingresos y gastos.",
+          "Visualiza tu ritmo de gasto actual frente a tus ingresos. La línea punteada proyecta cómo terminarás el mes si mantienes este ritmo.",
         side: "top",
         align: "center",
       },

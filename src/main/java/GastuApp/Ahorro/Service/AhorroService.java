@@ -6,15 +6,11 @@ import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 import java.util.stream.Collectors;
-
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
-
 import GastuApp.Ahorro.DTO.AhorroDTO;
 import GastuApp.Ahorro.DTO.AporteAhorroDTO;
 import GastuApp.Ahorro.DTO.CrearAhorroDTO;
@@ -428,34 +424,33 @@ public class AhorroService {
                 .collect(Collectors.toList());
 
         List<AporteAhorro> pendientes = todas.stream()
-                .filter(a -> a.getEstado() == AporteAhorro.EstadoAp.PENDIENTE)
+                .filter(a -> a.getEstado() == AporteAhorro.EstadoAp.PENDIENTE ||a.getEstado() == AporteAhorro.EstadoAp.PERDIDO )
                 .collect(Collectors.toList());
 
-        // generar nuevas fechas para las pendientes según la nueva configuración
-        // estrategia: empezar desde fechaCreacion y saltar periodos, pero respetar el
-        // número total de cuotas
-        Integer cantidad = meta.getCantCuotas() == null ? (aportadas.size() + pendientes.size()) : meta.getCantCuotas();
-        LocalDate inicio = meta.getCreacion() == null ? LocalDate.now() : meta.getCreacion();
-
-        // Generamos la lista completa de fechas para 'cantidad' cuotas y luego
-        // reasignamos las fechas
-        List<LocalDate> fechas = new ArrayList<>();
-        for (int i = 0; i < cantidad; i++) {
-            fechas.add(sumarFrecuencia(inicio, meta.getFrecuencia(), i));
+// ELIMINAR todas las cuotas pendientes/perdidas ANTIGUAS
+        if (!pendientes.isEmpty()) {
+            aporteAhorroRepository.deleteAll(pendientes);
         }
 
-        // Mantener las aportadas en sus posiciones iniciales por fecha si coinciden
-        // reasignar a las pendientes las fechas que no estén ocupadas por aportadas
-        Set<LocalDate> fechasAportadas = aportadas.stream().map(AporteAhorro::getFechaLimite)
-                .collect(Collectors.toSet());
-        Iterator<LocalDate> it = fechas.stream().filter(f -> !fechasAportadas.contains(f)).iterator();
-        for (AporteAhorro p : pendientes) {
-            if (it.hasNext()) {
-                p.setFechaLimite(it.next());
-                aporteAhorroRepository.save(p);
-            }
-        }
-        // finalmente, recalcular aporteAsignado en pendientes
+//Regenerar el plan COMPLETO (incluyendo las aportadas, pero solo para obtener las fechas correctas)
+    List<AporteAhorro> cuotasNuevas = generarCuotas(meta);
+
+// Determinar cuántas cuotas son realmente nuevas
+    int cuotasAportadasCount = aportadas.size();
+    List<AporteAhorro> cuotasARegistrar = Collections.emptyList();
+
+        if (cuotasNuevas.size() > cuotasAportadasCount) {
+        // Tomar solo las cuotas desde la posición (aportadas.size()) en adelante.
+        cuotasARegistrar = cuotasNuevas.subList(cuotasAportadasCount, cuotasNuevas.size());
+    } else if (cuotasNuevas.size() < cuotasAportadasCount) {
+    }
+    
+    // 5. Persistir las cuotas futuras (con sus fechas límite y monto asignado nuevos)
+    if (!cuotasARegistrar.isEmpty()) {
+        // Asegurar que tengan el ID de la meta
+        cuotasARegistrar.forEach(c -> c.setMetaId(meta.getId())); 
+        aporteAhorroRepository.saveAll(cuotasARegistrar);
+    }
         recalcularAportesRestantes(meta);
     }
 
@@ -463,7 +458,7 @@ public class AhorroService {
     @Transactional
     public AhorroDTO actualizar(Long id, EditarAhorroDTO dto, Long usuarioId) {
         AhorroMeta existente = ahorroMetaRepository.findByAhorroIdAndUsuarioId(id, usuarioId)
-                .orElseThrow(() -> new RuntimeException("Ahorro no encontrado o sin permisos"));
+                .orElseThrow(() -> new RuntimeException("Ahorro no encontrado"));
 
         if (dto.getFrecuencia() == null) {
             throw new IllegalArgumentException("La frecuencia es obligatoria");
@@ -471,15 +466,20 @@ public class AhorroService {
 
         if (dto.getDescripcion() != null)
             existente.setDescripcion(dto.getDescripcion());
+
         if (dto.getMontoMeta() != null)
             existente.setMonto(dto.getMontoMeta());
+        
         existente.setFrecuencia(dto.getFrecuencia());
-        if (dto.getFechaMeta() != null)
-            existente.setMeta(dto.getFechaMeta());
-        if (dto.getCantidadCuotas() != null)
-            existente.setCantCuotas(dto.getCantidadCuotas());
+        
+        existente.setMeta(dto.getFechaMeta());
+        existente.setCantCuotas(dto.getCantidadCuotas() != null ? dto.getCantidadCuotas() : null);
 
-        // Recalcular cuotas pendientes (no tocar las aportadas)
+// Calcular Campo Faltante: Asegura que fechaMeta y cantCuotas sean coherentes
+// (Ej: si se cambió la fecha meta, se recalcula la cantidad de cuotas, y viceversa)
+    calcularCampoFaltante(existente, new CrearAhorroDTO());
+    
+// Recalcular cuotas pendientes (no tocar las aportadas)
         recalcularAportes(existente);
 
         AhorroMeta actualizado = ahorroMetaRepository.save(existente);
@@ -529,8 +529,8 @@ public class AhorroService {
         if (cuota == null)
             return false;
         LocalDate hoy = LocalDate.now();
-        // disponible si fechaLimite <= hoy + 7 días
-        return !cuota.getFechaLimite().isAfter(hoy.plusDays(7));
+        // disponible si fechaLimite <= hoy + 3 días
+        return !cuota.getFechaLimite().isAfter(hoy.plusDays(3));
     }
 
     // METODO QUE MUESTRA LOS 3 APORTES
@@ -567,7 +567,7 @@ public class AhorroService {
 
         return todas.stream()
                 .filter(a -> a.getEstado() == AporteAhorro.EstadoAp.PENDIENTE)
-                .filter(a -> !a.getFechaLimite().isAfter(hoy.plusDays(7)))
+                .filter(a -> !a.getFechaLimite().isAfter(hoy.plusDays(3)))
                 .findFirst();
 
     }
@@ -601,9 +601,9 @@ public class AhorroService {
                     "La cuota seleccionada no está disponible para aportar (estado=" + cuota.getEstado() + ")");
         }
 
-        // validar disponibilidad 7 días antes
+        // validar disponibilidad 3 días antes
         if (!cuotaDisponiblePago(cuota)) {
-            throw new IllegalArgumentException("La cuota no está disponible para pago todavía (solo 7 días antes)");
+            throw new IllegalArgumentException("La cuota no está disponible para pago todavía");
         }
 
         // Registrar aporte: actualizar aporte y estado

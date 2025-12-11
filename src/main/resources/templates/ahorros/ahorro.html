@@ -65,7 +65,7 @@
                         <div class="col-md-6">
                             <select id="estadoFilter" class="form-select">
                                 <option value="">Todos los estados</option>
-                                <option value="SININICIAR">Sin Iniciar</option>
+                                <option value="SININICIAR">SinIniciar</option>
                                 <option value="ACTIVO">Activo</option>
                                 <option value="COMPLETADO">Completado</option>
                                 <option value="ABANDONADO">Abandonado</option>
@@ -173,10 +173,14 @@
                                 <input type="hidden" id="ahorroId" />
 
                                 <div class="mb-3">
-                                    <label for="conceptoId" class="form-label">Concepto</label>
-                                    <select id="conceptoId" class="form-select" required>
-                                        <option value="">Selecciona un concepto...</option>
-                                    </select>
+                                        <label class="form-label">Concepto</label>
+                                        <div class="input-group search-container shadow-sm rounded">
+                                            <span class="input-group-text bg-white border-end-0 ps-3">
+                                                <i class="bi bi-search text-muted"></i>
+                                            </span>
+                                            <input type="text" id="conceptoInput" class="form-control search-input" placeholder="Seleccionar concepto..." readonly style="cursor:pointer;background-color:#fff8e1;" />
+                                            <input type="hidden" id="conceptoId" name="conceptoId" />
+                                        </div>
                                 </div>
 
                                 <div class="mb-3">
@@ -231,19 +235,26 @@
             <div class="modal fade" id="modalSeleccionConcepto" tabindex="-1">
                 <div class="modal-dialog modal-lg">
                     <div class="modal-content">
-                        <div class="modal-header">
+                        <div class="modal-header bg-warning text-dark">
                             <h5 class="modal-title">Seleccionar Concepto</h5>
                             <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                         </div>
                         <div class="modal-body">
-                            <input type="text" id="buscadorModal" class="form-control mb-3" placeholder="Buscar concepto..." />
-                            <div id="listaConceptosSeleccion" class="row g-3"></div>
+                                <div class="mb-3">
+                                    <div class="input-group search-container shadow-sm rounded">
+                                        <span class="input-group-text bg-white border-end-0 ps-3">
+                                            <i class="bi bi-search text-muted"></i>
+                                        </span>
+                                        <input type="text" id="buscadorModal" class="form-control search-input" placeholder="Buscar concepto..." />
+                                    </div>
+                                </div>
+                                <div id="listaConceptosSeleccion" class="row g-3"></div>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <!-- Modal Form Aporte -->
+            <!-- Modal Form Aporte -->        <!-- REVISA ESO PQ NO SE QUE EEEEEEEEEEEEEEEEEEEEEEES-->
             <div class="modal fade" id="modalFormAporte" tabindex="-1">
                 <div class="modal-dialog">
                     <div class="modal-content">
