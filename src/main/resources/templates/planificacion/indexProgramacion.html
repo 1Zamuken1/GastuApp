@@ -12,11 +12,10 @@
     <!-- Custom Tour Styles -->
     <link
       rel="stylesheet"
-      th:href="@{/css/planificacion/programaciones-tour.css}"
+      th:href="@{/css/planificacion/programaciones.css}"
     />
   </head>
   <body>
-    <!-- ESTILOS INLINE -->
     <style>
       .text-purple {
         color: #6f42c1;
@@ -80,14 +79,13 @@
 
     <!-- MAIN -->
     <main class="px-md-4 py-4">
-      <div class="container">
+      <div class="container container-programacion">
         <!-- HEADER -->
         <div class="d-flex justify-content-between align-items-center mb-4">
           <div>
-            <h1 class="text-dark mb-1">
-              <i class="bi bi-calendar-check text-purple me-2"></i>
+            <h2 class="text-dark mb-1">
               Mis Programaciones
-            </h1>
+            </h2>
             <p class="text-muted mb-0">
               Gestiona tus ingresos y egresos programados
             </p>
@@ -119,29 +117,6 @@
                   <i class="bi bi-x-lg"></i>
                 </button>
               </div>
-
-              <!-- Filtro Tipo -->
-              <select
-                id="filtroTipo"
-                class="form-select"
-                style="min-width: 150px"
-              >
-                <option value="">Todos los tipos</option>
-                <option value="INGRESO">Ingresos</option>
-                <option value="EGRESO">Egresos</option>
-              </select>
-
-              <!-- Filtro Estado -->
-              <select
-                id="filtroEstado"
-                class="form-select"
-                style="min-width: 150px"
-              >
-                <option value="">Todos los estados</option>
-                <option value="true">Activos</option>
-                <option value="false">Inactivos</option>
-              </select>
-
               <!-- Botón nuevo -->
               <button id="btnNuevo" class="btn btn-purple">
                 <i class="bi bi-plus-lg me-1"></i>
@@ -152,71 +127,73 @@
         </div>
 
         <!-- ESTADÍSTICAS -->
-        <div class="row g-3 mb-4" id="estadisticas">
-          <div class="col-lg-3 col-md-6">
-            <div class="card border-0 shadow-sm stat-card">
-              <div class="card-body">
-                <div class="d-flex align-items-center">
-                  <div class="stat-icon bg-purple-light">
-                    <i class="bi bi-list-check text-purple"></i>
-                  </div>
-                  <div class="ms-3">
-                    <h6 class="text-muted mb-1">Total</h6>
-                    <h3 id="totalProgramaciones">0</h3>
-                  </div>
-                </div>
-              </div>
-            </div>
+        <!-- ESTADÍSTICAS -->
+<div class="row g-3 mb-4" id="estadisticas">
+  <div class="col-lg-3 col-md-6">
+    <div class="card border-0 shadow-sm stat-card total-card">
+      <div class="card-body">
+        <div class="d-flex align-items-center">
+          <div class="stat-icon bg-purple-light">
+            <i class="bi bi-list-check text-purple"></i>
           </div>
-
-          <div class="col-lg-3 col-md-6">
-            <div class="card border-0 shadow-sm stat-card">
-              <div class="card-body">
-                <div class="d-flex align-items-center">
-                  <div class="stat-icon bg-success-light">
-                    <i class="bi bi-arrow-up-circle text-success"></i>
-                  </div>
-                  <div class="ms-3">
-                    <h6 class="text-muted mb-1">Ingresos</h6>
-                    <h3 id="totalIngresos" class="text-success">$0</h3>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div class="col-lg-3 col-md-6">
-            <div class="card border-0 shadow-sm stat-card">
-              <div class="card-body">
-                <div class="d-flex align-items-center">
-                  <div class="stat-icon bg-danger-light">
-                    <i class="bi bi-arrow-down-circle text-danger"></i>
-                  </div>
-                  <div class="ms-3">
-                    <h6 class="text-muted mb-1">Egresos</h6>
-                    <h3 id="totalEgresos" class="text-danger">$0</h3>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div class="col-lg-3 col-md-6">
-            <div class="card border-0 shadow-sm stat-card">
-              <div class="card-body">
-                <div class="d-flex align-items-center">
-                  <div class="stat-icon bg-info-light">
-                    <i class="bi bi-check-circle text-info"></i>
-                  </div>
-                  <div class="ms-3">
-                    <h6 class="text-muted mb-1">Activas</h6>
-                    <h3 id="totalActivas" class="text-info">0</h3>
-                  </div>
-                </div>
-              </div>
-            </div>
+          <div class="ms-3">
+            <h6 class="text-muted mb-1">Total</h6>
+            <h3 id="totalProgramaciones">0</h3>
           </div>
         </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-lg-3 col-md-6">
+    <div class="card border-0 shadow-sm stat-card ingresos-card">
+      <div class="card-body">
+        <div class="d-flex align-items-center">
+          <div class="stat-icon bg-success-light">
+            <i class="bi bi-arrow-up-circle text-success"></i>
+          </div>
+          <div class="ms-3">
+            <h6 class="text-muted mb-1">Ingresos</h6>
+            <h3 id="totalIngresos" class="text-success">$0</h3>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-lg-3 col-md-6">
+    <div class="card border-0 shadow-sm stat-card egresos-card">
+      <div class="card-body">
+        <div class="d-flex align-items-center">
+          <div class="stat-icon bg-danger-light">
+            <i class="bi bi-arrow-down-circle text-danger"></i>
+          </div>
+          <div class="ms-3">
+            <h6 class="text-muted mb-1">Egresos</h6>
+            <h3 id="totalEgresos" class="text-danger">$0</h3>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-lg-3 col-md-6">
+    <div class="card border-0 shadow-sm stat-card activas-card">
+      <div class="card-body">
+        <div class="d-flex align-items-center">
+          <div class="stat-icon bg-info-light">
+            <i class="bi bi-check-circle text-info"></i>
+          </div>
+          <div class="ms-3">
+            <h6 class="text-muted mb-1">Activas</h6>
+            <h3 id="totalActivas" class="text-info">0</h3>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
 
         <!-- LISTA -->
         <div class="panel-box">
@@ -231,13 +208,6 @@
               <p class="text-muted">
                 Crea tu primera programación para automatizar tus movimientos.
               </p>
-              <button
-                class="btn btn-purple mt-2"
-                onclick="document.getElementById('btnNuevo').click()"
-              >
-                <i class="bi bi-plus-circle me-1"></i>
-                Crear Programación
-              </button>
             </div>
           </div>
         </div>

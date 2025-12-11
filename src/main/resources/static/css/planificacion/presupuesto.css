@@ -1,6 +1,6 @@
-/* ============================================
-   PANEL GENERAL
-============================================ */
+/* ============================
+   Panel general
+============================ */
 .panel-box {
   border: 1px solid #e6eefc;
   border-radius: 8px;
@@ -8,19 +8,18 @@
   background: #fff;
 }
 
-/* ============================================
-   ÁREA SCROLLEABLE (TARJETAS)
-   Ajustado para usar todo el espacio disponible
-============================================ */
+/* ============================
+   Área de tarjetas con scroll
+============================ */
 .scroll-area {
-  height: calc(100vh - 250px); /* Ajustado para que alcance hasta abajo */
+  height: calc(100vh - 250px); 
   overflow-y: auto;
   padding-right: 4px;
 }
 
-/* ============================================
-   TARJETAS
-============================================ */
+/* ============================
+   Tarjetas de presupuesto
+============================ */
 .card-presupuesto {
   border-radius: 10px;
   box-shadow: 0 1px 6px rgba(0, 0, 0, 0.04);
@@ -32,9 +31,9 @@
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
 }
 
-/* ============================================
-   TÍTULO + BUSCADOR
-============================================ */
+/* ============================
+   Título + barra de búsqueda
+============================ */
 .section-header {
   display: flex;
   gap: 8px;
@@ -48,34 +47,44 @@
   max-width: 520px;
 }
 
-/* RESPONSIVE */
+/* Ajuste del contenido cuando el sidebar está visible */
+@media (min-width: 768px) {
+   .container-presupuesto {
+    margin-left: 0; 
+  }
+}
+
+/* ============================
+   Responsive
+============================ */
 @media (max-width: 576px) {
   .section-header {
     flex-direction: column;
     align-items: stretch;
   }
+
   .search-bar {
     max-width: 100%;
   }
 }
 
-/* ============================================
-   SCROLL GLOBAL
-   - Evita scroll en el body (mejor UX)
-   - main scrollea si es necesario
-============================================ */
+/* ============================
+   Scroll global del layout
+============================ */
 html,
 body {
   height: 100%;
-  overflow: hidden;
+  overflow: hidden; 
 }
 
 main {
-  overflow-y: auto;
-  height: calc(100vh - 56px); /* Altura menos navbar */
+  overflow-y: auto; 
+  height: calc(100vh - 56px); 
 }
 
-/* Tour Help Button */
+/* ============================
+   Botón flotante (tour)
+============================ */
 .tour-help-btn {
   position: fixed;
   bottom: 24px;
@@ -105,7 +114,9 @@ main {
   transform: scale(0.95);
 }
 
-/* Driver.js Theme Customizations */
+/* ============================
+   Estilos personalizados del tour (Driver.js)
+============================ */
 .driver-popover {
   background-color: #ffffff;
   border-radius: 12px !important;
@@ -136,7 +147,6 @@ main {
   background-color: #0d6efd !important;
   color: white !important;
   border: none !important;
-  text-shadow: none !important;
 }
 
 .driver-popover-next-btn:hover {
