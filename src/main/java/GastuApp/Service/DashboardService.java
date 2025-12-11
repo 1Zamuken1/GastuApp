@@ -54,7 +54,7 @@ public class DashboardService {
 
         dto.setMesNumero(mesActual);
         dto.setAnioActual(anioActual);
-        dto.setMesActual(Month.of(mesActual).getDisplayName(TextStyle.FULL, new Locale("es", "ES")));
+        dto.setMesActual(Month.of(mesActual).getDisplayName(TextStyle.FULL, Locale.of("es", "ES")));
 
         // 1. Totals for the selected month
         LocalDateTime inicioMes = LocalDate.of(anioActual, mesActual, 1).atStartOfDay();

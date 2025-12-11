@@ -135,10 +135,10 @@ document.addEventListener("DOMContentLoaded", function () {
       ahorro.estado === "ACTIVO"
         ? "bg-success"
         : ahorro.estado === "COMPLETADO"
-        ? "bg-info"
-        : ahorro.estado === "ABANDONADO"
-        ? "bg-danger"
-        : "bg-secondary";
+          ? "bg-info"
+          : ahorro.estado === "ABANDONADO"
+            ? "bg-danger"
+            : "bg-secondary";
 
     const col = document.createElement("div");
     col.className = "col-md-6 col-lg-4";
@@ -239,7 +239,7 @@ document.addEventListener("DOMContentLoaded", function () {
     document.getElementById("statMetas").innerText = ahorros.length;
     document.getElementById("statCompletadas").innerText = completadas;
     document.getElementById("statProximaMeta").innerText = proximaMeta
-      ? `${proximaMeta.nombreConcepto || "(sin nombre)"} — ${new Date(proximaMeta.fechaMeta).toLocaleDateString("es-ES")}`
+      ? `${proximaMeta.nombreConcepto || "(sin nombre)"} — ${formatDateLocal(proximaMeta.fechaMeta)}`
       : "N/A";
   }
 
@@ -274,7 +274,7 @@ document.addEventListener("DOMContentLoaded", function () {
         document.getElementById("detalleMontoMeta").innerText = `$ ${formatoMoneda(n.montoMeta)}`;
         document.getElementById("detalleTotalAcumulado").innerText = `$ ${formatoMoneda(n.totalAcumulado)}`;
         document.getElementById("detalleFrecuencia").innerText = n.frecuencia || "N/A";
-        document.getElementById("detalleFechaMeta").innerText = n.fechaMeta ? new Date(n.fechaMeta).toLocaleDateString("es-ES") : "-";
+        document.getElementById("detalleFechaMeta").innerText = formatDateLocal(n.fechaMeta);
         document.getElementById("detalleCantidadCuotas").innerText = n.cantidadCuotas ?? "N/A";
         document.getElementById("detalleEstado").innerText = n.estado || "-";
         document.getElementById("detalleEstado").className =
@@ -282,10 +282,10 @@ document.addEventListener("DOMContentLoaded", function () {
           (n.estado === "ACTIVO"
             ? "bg-success"
             : n.estado === "COMPLETADO"
-            ? "bg-info"
-            : n.estado === "ABANDONADO"
-            ? "bg-danger"
-            : "bg-secondary");
+              ? "bg-info"
+              : n.estado === "ABANDONADO"
+                ? "bg-danger"
+                : "bg-secondary");
 
         // Cargar cuotas
         cargarCuotasDetalle(n.ahorroId ?? n.id);
@@ -333,16 +333,41 @@ document.addEventListener("DOMContentLoaded", function () {
       if (estado === 'APORTADO') pagadas++;
       if (estado === 'PERDIDO') perdidas++;
 
-      const badgeClass = estado === 'APORTADO' ? 'bg-success' : estado === 'PERDIDO' ? 'bg-danger' : 'bg-warning';
+      const disponible = cuota.disponible === true;
+      const esPendiente = estado === 'PENDIENTE';
+
+      let badgeClass = 'bg-secondary';
+      if (estado === 'APORTADO') badgeClass = 'bg-success';
+      else if (estado === 'PERDIDO') badgeClass = 'bg-danger';
+      else if (esPendiente) {
+        badgeClass = disponible ? 'bg-success' : 'bg-warning';
+      }
 
       const numero = `${(index + 1).toString().padStart(2, '0')}/${cuotas.length.toString().padStart(2, '0')}`;
+      const montoAsignado = cuota.aporteAsignado ?? cuota.aporte_asignado ?? 0;
+      const idCuota = cuota.aporteAhorroId ?? cuota.id;
+
+      let columnaAportado = "---";
+      if (esPendiente && disponible) {
+        columnaAportado = `
+            <div class="input-group input-group-sm" style="max-width: 150px;">
+                <span class="input-group-text">$</span>
+                <input type="number" class="form-control input-aporte" id="input-aporte-${idCuota}" value="${montoAsignado}">
+                <button class="btn btn-success btn-guardar-aporte" onclick="guardarAporte(${idCuota})" title="Guardar Aporte">
+                    <i class="bi bi-check"></i>
+                </button>
+            </div>
+          `;
+      } else if (cuota.aporte || cuota.aporte > 0) {
+        columnaAportado = `$ ${formatoMoneda(cuota.aporte)}`;
+      }
 
       const fila = document.createElement("tr");
       fila.innerHTML = `
         <td class="fw-bold">${numero}</td>
-        <td>$ ${formatoMoneda(cuota.aporteAsignado ?? cuota.aporte_asignado ?? 0)}</td>
-        <td>${(cuota.aporte ?? cuota.aporte) ? `$ ${formatoMoneda(cuota.aporte ?? cuota.aporte)}` : "---"}</td>
-        <td>${cuota.fechaLimite ?? cuota.fecha_limite ?? '-'}</td>
+        <td>$ ${formatoMoneda(montoAsignado)}</td>
+        <td>${columnaAportado}</td>
+        <td>${formatDateLocal(cuota.fechaLimite ?? cuota.fecha_limite)}</td>
         <td><span class="badge ${badgeClass}">${estado}</span></td>
       `;
       tablaCuotas.appendChild(fila);
@@ -455,7 +480,7 @@ document.addEventListener("DOMContentLoaded", function () {
             col.setAttribute('data-nombre', (c.nombre || '').toLowerCase());
             col.innerHTML = `
               <div class="card h-100 border-0 shadow-sm" style="cursor:pointer;">
-                <div class="card-body select-concepto d-flex align-items-center" data-id="${c.id}" data-nombre="${(c.nombre||'')}">
+                <div class="card-body select-concepto d-flex align-items-center" data-id="${c.id}" data-nombre="${(c.nombre || '')}">
                   <div class="rounded bg-warning text-dark d-flex align-items-center justify-content-center me-3" style="width:50px;height:50px;">
                     <i class="bi bi-piggy-bank fs-4"></i>
                   </div>
@@ -656,5 +681,67 @@ document.addEventListener("DOMContentLoaded", function () {
     if (loadingSpinner) {
       loadingSpinner.style.display = show ? "block" : "none";
     }
+  }
+  // --- Guardar Aporte ---
+  window.guardarAporte = function (idCuota) {
+    const input = document.getElementById(`input-aporte-${idCuota}`);
+    if (!input) return;
+    const monto = input.value;
+    if (!monto || monto <= 0) {
+      alert("Por favor ingresa un monto válido");
+      return;
+    }
+
+    if (!confirm(`¿Confirmar aporte de $${monto}?`)) return;
+
+    mostrarLoading(true);
+    // Endpoint: POST /api/ahorros/{idAhorro}/cuotas -> Pero el endpoint real es POST /api/ahorros/cuotas/{idCuota}?
+    // Revisando AhorroController: @PostMapping("/{id}/cuotas") -> registrarAporte(@PathVariable Long id, @RequestBody AporteAhorroDTO dto)
+    // El ID en el path es el ID del AHORRO (Meta), no de la cuota.
+    // Pero el DTO debe tener el ID de la cuota?
+    // Revisemos AhorroService.registrarAporte(Long metaId, AporteAhorroDTO dto)
+    // dto.getAporteAhorroId() se usa para buscar la cuota.
+
+    // Necesito el ID de la meta (currentAhorroId) y el ID de la cuota.
+
+    const dto = {
+      aporteAhorroId: idCuota,
+      aporte: monto
+    };
+
+    fetch(`${API_BASE}/${currentAhorroId}/cuotas`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      body: JSON.stringify(dto)
+    })
+      .then(async (r) => {
+        if (!r.ok) {
+          const text = await r.text();
+          throw text || "Error al registrar aporte";
+        }
+        return r.json();
+      })
+      .then(() => {
+        mostrarLoading(false);
+        // Recargar detalle
+        abrirDetalleAhorro(currentAhorroId);
+        // Recargar lista principal para actualizar progreso
+        cargarAhorros();
+      })
+      .catch((err) => {
+        mostrarLoading(false);
+        console.error("Error guardando aporte:", err);
+        alert("Error: " + (err.message || err));
+      });
+  };
+
+  // Helper para formatear fecha en zona horaria local (evita error de día anterior por UTC)
+  function formatDateLocal(dateString) {
+    if (!dateString) return "-";
+    const [year, month, day] = dateString.split('-');
+    // Mes en Date es 0-indexado (0=Enero, 11=Diciembre)
+    const date = new Date(year, month - 1, day);
+    return date.toLocaleDateString("es-ES");
   }
 });

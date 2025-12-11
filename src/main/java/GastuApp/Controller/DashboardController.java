@@ -53,7 +53,7 @@ public class DashboardController {
             emptyDashboard.setMesNumero(mes);
             emptyDashboard.setAnioActual(anio);
             emptyDashboard.setMesActual(java.time.Month.of(mes).getDisplayName(
-                    java.time.format.TextStyle.FULL, new java.util.Locale("es", "ES")));
+                    java.time.format.TextStyle.FULL, java.util.Locale.of("es", "ES")));
             emptyDashboard.setTotalIngresos(java.math.BigDecimal.ZERO);
             emptyDashboard.setTotalEgresos(java.math.BigDecimal.ZERO);
             emptyDashboard.setTotalAhorros(java.math.BigDecimal.ZERO);

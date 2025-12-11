@@ -16,24 +16,26 @@ public class AporteAhorroDTO {
     @NotNull(message = "El aporte es obligatorio")
     @DecimalMin(value = "0.01", message = "El monto debe ser mayor a cero")
     private BigDecimal aporte;
-    
+
     private LocalDate fechaLimite;
     private EstadoAp estadoAp;
     private LocalDate fechaRegistro;
+    private boolean disponible;
 
     public AporteAhorroDTO() {
     }
 
-    public AporteAhorroDTO(Long metaId, Long aporteAhorroId, BigDecimal aporteAsignado, BigDecimal aporte, LocalDate fechaLimite, 
-                        EstadoAp estadoAp, LocalDate fechaRegistro) {
+    public AporteAhorroDTO(Long metaId, Long aporteAhorroId, BigDecimal aporteAsignado, BigDecimal aporte,
+            LocalDate fechaLimite,
+            EstadoAp estadoAp, LocalDate fechaRegistro) {
         this.metaId = metaId;
         this.aporteAhorroId = aporteAhorroId;
         this.aporteAsignado = aporteAsignado;
-        this.aporte=aporte;
+        this.aporte = aporte;
         this.fechaLimite = fechaLimite;
         this.estadoAp = estadoAp;
-        this.fechaRegistro=fechaRegistro;
-        
+        this.fechaRegistro = fechaRegistro;
+
     }
 
     public Long getMetaId() {
@@ -88,6 +90,13 @@ public class AporteAhorroDTO {
     public LocalDate getFechaRegistro() {
         return fechaRegistro;
     }
-    
+
+    public boolean isDisponible() {
+        return disponible;
+    }
+
+    public void setDisponible(boolean disponible) {
+        this.disponible = disponible;
+    }
 
 }

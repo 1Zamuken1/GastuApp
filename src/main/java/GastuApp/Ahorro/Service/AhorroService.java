@@ -18,6 +18,7 @@ import GastuApp.Ahorro.DTO.EditarAhorroDTO;
 import GastuApp.Ahorro.Entity.AhorroMeta;
 import GastuApp.Ahorro.Entity.AhorroMeta.Estado;
 import GastuApp.Ahorro.Entity.AhorroMeta.Frecuencia;
+import GastuApp.Ahorro.Entity.AporteAhorro.EstadoAp;
 import GastuApp.Ahorro.Entity.AporteAhorro;
 import GastuApp.Ahorro.Repository.AhorroMetaRepository;
 import GastuApp.Ahorro.Repository.AporteAhorroRepository;
@@ -83,7 +84,7 @@ public class AhorroService {
         return dto;
     }
 
-    public AporteAhorroDTO toAporteDTO(AporteAhorro ap) {
+    public AporteAhorroDTO toAporteDTO(AporteAhorro ap, Frecuencia frecuencia) {
         AporteAhorroDTO dtoAp = new AporteAhorroDTO();
         dtoAp.setMetaId(ap.getMetaId());
         dtoAp.setAporteAhorroId(ap.getAporteAhorroId());
@@ -91,6 +92,7 @@ public class AhorroService {
         dtoAp.setAporte(ap.getAporte());
         dtoAp.setFechaLimite(ap.getFechaLimite());
         dtoAp.setEstado(ap.getEstado());
+        dtoAp.setDisponible(cuotaDisponiblePago(ap, frecuencia));
         return dtoAp;
     }
 
@@ -289,50 +291,59 @@ public class AhorroService {
     }
 
     // METODO QUE GENERA LAS CUOTAS
+    // METODO QUE GENERA LAS CUOTAS
     private List<AporteAhorro> generarCuotas(AhorroMeta meta) {
-        List<AporteAhorro> resultado = new ArrayList<>();
-        Integer obj = meta.getCantCuotas();
-        int n = (obj == null) ? 0 : obj;
-        if (n <= 0)
-            return resultado;
 
-        BigDecimal monto = meta.getMonto() == null ? BigDecimal.ZERO : meta.getMonto();
-        BigDecimal cuotaBase = BigDecimal.ZERO;
-        if (monto.compareTo(BigDecimal.ZERO) > 0) {
-            cuotaBase = monto.divide(BigDecimal.valueOf(n), 2, RoundingMode.HALF_UP);
+        LocalDate fechaInicio = meta.getCreacion().plusDays(1);
+        LocalDate fechaFin = meta.getMeta();
+        int cuotas = meta.getCantCuotas();
+
+        long diasTotales = ChronoUnit.DAYS.between(fechaInicio, fechaFin);
+        // si solo hay una cuota
+        double delta = cuotas > 1 ? (double) diasTotales / (double) (cuotas - 1) : 0;
+
+        // Calcular monto por cuota
+        BigDecimal montoMeta = meta.getMonto() != null ? meta.getMonto() : BigDecimal.ZERO;
+        BigDecimal montoPorCuota = BigDecimal.ZERO;
+        BigDecimal resto = BigDecimal.ZERO;
+
+        if (cuotas > 0 && montoMeta.compareTo(BigDecimal.ZERO) > 0) {
+            montoPorCuota = montoMeta.divide(BigDecimal.valueOf(cuotas), 2, RoundingMode.HALF_UP);
+            // Calcular resto para ajustar la última cuota
+            BigDecimal totalCalculado = montoPorCuota.multiply(BigDecimal.valueOf(cuotas));
+            resto = montoMeta.subtract(totalCalculado);
         }
 
-        LocalDate inicio = meta.getCreacion() == null ? LocalDate.now() : meta.getCreacion();
+        List<AporteAhorro> lista = new ArrayList<>();
 
-        for (int i = 0; i < n; i++) {
-            AporteAhorro ap = new AporteAhorro();
-            ap.setMetaId(meta.getId());
-            ap.setAporteAsignado(cuotaBase);
-            ap.setAporte(BigDecimal.ZERO);
-            ap.setEstado(AporteAhorro.EstadoAp.PENDIENTE);
-            LocalDate fechaLimite = sumarFrecuencia(inicio, meta.getFrecuencia(), i);
-            ap.setFechaLimite(fechaLimite);
-            resultado.add(ap);
-        }
+        for (int i = 0; i < cuotas; i++) {
 
-        // Ajuste por redondeo: sumar diferencias en la última cuota
-        if (monto.compareTo(BigDecimal.ZERO) > 0) {
-            BigDecimal sumaAsignados = resultado.stream()
-                    .map(r -> r.getAporteAsignado() == null ? BigDecimal.ZERO : r.getAporteAsignado())
-                    .reduce(BigDecimal.ZERO, BigDecimal::add);
-            BigDecimal diff = monto.subtract(sumaAsignados).setScale(2, RoundingMode.HALF_UP);
-            if (diff.compareTo(BigDecimal.ZERO) != 0 && !resultado.isEmpty()) {
-                AporteAhorro ultima = resultado.get(resultado.size() - 1);
-                BigDecimal nuevo = (ultima.getAporteAsignado() == null ? BigDecimal.ZERO : ultima.getAporteAsignado())
-                        .add(diff);
-                ultima.setAporteAsignado(nuevo);
+            long diasSumar = Math.round(delta * i);
+
+            LocalDate fechaLimite = fechaInicio.plusDays(diasSumar);
+
+            // evitar que una cuota se pase de la fecha meta
+            if (fechaLimite.isAfter(fechaFin)) {
+                fechaLimite = fechaFin;
             }
-        } else {
-            // monto = 0 -> dejar aporteAsignado = 0 explicitamente
-            resultado.forEach(r -> r.setAporteAsignado(BigDecimal.ZERO));
+
+            AporteAhorro aporte = new AporteAhorro();
+            aporte.setMetaId(meta.getId());
+            aporte.setEstado(AporteAhorro.EstadoAp.PENDIENTE);
+            aporte.setFechaLimite(fechaLimite);
+            
+            // Asignar monto
+            if (i == cuotas - 1) {
+                // Sumar resto a la última cuota
+                aporte.setAporteAsignado(montoPorCuota.add(resto));
+            } else {
+                aporte.setAporteAsignado(montoPorCuota);
+            }
+            
+            lista.add(aporte);
         }
 
-        return resultado;
+        return lista;
     }
 
     // Crear ahorro
@@ -371,47 +382,54 @@ public class AhorroService {
 
     // METODO QUE CALCULA LOS APORTES RESTANTES
     private void recalcularAportesRestantes(AhorroMeta meta) {
-        List<AporteAhorro> todas = aporteAhorroRepository.findByMetaIdOrderByFechaLimiteAsc(meta.getId());
+        List<AporteAhorro> aportes = aporteAhorroRepository.findByMetaIdOrderByFechaLimiteAsc(meta.getId());
 
-        BigDecimal aportado = todas.stream()
+        // sumar lo ya aportado (APORTADO)
+        BigDecimal aportado = aportes.stream()
                 .filter(a -> a.getEstado() == AporteAhorro.EstadoAp.APORTADO)
                 .map(a -> a.getAporte() == null ? BigDecimal.ZERO : a.getAporte())
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
 
-        List<AporteAhorro> pendientes = todas.stream()
+        // calcular restante (montoMeta - aportado)
+        BigDecimal montoMeta = meta.getMonto() == null ? BigDecimal.ZERO : meta.getMonto();
+        BigDecimal restante = montoMeta.subtract(aportado);
+
+        if (restante.compareTo(BigDecimal.ZERO) <= 0) { // ya está cubierto o no hay nada que repartir
+            return;
+        }
+        // obtener solo las cuotas pendientes
+        List<AporteAhorro> pendientes = aportes.stream()
                 .filter(a -> a.getEstado() == AporteAhorro.EstadoAp.PENDIENTE)
                 .collect(Collectors.toList());
 
-        int restantes = pendientes.size();
-        BigDecimal montoMeta = meta.getMonto() == null ? BigDecimal.ZERO : meta.getMonto();
-        BigDecimal restante = montoMeta.subtract(aportado);
-        if (restante.compareTo(BigDecimal.ZERO) <= 0) {
-            // si ya cumplido, poner 0 a pendientes
-            pendientes.forEach(p -> {
-                p.setAporteAsignado(BigDecimal.ZERO);
-                aporteAhorroRepository.save(p);
-            });
-            return;
-        }
-        // reparto igual entre pendientes con ajuste
-        BigDecimal asignadoBase = restante.divide(BigDecimal.valueOf(restantes), 2, RoundingMode.HALF_UP);
-        for (int i = 0; i < pendientes.size(); i++) {
-            AporteAhorro p = pendientes.get(i);
-            p.setAporteAsignado(asignadoBase);
-            aporteAhorroRepository.save(p);
-        }
+        int cuotasFaltantes = pendientes.size();
 
-        // corregir diferencia en la última pendiente
+        if (cuotasFaltantes == 0) {
+            return; // no hay cuotas pendientes para recalcular
+        }
+        // calcular asignación base por cuota
+        BigDecimal asignadoBase = restante.divide(BigDecimal.valueOf(cuotasFaltantes), 2, RoundingMode.HALF_UP);
+
+        // asignar el valor base a todas las pendientes
+        for (AporteAhorro p : pendientes) {
+            p.setAporteAsignado(asignadoBase);
+        }
+        // guardar
+        aporteAhorroRepository.saveAll(pendientes);
+
+        // corregir diferencia por redondeo en la última pendiente
         BigDecimal sumaAsignados = pendientes.stream()
                 .map(a -> a.getAporteAsignado() == null ? BigDecimal.ZERO : a.getAporteAsignado())
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
+
         BigDecimal diff = restante.subtract(sumaAsignados).setScale(2, RoundingMode.HALF_UP);
         if (diff.compareTo(BigDecimal.ZERO) != 0 && !pendientes.isEmpty()) {
-            AporteAhorro last = pendientes.get(pendientes.size() - 1);
-            last.setAporteAsignado(
-                    (last.getAporteAsignado() == null ? BigDecimal.ZERO : last.getAporteAsignado()).add(diff));
-            aporteAhorroRepository.save(last);
+            AporteAhorro ultima = pendientes.get(pendientes.size() - 1);
+            ultima.setAporteAsignado(
+                    (ultima.getAporteAsignado() == null ? BigDecimal.ZERO : ultima.getAporteAsignado()).add(diff));
+            aporteAhorroRepository.save(ultima);
         }
+
     }
 
     // METODO QUE ME RECALCULA LAS CUOTAS AL EDITAR UN AHORRO
@@ -424,34 +442,54 @@ public class AhorroService {
                 .collect(Collectors.toList());
 
         List<AporteAhorro> pendientes = todas.stream()
-                .filter(a -> a.getEstado() == AporteAhorro.EstadoAp.PENDIENTE ||a.getEstado() == AporteAhorro.EstadoAp.PERDIDO )
+                .filter(a -> a.getEstado() == AporteAhorro.EstadoAp.PENDIENTE
+                        || a.getEstado() == AporteAhorro.EstadoAp.PERDIDO)
                 .collect(Collectors.toList());
 
-// ELIMINAR todas las cuotas pendientes/perdidas ANTIGUAS
+        // ELIMINAR todas las cuotas pendientes/perdidas ANTIGUAS
         if (!pendientes.isEmpty()) {
             aporteAhorroRepository.deleteAll(pendientes);
         }
 
-//Regenerar el plan COMPLETO (incluyendo las aportadas, pero solo para obtener las fechas correctas)
-    List<AporteAhorro> cuotasNuevas = generarCuotas(meta);
+        // Regenerar el plan COMPLETO (incluyendo las aportadas, pero solo para obtener
+        // las fechas correctas)
+        List<AporteAhorro> cuotasNuevas = generarCuotas(meta);
 
-// Determinar cuántas cuotas son realmente nuevas
-    int cuotasAportadasCount = aportadas.size();
-    List<AporteAhorro> cuotasARegistrar = Collections.emptyList();
+        // Determinar cuántas cuotas son realmente nuevas
+        int cuotasAportadasCount = aportadas.size();
+        List<AporteAhorro> cuotasARegistrar = Collections.emptyList();
 
         if (cuotasNuevas.size() > cuotasAportadasCount) {
-        // Tomar solo las cuotas desde la posición (aportadas.size()) en adelante.
-        cuotasARegistrar = cuotasNuevas.subList(cuotasAportadasCount, cuotasNuevas.size());
-    } else if (cuotasNuevas.size() < cuotasAportadasCount) {
-    }
-    
-    // 5. Persistir las cuotas futuras (con sus fechas límite y monto asignado nuevos)
-    if (!cuotasARegistrar.isEmpty()) {
-        // Asegurar que tengan el ID de la meta
-        cuotasARegistrar.forEach(c -> c.setMetaId(meta.getId())); 
-        aporteAhorroRepository.saveAll(cuotasARegistrar);
-    }
+            // Tomar solo las cuotas desde la posición (aportadas.size()) en adelante.
+            cuotasARegistrar = cuotasNuevas.subList(cuotasAportadasCount, cuotasNuevas.size());
+        } else if (cuotasNuevas.size() < cuotasAportadasCount) {
+            throw new IllegalArgumentException(
+                    "No se puede reducir la cantidad de cuotas por debajo del número de cuotas ya aportadas.");
+
+        }
+
+        // 5. Persistir las cuotas futuras (con sus fechas límite y monto asignado
+        // nuevos)
+        if (!cuotasARegistrar.isEmpty()) {
+            // Asegurar que tengan el ID de la meta
+            cuotasARegistrar.forEach(c -> c.setMetaId(meta.getId()));
+            aporteAhorroRepository.saveAll(cuotasARegistrar);
+        }
         recalcularAportesRestantes(meta);
+    }
+
+    // recalcular fechas
+    @Transactional
+    public void recalcularFechasCuotas(AhorroMeta meta) {
+
+        List<AporteAhorro> cuotas = aporteAhorroRepository.findByMetaIdOrderByFechaLimiteAsc(meta.getId());
+
+        List<AporteAhorro> nuevasFechas = generarCuotas(meta);
+
+        for (int i = 0; i < cuotas.size(); i++) {
+            cuotas.get(i).setFechaLimite(nuevasFechas.get(i).getFechaLimite());
+            aporteAhorroRepository.save(cuotas.get(i));
+        }
     }
 
     // editar un ahorro
@@ -469,18 +507,22 @@ public class AhorroService {
 
         if (dto.getMontoMeta() != null)
             existente.setMonto(dto.getMontoMeta());
-        
+
         existente.setFrecuencia(dto.getFrecuencia());
-        
+
         existente.setMeta(dto.getFechaMeta());
         existente.setCantCuotas(dto.getCantidadCuotas() != null ? dto.getCantidadCuotas() : null);
 
-// Calcular Campo Faltante: Asegura que fechaMeta y cantCuotas sean coherentes
-// (Ej: si se cambió la fecha meta, se recalcula la cantidad de cuotas, y viceversa)
-    calcularCampoFaltante(existente, new CrearAhorroDTO());
-    
-// Recalcular cuotas pendientes (no tocar las aportadas)
+        // Calcular Campo Faltante: Asegura que fechaMeta y cantCuotas sean coherentes
+        // (Ej: si se cambió la fecha meta, se recalcula la cantidad de cuotas, y
+        // viceversa)
+        calcularCampoFaltante(existente, new CrearAhorroDTO());
+
+        // Recalcular cuotas pendientes (no tocar las aportadas)
         recalcularAportes(existente);
+
+        // REGENERAR FECHAS DE LAS CUOTAS
+        recalcularFechasCuotas(existente);
 
         AhorroMeta actualizado = ahorroMetaRepository.save(existente);
         return toDTO(actualizado);
@@ -503,11 +545,11 @@ public class AhorroService {
     // Ver todos los aporte de un ahorro especifico
     @Transactional(readOnly = true)
     public List<AporteAhorroDTO> listarAportesPorMeta(Long metaId, Long usuarioId) {
-        ahorroMetaRepository.findByAhorroIdAndUsuarioId(metaId, usuarioId)
+        AhorroMeta meta = ahorroMetaRepository.findByAhorroIdAndUsuarioId(metaId, usuarioId)
                 .orElseThrow(() -> new IllegalArgumentException("Ahorro no encontrado o sin permisos"));
         return aporteAhorroRepository.findByMetaIdOrderByFechaLimiteAsc(metaId)
                 .stream()
-                .map(this::toAporteDTO)
+                .map(ap -> this.toAporteDTO(ap, meta.getFrecuencia()))
                 .collect(Collectors.toList());
     }
 
@@ -525,12 +567,38 @@ public class AhorroService {
     }
 
     // METODO QUE PASA UNA CUOTA A DISPONIBLE
-    private boolean cuotaDisponiblePago(AporteAhorro cuota) {
+    private boolean cuotaDisponiblePago(AporteAhorro cuota, Frecuencia frecuencia) {
         if (cuota == null)
             return false;
         LocalDate hoy = LocalDate.now();
-        // disponible si fechaLimite <= hoy + 3 días
-        return !cuota.getFechaLimite().isAfter(hoy.plusDays(3));
+        LocalDate limite = cuota.getFechaLimite();
+
+        // Si ya pasó la fecha límite, sigue disponible (hasta que sea marcada como
+        // PERDIDA por el job/logica)
+        // Pero aquí validamos anticipación.
+
+        switch (frecuencia) {
+            case DIARIA:
+                // 3 días antes
+                return !limite.isAfter(hoy.plusDays(3));
+            case SEMANAL:
+                // Semana siguiente (aprox 7 días antes)
+                return !limite.isAfter(hoy.plusDays(7));
+            case QUINCENAL:
+                // 15 días antes
+                return !limite.isAfter(hoy.plusDays(15));
+            case MENSUAL:
+                // Mes siguiente (aprox 30 días antes)
+                return !limite.isAfter(hoy.plusMonths(1));
+            case TRIMESTRAL:
+                return !limite.isAfter(hoy.plusMonths(3));
+            case SEMESTRAL:
+                return !limite.isAfter(hoy.plusMonths(6));
+            case ANUAL:
+                return !limite.isAfter(hoy.plusYears(1));
+            default:
+                return !limite.isAfter(hoy.plusDays(3));
+        }
     }
 
     // METODO QUE MUESTRA LOS 3 APORTES
@@ -557,9 +625,9 @@ public class AhorroService {
         }
     }
 
-    // muestra la proxima cuota disponible
-    public Optional<AporteAhorro> obtenerCuotaDisponible(Long metaId, Long usuarioId) {
-        ahorroMetaRepository.findByAhorroIdAndUsuarioId(metaId, usuarioId)
+    // Helper privado para reutilizar la lógica de búsqueda de cuota
+    private Optional<AporteAhorro> findCuotaDisponible(Long metaId, Long usuarioId) {
+        AhorroMeta meta = ahorroMetaRepository.findByAhorroIdAndUsuarioId(metaId, usuarioId)
                 .orElseThrow(() -> new IllegalArgumentException("Ahorro no encontrado o sin permisos"));
 
         LocalDate hoy = LocalDate.now();
@@ -567,79 +635,97 @@ public class AhorroService {
 
         return todas.stream()
                 .filter(a -> a.getEstado() == AporteAhorro.EstadoAp.PENDIENTE)
-                .filter(a -> !a.getFechaLimite().isAfter(hoy.plusDays(3)))
+                .filter(a -> cuotaDisponiblePago(a, meta.getFrecuencia()))
                 .findFirst();
+    }
 
+    // muestra la proxima cuota disponible (Public API returns DTO)
+    public Optional<AporteAhorroDTO> obtenerCuotaDisponible(Long metaId, Long usuarioId) {
+        // Reutilizamos el helper para obtener la entidad
+        Optional<AporteAhorro> cuota = findCuotaDisponible(metaId, usuarioId);
+
+        // Si existe, la convertimos a DTO. Necesitamos la meta para la frecuencia.
+        if (cuota.isPresent()) {
+            AhorroMeta meta = ahorroMetaRepository.findByAhorroIdAndUsuarioId(metaId, usuarioId).orElseThrow();
+            return Optional.of(toAporteDTO(cuota.get(), meta.getFrecuencia()));
+        }
+        return Optional.empty();
     }
 
     // registrar un aporte
     @Transactional
     public AporteAhorroDTO registrarAporte(Long metaId, Long aporteId, AporteAhorroDTO dto, Long usuarioId) {
-        AhorroMeta meta = ahorroMetaRepository.findByAhorroIdAndUsuarioId(metaId, usuarioId)
-                .orElseThrow(() -> new RuntimeException("Ahorro no encontrado o sin permisos"));
+        try {
+            AhorroMeta meta = ahorroMetaRepository.findByAhorroIdAndUsuarioId(metaId, usuarioId)
+                    .orElseThrow(() -> new RuntimeException("Ahorro no encontrado o sin permisos"));
 
-        // validad que el monto ingresado sea mayor a 0
-        BigDecimal aporteIngresado = dto.getAporte() == null ? BigDecimal.ZERO : dto.getAporte();
-        if (aporteIngresado.compareTo(BigDecimal.ZERO) <= 0) {
-            throw new IllegalArgumentException("El monto del aporte debe ser mayor que cero para registrar un pago.");
+            // validad que el monto ingresado sea mayor a 0
+            BigDecimal aporteIngresado = dto.getAporte() == null ? BigDecimal.ZERO : dto.getAporte();
+            if (aporteIngresado.compareTo(BigDecimal.ZERO) <= 0) {
+                throw new IllegalArgumentException(
+                        "El monto del aporte debe ser mayor que cero para registrar un pago.");
+            }
+            // marcar cuotas vencidas como PERDIDO si su fechaLimite < hoy y siguen
+            // PENDIENTE
+            pasarCuotasAPerdias(meta);
+
+            AporteAhorro cuota;
+            if (aporteId != null) {
+                cuota = aporteAhorroRepository.findByAporteAhorroIdAndMetaId(aporteId, metaId)
+                        .orElseThrow(() -> new RuntimeException("Cuota no encontrada para esta meta"));
+            } else {
+                cuota = findCuotaDisponible(metaId, usuarioId)
+                        .orElseThrow(() -> new RuntimeException("No hay cuota disponible para aportar hoy"));
+            }
+            // validar que cuota esté PENDIENTE
+            if (cuota.getEstado() != AporteAhorro.EstadoAp.PENDIENTE) {
+                throw new IllegalArgumentException(
+                        "La cuota seleccionada no está disponible para aportar (estado=" + cuota.getEstado() + ")");
+            }
+
+            // validar disponibilidad 3 días antes (ahora dinámico)
+            if (!cuotaDisponiblePago(cuota, meta.getFrecuencia())) {
+                throw new IllegalArgumentException("La cuota no está disponible para pago todavía");
+            }
+
+            // Registrar aporte: actualizar aporte y estado
+            cuota.setAporte(aporteIngresado);
+            cuota.setEstado(AporteAhorro.EstadoAp.APORTADO);
+            aporteAhorroRepository.saveAndFlush(cuota);
+
+            // actualizar acumulado de la meta
+            BigDecimal acumuladoActual = meta.getAcumulado() == null ? BigDecimal.ZERO : meta.getAcumulado();
+            acumuladoActual = acumuladoActual.add(aporteIngresado);
+            meta.setAcumulado(acumuladoActual);
+
+            // Reanudar o Iniciar: Si se hizo un pago, el estado debe ser ACTIVO, a menos
+            // que se complete.
+            if (meta.getEstado() == Estado.SININICIAR || meta.getEstado() == Estado.ABANDONADO) {
+                meta.setEstado(Estado.ACTIVO);
+            }
+
+            // Si total alcanzado o superado -> COMPLETADO
+            BigDecimal montoMeta = meta.getMonto() == null ? BigDecimal.ZERO : meta.getMonto();
+            if (montoMeta.compareTo(BigDecimal.ZERO) > 0 && acumuladoActual.compareTo(montoMeta) >= 0) {
+                meta.setEstado(Estado.COMPLETADO);
+            }
+
+            // Si aporte ingresado difiere del asignado -> recalcular cuotas pendientes
+            BigDecimal asignado = cuota.getAporteAsignado() == null ? BigDecimal.ZERO : cuota.getAporteAsignado();
+            if (aporteIngresado.compareTo(asignado) != 0) {
+                recalcularAportesRestantes(meta);
+            }
+
+            // detectar abandono DEBE ir después de la lógica de reanudación para capturar
+            // el nuevo estado
+            abandonoAhorro(meta);
+            ahorroMetaRepository.save(meta);
+
+            return toAporteDTO(cuota, meta.getFrecuencia());
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw e;
         }
-        // marcar cuotas vencidas como PERDIDO si su fechaLimite < hoy y siguen
-        // PENDIENTE
-        pasarCuotasAPerdias(meta);
-
-        AporteAhorro cuota;
-        if (aporteId != null) {
-            cuota = aporteAhorroRepository.findByAporteAhorroIdAndMetaId(aporteId, metaId)
-                    .orElseThrow(() -> new RuntimeException("Cuota no encontrada para esta meta"));
-        } else {
-            cuota = obtenerCuotaDisponible(metaId, usuarioId)
-                    .orElseThrow(() -> new RuntimeException("No hay cuota disponible para aportar hoy"));
-        }
-        // validar que cuota esté PENDIENTE
-        if (cuota.getEstado() != AporteAhorro.EstadoAp.PENDIENTE) {
-            throw new IllegalArgumentException(
-                    "La cuota seleccionada no está disponible para aportar (estado=" + cuota.getEstado() + ")");
-        }
-
-        // validar disponibilidad 3 días antes
-        if (!cuotaDisponiblePago(cuota)) {
-            throw new IllegalArgumentException("La cuota no está disponible para pago todavía");
-        }
-
-        // Registrar aporte: actualizar aporte y estado
-        cuota.setAporte(aporteIngresado);
-        cuota.setEstado(AporteAhorro.EstadoAp.APORTADO);
-        aporteAhorroRepository.save(cuota);
-
-        // actualizar acumulado de la meta
-        BigDecimal acumuladoActual = meta.getAcumulado() == null ? BigDecimal.ZERO : meta.getAcumulado();
-        acumuladoActual = acumuladoActual.add(aporteIngresado);
-        meta.setAcumulado(acumuladoActual);
-
-        // Reanudar o Iniciar: Si se hizo un pago, el estado debe ser ACTIVO, a menos
-        // que se complete.
-        if (meta.getEstado() == Estado.SININICIAR || meta.getEstado() == Estado.ABANDONADO) {
-            meta.setEstado(Estado.ACTIVO);
-        }
-
-        // Si total alcanzado o superado -> COMPLETADO
-        BigDecimal montoMeta = meta.getMonto() == null ? BigDecimal.ZERO : meta.getMonto();
-        if (montoMeta.compareTo(BigDecimal.ZERO) > 0 && acumuladoActual.compareTo(montoMeta) >= 0) {
-            meta.setEstado(Estado.COMPLETADO);
-        }
-
-        // Si aporte ingresado difiere del asignado -> recalcular cuotas pendientes
-        BigDecimal asignado = cuota.getAporteAsignado() == null ? BigDecimal.ZERO : cuota.getAporteAsignado();
-        if (aporteIngresado.compareTo(asignado) != 0) {
-            recalcularAportesRestantes(meta);
-        }
-
-        // detectar abandono DEBE ir después de la lógica de reanudación para capturar
-        // el nuevo estado
-        abandonoAhorro(meta);
-        ahorroMetaRepository.save(meta);
-
-        return toAporteDTO(cuota);
     }
 
 }
