@@ -1,6 +1,5 @@
 package GastuApp.Ahorro.Controller;
 
-
 import GastuApp.Ahorro.DTO.AhorroDTO;
 import GastuApp.Ahorro.DTO.AporteAhorroDTO;
 import GastuApp.Ahorro.DTO.CrearAhorroDTO;
@@ -13,7 +12,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import java.util.Optional;
-import GastuApp.Ahorro.Entity.AporteAhorro;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -43,21 +42,20 @@ public class AhorroController {
 
         if (estado != null && !estado.isEmpty()) {
             try {
-            //  Convertir estado de string a enum
-            AhorroMeta.Estado estadoEnum = AhorroMeta.Estado.valueOf(estado.toUpperCase());
-            
-            return ResponseEntity.ok(
-                    ahorroService.filtrarPorEstado(usuarioId, estadoEnum) // <-- Pasa el Enum
-            );
-        } catch (IllegalArgumentException e) {
-            // Manejar si el estado proporcionado no es válido
-            List<AhorroDTO> listaVaciaTipada = new ArrayList<>();
-            return ResponseEntity.badRequest().body(listaVaciaTipada);
+                // Convertir estado de string a enum
+                AhorroMeta.Estado estadoEnum = AhorroMeta.Estado.valueOf(estado.toUpperCase());
+
+                return ResponseEntity.ok(
+                        ahorroService.filtrarPorEstado(usuarioId, estadoEnum) // <-- Pasa el Enum
+                );
+            } catch (IllegalArgumentException e) {
+                // Manejar si el estado proporcionado no es válido
+                List<AhorroDTO> listaVaciaTipada = new ArrayList<>();
+                return ResponseEntity.badRequest().body(listaVaciaTipada);
+            }
         }
-    }
-    return ResponseEntity.ok(
-        ahorroService.listarTodosPorUsuario(usuarioId)
-        );
+        return ResponseEntity.ok(
+                ahorroService.listarTodosPorUsuario(usuarioId));
     }
 
     // OBTENER AHORRO POR ID
@@ -69,24 +67,22 @@ public class AhorroController {
         Long usuarioId = obtenerUsuarioId(authentication);
 
         return ResponseEntity.ok(
-                ahorroService.obtenerPorIdYUsuario(id, usuarioId)
-        );
+                ahorroService.obtenerPorIdYUsuario(id, usuarioId));
     }
 
     // OBTENER AHORRO POR ID
     @GetMapping("/concepto")
     public ResponseEntity<List<AhorroDTO>> buscarPorConcepto(
-        @RequestParam String texto,
-        Authentication authentication) {
+            @RequestParam String texto,
+            Authentication authentication) {
 
-    Long usuarioId = obtenerUsuarioId(authentication);
+        Long usuarioId = obtenerUsuarioId(authentication);
 
-    return ResponseEntity.ok(
-            ahorroService.buscarPorConceptoParcial(usuarioId, texto)
-    );
-}
+        return ResponseEntity.ok(
+                ahorroService.buscarPorConceptoParcial(usuarioId, texto));
+    }
 
-    //  CREAR NUEVO AHORRO
+    // CREAR NUEVO AHORRO
     @PostMapping
     public ResponseEntity<AhorroDTO> crear(
             @Valid @RequestBody CrearAhorroDTO dto,
@@ -95,8 +91,7 @@ public class AhorroController {
         Long usuarioId = obtenerUsuarioId(authentication);
 
         return ResponseEntity.ok(
-                ahorroService.crear(dto, usuarioId)
-        );
+                ahorroService.crear(dto, usuarioId));
     }
 
     // ACTUALIZAR AHORRO
@@ -109,11 +104,10 @@ public class AhorroController {
         Long usuarioId = obtenerUsuarioId(authentication);
 
         return ResponseEntity.ok(
-                ahorroService.actualizar(id, dto, usuarioId)
-        );
+                ahorroService.actualizar(id, dto, usuarioId));
     }
 
-    //  ELIMINAR AHORRO
+    // ELIMINAR AHORRO
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> eliminar(
             @PathVariable Long id,
@@ -135,28 +129,25 @@ public class AhorroController {
         Long usuarioId = obtenerUsuarioId(authentication);
 
         return ResponseEntity.ok(
-                ahorroService.listarAportesPorMeta(id, usuarioId)
-        );
+                ahorroService.listarAportesPorMeta(id, usuarioId));
     }
 
-    //  OBTENER LA PRÓXIMA CUOTA DISPONIBLE
+    // OBTENER LA PRÓXIMA CUOTA DISPONIBLE
     @GetMapping("/cuotas/proxima/{id}")
     public ResponseEntity<AporteAhorroDTO> obtenerProximaCuota(
             @PathVariable Long id,
             Authentication authentication) {
-            
-            Long usuarioId= obtenerUsuarioId(authentication);
-            Optional<AporteAhorro> cuotaOptional =
-            ahorroService.obtenerCuotaDisponible(id, usuarioId);
-            
+
+        Long usuarioId = obtenerUsuarioId(authentication);
+        Optional<AporteAhorroDTO> cuotaOptional = ahorroService.obtenerCuotaDisponible(id, usuarioId);
+
         return cuotaOptional
-        .map(ahorroService::toAporteDTO)
-        .map(ResponseEntity::ok) // Si hay DTO, devuelve 200 OK
-        .orElseGet(() -> ResponseEntity.notFound().build());
+                .map(ResponseEntity::ok) // Si hay DTO, devuelve 200 OK
+                .orElseGet(() -> ResponseEntity.notFound().build());
 
     }
 
-    //  REGISTRAR APORTE
+    // REGISTRAR APORTE
     @PostMapping("/{id}/cuotas")
     public ResponseEntity<AporteAhorroDTO> registrarAporte(
             @PathVariable Long id,
@@ -166,7 +157,6 @@ public class AhorroController {
         Long usuarioId = obtenerUsuarioId(authentication);
 
         return ResponseEntity.ok(
-                ahorroService.registrarAporte(id,null, dto, usuarioId)
-        );
+                ahorroService.registrarAporte(id, null, dto, usuarioId));
     }
 }
