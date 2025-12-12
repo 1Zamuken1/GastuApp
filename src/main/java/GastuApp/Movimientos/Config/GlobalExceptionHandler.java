@@ -77,7 +77,10 @@ public class GlobalExceptionHandler {
         respuesta.put("timestamp", LocalDateTime.now());
         respuesta.put("status", HttpStatus.INTERNAL_SERVER_ERROR.value());
         respuesta.put("error", "Error interno del servidor");
-        respuesta.put("mensaje", "Ha ocurrido un error inesperado. Por favor contacte al administrador.");
+        // DEBUG: Mostrar mensaje real para depurar
+        respuesta.put("mensaje",
+                "Ha ocurrido un error inesperado. " + ex.getClass().getName() + ": " + ex.getMessage());
+        respuesta.put("debug_message", ex.getMessage());
 
         // En desarrollo, puedes descomentar esta linea para ver el stack trace
         ex.printStackTrace();

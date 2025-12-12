@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+
+<head th:replace="~{fragments/head :: head(title='Admin - Mi Perfil', links=~{})}"></head>
+
+<body
+    th:attr="data-user-role=${#authentication != null && #authentication.principal != null && !#lists.isEmpty(#authentication.principal.authorities) ? #authentication.principal.authorities[0].authority : ''}">
+    <div th:replace="~{fragments/navbar_admin :: navbar}"></div>
+
+    <main class="container py-4">
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <!-- Profile Header -->
+                <div class="card shadow-sm mb-4">
+                    <div class="card-body text-center py-5">
+                        <div class="mb-3">
+                            <span class="d-inline-block rounded-circle bg-primary bg-opacity-10 text-primary p-4">
+                                <i class="bi bi-person-circle display-1"></i>
+                            </span>
+                        </div>
+                        <h2 class="h3 mb-1" th:text="${usuario.username}">Nombre de Usuario</h2>
+                        <span class="badge bg-dark">ADMINISTRADOR</span>
+                    </div>
+                </div>
+
+                <!-- Personal Information -->
+                <div class="card shadow-sm">
+                    <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+                        <h5 class="card-title mb-0"><i class="bi bi-person-vcard me-2 text-primary"></i>Información
+                            Personal</h5>
+                        <!-- Future implementation: Edit button -->
+                        <!-- <button class="btn btn-sm btn-outline-primary"><i class="bi bi-pencil me-1"></i>Editar</button> -->
+                    </div>
+                    <div class="card-body">
+                        <form>
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label class="form-label text-muted small text-uppercase fw-bold">Nombre de
+                                        Usuario</label>
+                                    <input type="text" class="form-control" th:value="${usuario.username}" readonly>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label text-muted small text-uppercase fw-bold">Correo
+                                        Electrónico</label>
+                                    <input type="email" class="form-control" th:value="${usuario.email}" readonly>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label text-muted small text-uppercase fw-bold">Teléfono</label>
+                                    <input type="text" class="form-control"
+                                        th:value="${usuario.telefono != null ? usuario.telefono : 'No registrado'}"
+                                        readonly>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label text-muted small text-uppercase fw-bold">Estado</label>
+                                    <div>
+                                        <span class="badge bg-success" th:if="${usuario.activo}">Activo</span>
+                                        <span class="badge bg-danger" th:unless="${usuario.activo}">Inactivo</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <div th:replace="~{fragments/head :: scripts}"></div>
+</body>
+
+</html>

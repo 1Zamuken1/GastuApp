@@ -80,7 +80,7 @@ public class ConceptoController {
      * @return DTO del concepto creado con status 201
      */
     @PostMapping
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('ADMINISTRADOR')")
     public ResponseEntity<ConceptoDTO> crearConcepto(@Valid @RequestBody ConceptoDTO dto) {
         ConceptoDTO conceptoCreado = conceptoService.crearConcepto(dto);
         return ResponseEntity.status(HttpStatus.CREATED).body(conceptoCreado);
@@ -95,7 +95,7 @@ public class ConceptoController {
      * @return DTO del concepto actualizado
      */
     @PutMapping("/{id}")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('ADMINISTRADOR')")
     public ResponseEntity<ConceptoDTO> actualizarConcepto(
             @PathVariable @org.springframework.lang.NonNull Long id,
             @Valid @RequestBody ConceptoDTO dto) {
@@ -111,7 +111,7 @@ public class ConceptoController {
      * @return Respuesta sin contenido con status 204
      */
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('ADMINISTRADOR')")
     public ResponseEntity<Void> eliminarConcepto(@PathVariable @org.springframework.lang.NonNull Long id) {
         conceptoService.eliminarConcepto(id);
         return ResponseEntity.noContent().build();

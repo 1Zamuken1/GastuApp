@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+
+<head th:replace="~{fragments/head :: head(title='Admin - Ajustes Conceptos', links=~{})}"></head>
+
+<body
+    th:attr="data-user-role=${#authentication != null && #authentication.principal != null && !#lists.isEmpty(#authentication.principal.authorities) ? #authentication.principal.authorities[0].authority : ''}">
+    <div th:replace="~{fragments/navbar_admin :: navbar}"></div>
+
+    <main class="container py-4">
+        <div class="row justify-content-center">
+            <div class="col-lg-10">
+                <div class="card shadow-sm">
+                    <div class="card-header bg-white py-3">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <h1 class="h3 mb-0 text-dark">
+                                <i class="bi bi-tags me-2 text-primary"></i>Ajustes de Conceptos
+                            </h1>
+                            <button id="newConceptBtn" class="btn btn-primary" data-bs-toggle="modal"
+                                data-bs-target="#conceptModal">
+                                <i class="bi bi-plus-lg me-1"></i>Nuevo Concepto
+                            </button>
+                        </div>
+                    </div>
+                    <div class="card-body">
+
+                        <!-- Filter/Search -->
+                        <div class="row mb-4">
+                            <div class="col-md-6">
+                                <div class="input-group">
+                                    <span class="input-group-text bg-light border-end-0"><i
+                                            class="bi bi-search"></i></span>
+                                    <input type="text" class="form-control border-start-0 ps-0" id="searchConcept"
+                                        placeholder="Buscar concepto...">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <select class="form-select" id="typeFilter">
+                                    <option value="ALL">Todos los tipos</option>
+                                    <option value="INGRESO">Ingresos</option>
+                                    <option value="EGRESO">Egresos</option>
+                                    <option value="AHORRO">Ahorros</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Concepts List -->
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle" id="conceptsTable">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th scope="col">Nombre</th>
+                                        <th scope="col">Tipo</th>
+                                        <th scope="col">Descripción</th>
+                                        <th scope="col" class="text-end">Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="conceptsList">
+                                    <!-- Example row (will be replaced by JS) -->
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- Empty State (Hidden by default) -->
+                        <div id="emptyState" class="text-center py-5 d-none">
+                            <div class="mb-3">
+                                <i class="bi bi-inbox fs-1 text-muted opacity-50"></i>
+                            </div>
+                            <h5 class="text-muted">No se encontraron conceptos</h5>
+                            <p class="text-muted small">Intenta ajustar los filtros o crear uno nuevo.</p>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Modal for Create/Edit Concept -->
+    <div class="modal fade" id="conceptModal" tabindex="-1" aria-labelledby="conceptModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="conceptModalLabel">Gestionar Concepto</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="conceptForm">
+                        <input type="hidden" id="conceptId">
+                        <div class="mb-3">
+                            <label for="conceptName" class="form-label">Nombre del Concepto</label>
+                            <input type="text" class="form-control" id="conceptName" required
+                                placeholder="Ej. Transporte, Arriendo...">
+                        </div>
+                        <div class="mb-3">
+                            <label for="conceptType" class="form-label">Tipo de Movimiento</label>
+                            <select class="form-select" id="conceptType" required>
+                                <option value="" selected disabled>Seleccionar tipo...</option>
+                                <option value="INGRESO">Ingreso</option>
+                                <option value="EGRESO">Egreso</option>
+                                <option value="AHORRO">Ahorro</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="conceptDesc" class="form-label">Descripción</label>
+                            <textarea class="form-control" id="conceptDesc" rows="2"
+                                placeholder="Breve descripción..."></textarea>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-primary" id="saveConceptBtn">Guardar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div th:replace="~{fragments/head :: scripts}"></div>
+
+    <!-- Custom Script for Settings -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const API_URL = '/api/conceptos';
+            const conceptsList = document.getElementById('conceptsList');
+            const conceptModal = new bootstrap.Modal(document.getElementById('conceptModal'));
+            const conceptForm = document.getElementById('conceptForm');
+            const saveBtn = document.getElementById('saveConceptBtn');
+            const typeFilter = document.getElementById('typeFilter');
+            const searchInput = document.getElementById('searchConcept');
+
+            // Elements for form
+            const formId = document.getElementById('conceptId');
+            const formName = document.getElementById('conceptName');
+            const formType = document.getElementById('conceptType');
+            const formDesc = document.getElementById('conceptDesc');
+
+            let allConcepts = [];
+
+            // Initial Load
+            loadConcepts();
+
+            // Search & Filter Listeners
+            searchInput.addEventListener('input', renderConcepts);
+            typeFilter.addEventListener('change', renderConcepts);
+
+            // Reset Form on Modal Open (for New Concept)
+            document.getElementById('newConceptBtn').addEventListener('click', () => {
+                conceptForm.reset();
+                formId.value = '';
+                document.getElementById('conceptModalLabel').textContent = 'Nuevo Concepto';
+            });
+
+            // Save Button Click
+            saveBtn.addEventListener('click', async () => {
+                if (!conceptForm.checkValidity()) {
+                    conceptForm.reportValidity();
+                    return;
+                }
+
+                const conceptData = {
+                    nombre: formName.value,
+                    tipo: formType.value,
+                    descripcion: formDesc.value
+                };
+
+                const id = formId.value;
+                const method = id ? 'PUT' : 'POST';
+                const url = id ? `${API_URL}/${id}` : API_URL;
+
+                try {
+                    const response = await fetch(url, {
+                        method: method,
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(conceptData)
+                    });
+
+                    if (response.ok) {
+                        conceptModal.hide();
+                        loadConcepts();
+                    } else {
+                        alert('Error al guardar el concepto');
+                    }
+                } catch (error) {
+                    console.error('Error:', error);
+                    alert('Error de conexión');
+                }
+            });
+
+            // Functions
+            async function loadConcepts() {
+                try {
+                    const response = await fetch(API_URL);
+                    if (response.ok) {
+                        allConcepts = await response.json();
+                        renderConcepts();
+                    } else {
+                        console.error('Failed to fetch concepts');
+                    }
+                } catch (error) {
+                    console.error('Error loading concepts:', error);
+                }
+            }
+
+            function renderConcepts() {
+                const searchTerm = searchInput.value.toLowerCase();
+                const filterType = typeFilter.value;
+
+                const filtered = allConcepts.filter(c => {
+                    const matchesSearch = c.nombre.toLowerCase().includes(searchTerm);
+                    const matchesType = filterType === 'ALL' || c.tipo === filterType;
+                    return matchesSearch && matchesType;
+                });
+
+                conceptsList.innerHTML = '';
+
+                if (filtered.length === 0) {
+                    document.getElementById('emptyState').classList.remove('d-none');
+                } else {
+                    document.getElementById('emptyState').classList.add('d-none');
+                    filtered.forEach(c => {
+                        const typeClass = c.tipo === 'INGRESO' ? 'text-success' : (c.tipo === 'EGRESO' ? 'text-danger' : 'text-primary');
+                        const typeBadge = c.tipo === 'INGRESO' ? 'bg-success' : (c.tipo === 'EGRESO' ? 'bg-danger' : 'bg-primary');
+
+                        const row = document.createElement('tr');
+                        row.innerHTML = `
+                          <td class="fw-bold">${c.nombre}</td>
+                          <td><span class="badge ${typeBadge} bg-opacity-10 ${typeClass}">${c.tipo}</span></td>
+                          <td class="text-truncate" style="max-width: 200px;" title="${c.descripcion || ''}">${c.descripcion || '-'}</td>
+                          <td class="text-end">
+                              <button class="btn btn-sm btn-outline-primary me-1 edit-btn" data-id="${c.id}"><i class="bi bi-pencil"></i></button>
+                              <button class="btn btn-sm btn-outline-danger delete-btn" data-id="${c.id}"><i class="bi bi-trash"></i></button>
+                          </td>
+                      `;
+                        conceptsList.appendChild(row);
+                    });
+
+                    // Re-attach listeners for dynamic buttons
+                    attachActionListeners();
+                }
+            }
+
+            function attachActionListeners() {
+                document.querySelectorAll('.edit-btn').forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        const id = btn.getAttribute('data-id');
+                        const concept = allConcepts.find(c => c.id == id);
+                        if (concept) {
+                            formId.value = concept.id;
+                            formName.value = concept.nombre;
+                            formType.value = concept.tipo;
+                            formDesc.value = concept.descripcion || '';
+
+                            document.getElementById('conceptModalLabel').textContent = 'Editar Concepto';
+                            conceptModal.show();
+                        }
+                    });
+                });
+
+                document.querySelectorAll('.delete-btn').forEach(btn => {
+                    btn.addEventListener('click', async () => {
+                        if (confirm('¿Estás seguro de eliminar este concepto?')) {
+                            const id = btn.getAttribute('data-id');
+                            try {
+                                const response = await fetch(`${API_URL}/${id}`, {
+                                    method: 'DELETE'
+                                });
+                                if (response.ok) {
+                                    loadConcepts();
+                                } else {
+                                    alert('No se pudo eliminar el concepto (puede estar en uso).');
+                                }
+                            } catch (e) {
+                                console.error(e);
+                            }
+                        }
+                    });
+                });
+            }
+        });
+    </script>
+</body>
+
+</html>
